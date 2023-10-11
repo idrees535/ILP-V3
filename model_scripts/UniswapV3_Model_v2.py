@@ -1,8 +1,10 @@
 import sys
 sys.path.append('/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/tokenspice')
-import os
-#os.environ["PATH"] += ":."
 
+import os
+os.environ["PATH"] += ":."
+
+from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick,price_to_raw_tick,price_to_sqrtp,sqrtp_to_price,tick_to_sqrtp,liquidity0,liquidity1,eth
 import brownie
@@ -41,13 +43,13 @@ class UniV3Model():
 
     def load_addresses(self):
         try:
-            with open("addresses_1.json", "r") as f:
+            with open("model_storage/token_pool_addresses.json", "r") as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return {}
 
     def save_addresses(self, addresses):
-        with open("addresses_1.json", "w") as f:
+        with open("model_storage/token_pool_addresses.json", "w") as f:
             json.dump(addresses, f)
 
     def deploy_load_tokens(self):
@@ -151,12 +153,14 @@ class UniV3Model():
         try:
             pool_actions = self.pool
             liquidity=self.budget_to_liquidity(tick_lower,tick_upper,usd_budget)
+            #print(liquidity)
 
             tx_receipt = pool_actions.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
 
             # Implement callback
             amount0 = tx_receipt.events['Mint']['amount0']
             amount1 = tx_receipt.events['Mint']['amount1']
+            #print(tx_receipt.events['Mint']['amount'])
             print(tx_receipt.events)
             if amount0 > 0:
                 tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
@@ -174,7 +178,7 @@ class UniV3Model():
         liquidity_provider_str = str(liquidity_provider)
         
         try:
-            with open("all_positions_1.json", "r") as f:
+            with open("model_storage/liq_positions.json", "r") as f:
                 all_positions = json.load(f)
         except FileNotFoundError:
             all_positions = {}
@@ -206,7 +210,7 @@ class UniV3Model():
             })
         
         # Store updated positions
-        with open("all_positions_1.json", "w") as f:
+        with open("model_storage/liq_positions.json", "w") as f:
             json.dump(all_positions, f)
         
         return tx_receipt
@@ -241,7 +245,7 @@ class UniV3Model():
         liquidity_provider_str = str(liquidity_provider)
         
         try:
-            with open("all_positions_1.json", "r") as f:
+            with open("model_storage/liq_positions.json", "r") as f:
                 all_positions = json.load(f)
         except FileNotFoundError:
             all_positions = {}
@@ -273,7 +277,7 @@ class UniV3Model():
             })
         
         # Store updated positions
-        with open("all_positions_1.json", "w") as f:
+        with open("model_storage/liq_positions.json", "w") as f:
             json.dump(all_positions, f)
         
         return tx_receipt
@@ -295,7 +299,7 @@ class UniV3Model():
             return tx_receipt  # Exit early if smart contract interaction fails
 
         try:
-            with open("all_positions_1.json", "r") as f:
+            with open("model_storage/liq_positions.json", "r") as f:
                 all_positions = json.load(f)
         except FileNotFoundError:
             all_positions = {}
@@ -322,20 +326,69 @@ class UniV3Model():
             all_positions[self.pool_id][liquidity_provider_str].remove(existing_position)  # Remove position if liquidity becomes zero
         
         # Update the JSON file
-        with open("all_positions_1.json", "w") as f:
+        with open("model_storage/liq_positions.json", "w") as f:
+            json.dump(all_positions, f)
+
+        return tx_receipt
+    
+    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity):
+        liquidity_provider_str = str(liquidity_provider)
+        tx_receipt = None
+        
+        # Convert budget to liquidity amount
+
+        try:
+            tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+            tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
+            print(tx_receipt.events)
+        except VirtualMachineError as e:
+            print("Failed to remove liquidity", e.revert_msg)
+            return tx_receipt  # Exit early if smart contract interaction fails
+
+        try:
+            with open("model_storage/liq_positions.json", "r") as f:
+                all_positions = json.load(f)
+        except FileNotFoundError:
+            all_positions = {}
+            
+        if self.pool_id not in all_positions or \
+        liquidity_provider_str not in all_positions[self.pool_id]:
+            print("Position not found.")
+            return tx_receipt  # Exit early if no positions are found
+
+        existing_position = None
+        for position in all_positions[self.pool_id][liquidity_provider_str]:
+            if position['tick_lower'] == tick_lower and position['tick_upper'] == tick_upper:
+                existing_position = position
+                break
+
+        if not existing_position:
+            print("Position not found.")
+            return tx_receipt  # Exit early if the specific position is not found
+
+        if existing_position['liquidity'] > liquidity:
+            existing_position['liquidity'] -= liquidity
+            existing_position['amount_usd'] -= liquidity  # Deduct removed liquidity
+        else:
+            all_positions[self.pool_id][liquidity_provider_str].remove(existing_position)  # Remove position if liquidity becomes zero
+        
+        # Update the JSON file
+        with open("model_storage/liq_positions.json", "w") as f:
             json.dump(all_positions, f)
 
         return tx_receipt
             
 
     def swap_token0_for_token1(self, recipient, amount_specified, data):
-        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1000000, 'gas_limit':  5000000, 'allow_revert': True}
         #tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
         sqrt_price_limit_x96=4295128740+1
 
         pool_actions = self.pool
         zero_for_one = True
-        tx_receipt=None 
+        tx_receipt=None
+        
+        print(f'amount_swap:{amount_specified} ,contract_token0 _balance: {self.token0.balanceOf(self.pool)} ,contract_token1_balance: {self.token1.balanceOf(self.pool)}')
 
         try:
             tx_receipt= pool_actions.swap(recipient, zero_for_one, amount_specified,sqrt_price_limit_x96, data,tx_params)
@@ -361,7 +414,9 @@ class UniV3Model():
 
         pool_actions = self.pool   
         zero_for_one = False
-        tx_receipt=None  
+        tx_receipt=None 
+
+        print(f'amount_swap:{amount_specified} ,contract_token0 _balance: {self.token0.balanceOf(self.pool)} ,contract_token1_balance: {self.token1.balanceOf(self.pool)}') 
 
         try:
             tx_receipt = pool_actions.swap(recipient, zero_for_one, amount_specified, sqrt_price_limit_x96, data,tx_params)
@@ -381,13 +436,16 @@ class UniV3Model():
         return tx_receipt
 
     def collect_fee(self,recipient,tick_lower,tick_upper):
-        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 500000000, 'allow_revert': True}
         
         position_key = Web3.solidityKeccak(['address', 'int24', 'int24'], [str(recipient), tick_lower, tick_upper]).hex()
 
         position_info = self.pool.positions(position_key)
+        
         amount0Owed = position_info[3]
         amount1Owed = position_info[4]
+        print(f'amount0Owed: {position_info[3]}, amount1Owed: {position_info[4]}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}, contract_token0_balance: {self.token0.balanceOf(self.pool)}, contract_token1_balance: {self.token1.balanceOf(self.pool)}')
+        
         tx_receipt=None
         fee_collected_usd=0
         try:
@@ -409,7 +467,7 @@ class UniV3Model():
     # Get All positions of all LPs in the pool
     def get_all_liquidity_positions(self):
         try:
-            with open("all_positions_1.json", "r") as f:
+            with open("model_storage/liq_positions.json", "r") as f:
                 all_positions = json.load(f)
         except FileNotFoundError:
             print("No positions found.")
@@ -521,7 +579,7 @@ class UniV3Model():
     def get_pool_state_for_all_ticks(self, lower_price_interested, upper_price_interested):
         tick_states = {} 
         try:
-            with open("all_positions_1.json", "r") as f:
+            with open("model_storage/liq_positions.json", "r") as f:
                 file_content = f.read().strip()  # Read and remove any leading/trailing whitespace
                 if not file_content:  # Check if file is empty
                     print("File is empty. Returning.")
@@ -567,7 +625,7 @@ class UniV3Model():
         position_states = {}
         # Load all positions from the JSON file
         try:
-            with open("all_positions_1.json", "r") as f:
+            with open("model_storage/liq_positions.json", "r") as f:
                 all_positions = json.load(f)
         except FileNotFoundError:
             print("No positions found.")
@@ -651,41 +709,33 @@ class UniV3Model():
         liquidity=get_liquidity_for_amounts(sqrt_ratio_x96=sqrtp_cur, sqrt_ratio_a_x96=sqrtp_low, sqrt_ratio_b_x96=sqrtp_upp, amount0=amount_token0, amount1=amount_token1)
         return liquidity
 
-def main():
-    token0 = "ETH"
-    token1 = "DAI"
-    supply_token0 = 1000000
-    supply_token1 = 1000000
-    decimals_token0 = 18
-    decimals_token1 = 18
-    fee_tier = 3000
-    initial_pool_price = 2000
-    deployer = GOD_ACCOUNT
-    sync_pool=True
-    initial_liquidity_amount=10000
-    env = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
-
-    env.add_liquidity(GOD_ACCOUNT, price_to_valid_tick(1000),price_to_valid_tick(3000),20000,b'')
+'''
+Usage
+token0 = "ETH"
+token1 = "DAI"
+supply_token0 = 1e18
+supply_token1 = 1e18
+decimals_token0 = 18
+decimals_token1 = 18
+fee_tier = 3000
+initial_pool_price = 2000
+deployer = GOD_ACCOUNT
+sync_pool=True
+initial_liquidity_amount=10000
+env = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
+'''
+#env.add_liquidity(GOD_ACCOUNT, price_to_valid_tick(1000),price_to_valid_tick(3000),20000,b'')
     #env.remove_liquidity(GOD_ACCOUNT,price_to_valid_tick(1700),price_to_valid_tick(2300),2000)
 
-    env.swap_token0_for_token1(GOD_ACCOUNT,toBase18(0.001),b'')
-    env.swap_token1_for_token0(GOD_ACCOUNT,toBase18(1000),b'')
-    tx,fee=env.collect_fee(GOD_ACCOUNT, price_to_valid_tick(1700),price_to_valid_tick(2300))
-    print(f"tx_collect: {fee}")
-    print(env.get_global_state())
-    print(env.get_pool_state_for_all_positions())
-    print(env.get_pool_state_for_all_ticks(1000,3000))
-    print(env.get_wallet_balances(GOD_ACCOUNT))
-    print(env.get_all_liquidity_positions())
-    print(env.get_lp_all_positions(GOD_ACCOUNT))
+#env.swap_token0_for_token1(GOD_ACCOUNT,toBase18(0.001),b'')
+#env.swap_token1_for_token0(GOD_ACCOUNT,toBase18(1000),b'')
 
 
-if __name__ == "__main__":
-    main()
-# Add logic to use already deployed tokens for new pool (If eth token was previously deployed for another pool we should be able to use that existing token to deploy new pool)
-# Sync depolyed pool with actual pool using dploy pool with liquidty function
-# Take this model to notebook env with all it's dependencies managed accordingly
-# Collect is failing I think I am requesting both amounts amount0 and maount1
-# swap token 0 to token 1 failed
-# Sync pool from liquidity positions
-# Sync pool with tick data (liquidity growth net, liquidty growth gross)
+
+
+#print(env.get_wallet_balances(GOD_ACCOUNT))
+#print(env.get_all_liquidity_positions())
+#print(env.get_lp_all_positions(GOD_ACCOUNT))
+
+
+# Sync Pool state with positions_data, tick_data, events_data

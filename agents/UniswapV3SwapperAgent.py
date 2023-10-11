@@ -1,5 +1,4 @@
-#Kuch hua
-# Nahi hua
+
 from enforce_typing import enforce_types
 from engine import AgentBase
 from util.constants import GOD_ACCOUNT
@@ -10,13 +9,13 @@ from util.globaltokens import weth_usdc_pool
 
 @enforce_types
 class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
-    def __init__(self, name, weth, usdc ,policy_func):
-        super().__init__(name, weth, usdc)
+    def __init__(self, name, token0, token1 ,policy_func):
+        super().__init__(name, token0, token1)
         
         self.pool=weth_usdc_pool
         self.policy=policy_func
-        self.weth=weth
-        self.usdc=usdc
+        self._token0=token0
+        self._token1=token1
 
     def takeStep(self, state):
         action,amount = self.policy(state)

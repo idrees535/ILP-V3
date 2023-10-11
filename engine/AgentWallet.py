@@ -40,13 +40,13 @@ class AgentWalletAbstract(ABC):
     """
 
     @abstractmethod
-    def __init__(self, WETH: float = 0.0, USDC: float = 0.0, private_key=None):
+    def __init__(self, tokne0: float = 0.0, token1: float = 0.0, private_key=None):
         pass
 
     # ===================================================================
     # WETH-related
     @abstractmethod
-    def WETH(self) -> float:
+    def token0(self) -> float:
         pass
 
     @abstractmethod
@@ -68,7 +68,7 @@ class AgentWalletAbstract(ABC):
     # ===================================================================
     # USDC-related
     @abstractmethod
-    def USDC(self) -> float:
+    def token1(self) -> float:
         pass
 
     @abstractmethod
@@ -347,8 +347,8 @@ class AgentWalletEvm(
 
 @enforce_types
 class AgentWalletEvmBoth(AgentWalletAbstract):
-    def __init__(self, WETH: float = 0.0, USDC: float = 0.0, private_key=None):
-        AgentWalletAbstract.__init__(self, WETH, USDC, private_key)
+    def __init__(self, token0: float = 0.0, token1: float = 0.0, private_key=None):
+        AgentWalletAbstract.__init__(self, token0, token1, private_key)
       
 
         self._account: Account = None
@@ -365,12 +365,12 @@ class AgentWalletEvmBoth(AgentWalletAbstract):
         self._cached_WETH_base: typing.Union[int, None] = None
         self._cached_USDC_base: typing.Union[int, None] = None
         
-        self._total_WETH_in: float = WETH
-        self._total_USDC_in: float = USDC
+        self._total_WETH_in: float = token0
+        self._total_USDC_in: float = token1
 
         # Fund the account
-        globaltokens.fundWETHFromAbove(self._account.address, toBase18(WETH))
-        globaltokens.fundUSDCFromAbove(self._account.address, toBase18(USDC))
+        globaltokens.fundToken0FromAbove(self._account.address, toBase18(token0))
+        globaltokens.fundToken1FromAbove(self._account.address, toBase18(token1))
         
         # Postconditions
         #assert self.WETH() == WETH
@@ -392,14 +392,14 @@ class AgentWalletEvmBoth(AgentWalletAbstract):
 
     # ===================================================================
    # USDC-related
-    def USDC(self) -> float:
-        return fromBase18(self._USDC_base())
+    def token1(self) -> float:
+        return fromBase18(self._token1_base())
 
-    def _USDC_base(self) -> int:
-        USDC_token = globaltokens.USDCToken()
-        self._cached_USDC_base = USDC_token.balanceOf(self.address)
+    def _token1_base(self) -> int:
+        token1 = globaltokens.Token1()
+        self._cached_token1_base = token1.balanceOf(self.address)
 
-        return self._cached_USDC_base
+        return self._cached_token1_base
 
     def depositUSDC(self, amt: float) -> None:
         assert amt >= 0.0
@@ -445,13 +445,13 @@ class AgentWalletEvmBoth(AgentWalletAbstract):
 
         # ===================================================================
     # WETH-related
-    def WETH(self) -> float:
-        return fromBase18(self._WETH_base())
+    def token0(self) -> float:
+        return fromBase18(self._token0_base())
 
-    def _WETH_base(self) -> int:
-        WETH_token = globaltokens.WETHToken()
-        self._cached_WETH_base = WETH_token.balanceOf(self.address)
-        return self._cached_WETH_base
+    def _token0_base(self) -> int:
+        token0 = globaltokens.Token0()
+        self._cached_token0_base = token0.balanceOf(self.address)
+        return self._cached_token0_base
 
     def depositWETH(self, amt: float) -> None:
         assert amt >= 0.0

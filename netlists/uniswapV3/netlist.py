@@ -16,10 +16,6 @@ import numpy as np
 import pandas as pd
 
 
-#from agents.rl_ilp_agent import DiscreteSimpleEnvBox
-#import stable_baselines3
-#from stable_baselines3 import PPO
-
 # SimStrategy Class
 class SimStrategy(SimStrategyBase):
     def __init__(self):
@@ -27,20 +23,9 @@ class SimStrategy(SimStrategyBase):
         self.stop_condition = S_PER_MONTH
         
         self.log_interval = S_PER_DAY
-        self.max_ticks = 5
+        self.max_ticks = 10
 
         self.pool = weth_usdc_pool
-        '''
-        price_lower_low = 1000
-        price_lower_high = 2000
-        price_upper_low = 2000
-        price_upper_high = 3000
-        agent_budget_usd = 1000
-        pool = None  # Your pool object here
-
-        env_box = DiscreteSimpleEnvBox(price_lower_low, price_lower_high, price_upper_low, price_upper_high, agent_budget_usd,weth_usdc_pool)
-        self.model = PPO('MlpPolicy', env_box, verbose=1)
-        '''
 # SimState Class
 class SimState(SimStateBase):
     def __init__(self, ss: SimStrategy):
@@ -71,6 +56,7 @@ class KPIs(KPIsBase):
 
 # netlist_createLogData Function
 def netlist_createLogData(state: SimState):
+    
     # Static variables
     try:
         s = []
@@ -82,16 +68,16 @@ def netlist_createLogData(state: SimState):
         noise_trader = state.agents["noise_trader"]
 
         # Log LP's funds
-        s.append(f"LP_USDC: {retail_lp.USDC()}, LP_WETH: {retail_lp.WETH()}")
-        dataheader.extend(["LP_USDC", "LP_WETH"])
-        datarow.extend([retail_lp.USDC(), retail_lp.WETH()])
+        s.append(f"LP_token1: {retail_lp.token1()}, LP_token0: {retail_lp.token0()}")
+        dataheader.extend(["LP_token1", "LP_token0"])
+        datarow.extend([retail_lp.token1(), retail_lp.token0()])
         
 
         # Log Trader's funds
-        #s.append(f"Trader_USDC: {noise_trader.USDC()}, Trader_WETH: {noise_trader.WETH()}")
-        #dataheader.extend(["Trader_USDC", "Trader_WETH"])
-        #datarow.extend([noise_trader.USDC(), noise_trader.WETH()])
-
+        s.append(f"Trader_token1: {noise_trader.token1()}, Trader_token0: {noise_trader.token0()}")
+        dataheader.extend(["Trader_token1", "Trader_token0"])
+        datarow.extend([noise_trader.token1(), noise_trader.token0()])
+        
         # Log global pool state
         global_state = weth_usdc_pool.get_global_state()  # Replace with the actual method call
         for key, value in global_state.items():
@@ -122,13 +108,14 @@ def netlist_createLogData(state: SimState):
         tick_final_df = pd.concat(netlist_createLogData.tick_data_frames, keys=range(len(netlist_createLogData.tick_data_frames)))
         position_final_df = pd.concat(netlist_createLogData.position_data_frames, keys=range(len(netlist_createLogData.position_data_frames)))
 
-        tick_final_df.to_csv("outdir_csv/tick_data.csv")
-        position_final_df.to_csv("outdir_csv/position_data.csv")
+        tick_final_df.to_csv("model_outdir_csv/tick_data.csv")
+        position_final_df.to_csv("model_outdir_csv/position_data.csv")
 
         netlist_createLogData.tick_data_frames = []
         netlist_createLogData.position_data_frames = []
+        
     except Exception as e:
-        print("An error occurred:", e)
+        print("An error occurred while logging data:", e)
 
     return s, dataheader, datarow
 
@@ -144,15 +131,18 @@ def retail_LP_policy(state,agent):
     action = random.choice(actions)
     if action =='add_liquidity':
         current_price = sqrtp_to_price(weth_usdc_pool.pool.slot0()[0])
-        price_lower = current_price * random.uniform(0.5, 0.9)  
-        price_upper = current_price * random.uniform(1.1, 1.5)  
+        tick_lower = price_to_valid_tick(current_price * random.uniform(0.5, 0.9))  
+        tick_upper = price_to_valid_tick(current_price * random.uniform(1.1, 1.5))  
         amount_usd = random.uniform(10, 5000)
-        return action, price_lower,price_upper,amount_usd 
+
+        return action, tick_lower,tick_upper,amount_usd 
     
     elif action =='remove_liquidity':
         lp_positions = weth_usdc_pool.get_lp_all_positions(agent._wallet.address)
+        
         if lp_positions:
             position_to_remove = random.choice(lp_positions)
+            
             tick_lower = position_to_remove['tick_lower']
             tick_upper = position_to_remove['tick_upper']
             amount = position_to_remove['liquidity']
@@ -214,7 +204,7 @@ def noise_trader_policy(state):
     
     # Generate a random amount
     if action == 'swap_token0_for_token1':
-        amount = random.uniform(0.05, 0.1) 
+        amount = random.uniform(0.05, 1) 
     else:
         amount=random.uniform(100,500)
 
@@ -231,10 +221,3 @@ def whale_trader_policy(state):
         amount=random.uniform(0.1, 0.5)
 
     return action, amount
-
-# Agnets and pool reinitialization (netlist reinitilaze agents everytime simulation is run which is not correct beacuse in RL we want to same agents to interact with pool in each step of RL agent)
-# Model trader behaviours based on gauntlet's analysis of trader elasticity
-# Include feeCollected by agent in agent's state (balances), how can IL be claculated?
-# Create Log data function (Make log data more comrehensive, by adding events at each step)
-# Get derived state from raw state for infernce tasks (volume from swaps, fees_cumulative, volatility from price, etc.)
-# Initialize new pool when done with testing because Tick data and position data is incomplete, as we are getting position data and tick from only those ticks which were stored in json file, but pool has money more initialized ticks and positions than those stored in json file

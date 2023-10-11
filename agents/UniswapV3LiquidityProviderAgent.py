@@ -8,13 +8,13 @@ from util.base18 import log_event_to_csv
 
 @enforce_types
 class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
-    def __init__(self, name: str,WETH,USDC,policy_func):
-        super().__init__(name,WETH,USDC)
+    def __init__(self, name: str,token0,token1,policy_func):
+        super().__init__(name,token0,token1)
 
         self.pool=weth_usdc_pool
         self.policy=policy_func
-        self.weth=WETH
-        self.usdc=USDC
+        self._token0=token0
+        self._token1=token1
         self.agent_name=name
     
     def takeStep(self, state):
@@ -25,20 +25,14 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
             return None
 
         if liquidity_action == "add_liquidity":
-            tx_receipt = self.pool.add_liquidity(self._wallet.address, tick_lower, tick_upper, amount, b'')
-            log_event_to_csv(tx_receipt)
+            tx_receipt= self.pool.add_liquidity(self._wallet.address, tick_lower, tick_upper, amount, b'')
+            #log_event_to_csv(tx_receipt)
 
         elif liquidity_action == "remove_liquidity":
-            tx_receipt = self.pool.remove_liquidity(self._wallet.address, tick_lower, tick_upper, amount)
+            tx_receipt = self.pool.remove_liquidity_with_liquidty(self._wallet.address, tick_lower, tick_upper, amount)
             log_event_to_csv(tx_receipt)
             tx_receipt,_ = self.pool.collect_fee(self._wallet.address, tick_lower, tick_upper)
             log_event_to_csv(tx_receipt)
 
         elif liquidity_action == "hold":
             print("Do Nothing (HODOOR)")
-
-            
-
-   
-      
-
