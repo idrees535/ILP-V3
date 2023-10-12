@@ -15,7 +15,7 @@ import random
 from brownie.exceptions import VirtualMachineError
 
 class UniV3Model():
-    def __init__(self, token0='token0', token1='token1', token0_decimals=18, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=10000):
+    def __init__(self, token0='token0', token1='token1', token0_decimals=18, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=1000000):
         self.deployer = deployer
         self.token0_name = token0
         self.token1_name = token1
@@ -388,7 +388,7 @@ class UniV3Model():
         zero_for_one = True
         tx_receipt=None
         
-        print(f'amount_swap:{amount_specified} ,contract_token0 _balance: {self.token0.balanceOf(self.pool)} ,contract_token1_balance: {self.token1.balanceOf(self.pool)}')
+        print(f'amount_swap_token0 - contract_token0 _balance: {amount_specified-self.token0.balanceOf(self.pool)} , contract_token1_balance: {self.token1.balanceOf(self.pool)}')
 
         try:
             tx_receipt= pool_actions.swap(recipient, zero_for_one, amount_specified,sqrt_price_limit_x96, data,tx_params)
@@ -416,7 +416,7 @@ class UniV3Model():
         zero_for_one = False
         tx_receipt=None 
 
-        print(f'amount_swap:{amount_specified} ,contract_token0 _balance: {self.token0.balanceOf(self.pool)} ,contract_token1_balance: {self.token1.balanceOf(self.pool)}') 
+        print(f'amount_swap_token1 - contract_token1 _balance:{amount_specified-self.token1.balanceOf(self.pool)} , contract_token0_balance: {self.token0.balanceOf(self.pool)}')
 
         try:
             tx_receipt = pool_actions.swap(recipient, zero_for_one, amount_specified, sqrt_price_limit_x96, data,tx_params)
@@ -444,7 +444,7 @@ class UniV3Model():
         
         amount0Owed = position_info[3]
         amount1Owed = position_info[4]
-        print(f'amount0Owed: {position_info[3]}, amount1Owed: {position_info[4]}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}, contract_token0_balance: {self.token0.balanceOf(self.pool)}, contract_token1_balance: {self.token1.balanceOf(self.pool)}')
+        print(f'amount0Owed: {position_info[3]}, contract_token0_balance - amount0Owed: {self.token0.balanceOf(self.pool)-position_info[3]} ,amount1Owed: {position_info[4]} ,contract_token1_balance - amount1Owed: {self.token0.balanceOf(self.pool)-position_info[4]}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}')
         
         tx_receipt=None
         fee_collected_usd=0

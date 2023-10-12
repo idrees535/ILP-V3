@@ -12,6 +12,10 @@ def fromBase18(amt_base: int) -> float:
 def fromBase128(value):
     return value / (2 ** 128)
 
+def toBase128(value):
+    return value *(2 **128)
+
+
 
 min_tick = -887272
 max_tick = 887272

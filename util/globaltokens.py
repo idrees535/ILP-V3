@@ -21,7 +21,7 @@ fee_tier = 3000
 initial_pool_price = 2000
 deployer = GOD_ACCOUNT
 sync_pool=True
-initial_liquidity_amount=10000
+initial_liquidity_amount=1000000
 weth_usdc_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
 
 #Instantiante pool class
