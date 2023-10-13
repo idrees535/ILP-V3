@@ -23,7 +23,7 @@ class SimStrategy(SimStrategyBase):
         self.stop_condition = S_PER_MONTH
         
         self.log_interval = S_PER_DAY
-        self.max_ticks = 10
+        self.max_ticks = 1
 
         self.pool = weth_usdc_pool
 # SimState Class

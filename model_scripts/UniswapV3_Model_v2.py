@@ -388,8 +388,6 @@ class UniV3Model():
         zero_for_one = True
         tx_receipt=None
         
-        print(f'amount_swap_token0 - contract_token0 _balance: {amount_specified-self.token0.balanceOf(self.pool)} , contract_token1_balance: {self.token1.balanceOf(self.pool)}')
-
         try:
             tx_receipt= pool_actions.swap(recipient, zero_for_one, amount_specified,sqrt_price_limit_x96, data,tx_params)
             
@@ -405,6 +403,8 @@ class UniV3Model():
         
         except VirtualMachineError as e:
             print("Swap token 0 to Token 1 Transaction failed:", e.revert_msg)
+            print(f'amount_swap_token0 - contract_token0 _balance: {amount_specified-self.token0.balanceOf(self.pool)} , contract_token1_balance: {self.token1.balanceOf(self.pool)}')
+        
         return tx_receipt
      
     def swap_token1_for_token0(self, recipient, amount_specified, data):
@@ -415,8 +415,6 @@ class UniV3Model():
         pool_actions = self.pool   
         zero_for_one = False
         tx_receipt=None 
-
-        print(f'amount_swap_token1 - contract_token1 _balance:{amount_specified-self.token1.balanceOf(self.pool)} , contract_token0_balance: {self.token0.balanceOf(self.pool)}')
 
         try:
             tx_receipt = pool_actions.swap(recipient, zero_for_one, amount_specified, sqrt_price_limit_x96, data,tx_params)
@@ -433,6 +431,7 @@ class UniV3Model():
         
         except VirtualMachineError as e:
             print("Swap token 1 to Token 0 Transaction failed:", e.revert_msg)
+            print(f'amount_swap_token1 - contract_token1 _balance:{amount_specified-self.token1.balanceOf(self.pool)} , contract_token0_balance: {self.token0.balanceOf(self.pool)}')
         return tx_receipt
 
     def collect_fee(self,recipient,tick_lower,tick_upper):
@@ -444,8 +443,9 @@ class UniV3Model():
         
         amount0Owed = position_info[3]
         amount1Owed = position_info[4]
-        print(f'amount0Owed: {position_info[3]}, contract_token0_balance - amount0Owed: {self.token0.balanceOf(self.pool)-position_info[3]} ,amount1Owed: {position_info[4]} ,contract_token1_balance - amount1Owed: {self.token0.balanceOf(self.pool)-position_info[4]}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}')
-        
+
+        print(f'amount0Owed: {position_info[3]}, ,amount1Owed: {position_info[4]}')
+
         tx_receipt=None
         fee_collected_usd=0
         try:
@@ -459,6 +459,8 @@ class UniV3Model():
             fee_collected_usd = fromBase18(amount0Collected*sqrtp_to_price(slot0_data[0]) + amount1Collected)
         except VirtualMachineError as e:
             print("Fee collection failed:", e.revert_msg)
+            print(f"contract_token0_balance - amount0Owed: {self.token0.balanceOf(self.pool)-position_info[3]} ,contract_token1_balance - amount1Owed: {self.token0.balanceOf(self.pool)-position_info[4]}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}")
+
         
         #print(f"Fee collected usd: {fee_collected_usd}")
         return tx_receipt,fee_collected_usd
