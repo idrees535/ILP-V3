@@ -206,7 +206,7 @@ def noise_trader_policy(state):
     if action == 'swap_token0_for_token1':
         amount = random.uniform(0.05, 1) 
     else:
-        amount=random.uniform(100,500)
+        amount=random.uniform(100,2000)
 
     return action, amount
 
