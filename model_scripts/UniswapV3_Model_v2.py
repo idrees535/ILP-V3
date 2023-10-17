@@ -436,6 +436,11 @@ class UniV3Model():
 
     def collect_fee(self,recipient,tick_lower,tick_upper):
         tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 500000000, 'allow_revert': True}
+        # Poke to update variables
+        try:
+            tx_receipt = self.pool.burn(tick_lower, tick_upper, 0, tx_params)
+        except VirtualMachineError as e:
+            print("Poke failed:", e.revert_msg)
         
         position_key = Web3.solidityKeccak(['address', 'int24', 'int24'], [str(recipient), tick_lower, tick_upper]).hex()
 
