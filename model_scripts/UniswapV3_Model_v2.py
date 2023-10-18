@@ -57,21 +57,30 @@ class UniV3Model():
         addresses = self.load_addresses()
         pool_addresses = addresses.get(self.pool_id, {})
 
-        def deploy_token(name, symbol, decimals, supply, key):
+        # This function deploys a token and saves its address in the JSON file
+        def deploy_and_save_token(name, symbol, decimals, supply, key):
+            token = SimpleToken.deploy(name, symbol, decimals, toBase18(supply),  {'from': self.deployer, 'gas_price': self.base_fee + 1})
+            print(f"New {symbol} token deployed at {token.address}")
+            pool_addresses[key] = token.address
+            addresses[self.pool_id] = pool_addresses
+            self.save_addresses(addresses)
+            return token
 
-            if key in pool_addresses:
-                return SimpleToken.at(pool_addresses[key])
-                
-            else:
-                token = SimpleToken.deploy(name, symbol, decimals, toBase18(supply),  {'from': self.deployer, 'gas_price': self.base_fee + 1})
-                print(f"New {symbol} token deployed at {token.address}")
-                pool_addresses[key] = token.address
-                addresses[self.pool_id] = pool_addresses
-                self.save_addresses(addresses)
-                return token
+        # Load or deploy token1
+        if "token1_address" in pool_addresses:
+            self.token1 = SimpleToken.at(pool_addresses["token1_address"])
+        else:
+            self.token1 = deploy_and_save_token(self.token1_name, self.token1_symbol, self.token1_decimals, self.supply_token1, "token1_address")
 
-        self.token0 = deploy_token(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, "token0_address")
-        self.token1 = deploy_token(self.token1_name, self.token1_symbol, self.token1_decimals, self.supply_token1, "token1_address")
+        # Load or deploy token0
+        if "token0_address" in pool_addresses:
+            self.token0 = SimpleToken.at(pool_addresses["token0_address"])
+        else:
+            self.token0 = deploy_and_save_token(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, "token0_address")
+            # Ensure token0 address is less than token1 address
+            while int(self.token0.address, 16) >= int(self.token1.address, 16):
+                self.token0 = deploy_and_save_token(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, "token0_address")
+
 
     def deploy_load_pool(self):
         UniswapV3Factory = BROWNIE_PROJECTUniV3.UniswapV3Factory
@@ -98,6 +107,22 @@ class UniV3Model():
             self.save_addresses(addresses)
             
             self.sync_pool_state()
+
+
+    def ensure_token_order(self):
+        # Check if token0's address is greater than token1's address
+        if int(self.token0.address, 16) > int(self.token1.address, 16):
+            SimpleToken = BROWNIE_PROJECTUniV3.Simpletoken
+
+            # Continue deploying token0 until its address is less than token1's address
+            while True:
+                new_token0 = SimpleToken.deploy(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, {'from': self.deployer, 'gas_price': self.base_fee + 1})
+                if int(new_token0.address, 16) < int(self.token1.address, 16):
+                    break
+
+            # Update the model's token0 reference to point to the new token0 contract
+            self.token0 = new_token0
+            print(f"New {self.token0_symbol} token deployed at {self.token0.address} to ensure desired token order in the pool")
 
     def sync_pool_state(self):
         # Can add any other logic to sync pool with real pool
@@ -166,6 +191,7 @@ class UniV3Model():
                 tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
             if amount1 > 0:
                 tx_receipt_token1_transfer=self.token1.transfer(self.pool.address, amount1, tx_params)
+                #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
 
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
@@ -233,6 +259,8 @@ class UniV3Model():
                 tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
             if amount1 > 0:
                 tx_receipt_token1_transfer=self.token1.transfer(self.pool.address, amount1, tx_params)
+                #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
+
 
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
@@ -294,6 +322,7 @@ class UniV3Model():
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
             tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
             print(tx_receipt.events)
+            self.collect_fee(liquidity_provider_str,tick_lower,tick_upper)
         except VirtualMachineError as e:
             print("Failed to remove liquidity", e.revert_msg)
             return tx_receipt  # Exit early if smart contract interaction fails
@@ -341,6 +370,7 @@ class UniV3Model():
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
             tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
             print(tx_receipt.events)
+            self.collect_fee(liquidity_provider_str,tick_lower,tick_upper)
         except VirtualMachineError as e:
             print("Failed to remove liquidity", e.revert_msg)
             return tx_receipt  # Exit early if smart contract interaction fails
@@ -403,8 +433,9 @@ class UniV3Model():
         
         except VirtualMachineError as e:
             print("Swap token 0 to Token 1 Transaction failed:", e.revert_msg)
-            print(f'amount_swap_token0 - contract_token0 _balance: {amount_specified-self.token0.balanceOf(self.pool)} , contract_token1_balance: {self.token1.balanceOf(self.pool)}')
-        
+            slot0_data = self.pool.slot0()
+            print(f'contract_token1_balance - approx_token1_amount: {self.token1.balanceOf(self.pool)-amount_specified*sqrtp_to_price(slot0_data[0])}, approx_token1_amount: {amount_specified*sqrtp_to_price(slot0_data[0])}), contract_token1_balance: {self.token1.balanceOf(self.pool)}, amount_swap_token0: {amount_specified}, contract_token0 _balance - amount_swap_token0: {self.token0.balanceOf(self.pool)-amount_specified}')
+
         return tx_receipt
      
     def swap_token1_for_token0(self, recipient, amount_specified, data):
@@ -427,11 +458,13 @@ class UniV3Model():
 
             # Trasfer token1 to pool (callabck)
             tx_receipt_token1_transfer = self.token1.transfer(self.pool.address, amount1, tx_params)
+            #print(f'token1 amount:{amount1} transfered to contract:{tx_receipt_token1_transfer}')
             
         
         except VirtualMachineError as e:
             print("Swap token 1 to Token 0 Transaction failed:", e.revert_msg)
-            print(f'amount_swap_token1 - contract_token1 _balance:{amount_specified-self.token1.balanceOf(self.pool)} , contract_token0_balance: {self.token0.balanceOf(self.pool)}')
+            slot0_data = self.pool.slot0()
+            print(f'contract_token0_balance - approx_token0_amount: {self.token0.balanceOf(self.pool)-amount_specified/sqrtp_to_price(slot0_data[0])}, approx_token0_amount: {amount_specified/sqrtp_to_price(slot0_data[0])}, contract_token0_balance: {self.token0.balanceOf(self.pool)}, contract_token1_balance - amount_swap_token1: {self.token1.balanceOf(self.pool)-amount_specified}')
         return tx_receipt
 
     def collect_fee(self,recipient,tick_lower,tick_upper):
@@ -440,7 +473,7 @@ class UniV3Model():
         try:
             tx_receipt = self.pool.burn(tick_lower, tick_upper, 0, tx_params)
         except VirtualMachineError as e:
-            print("Poke failed:", e.revert_msg)
+            print("Poke:", e.revert_msg)
         
         position_key = Web3.solidityKeccak(['address', 'int24', 'int24'], [str(recipient), tick_lower, tick_upper]).hex()
 
@@ -464,7 +497,7 @@ class UniV3Model():
             fee_collected_usd = fromBase18(amount0Collected*sqrtp_to_price(slot0_data[0]) + amount1Collected)
         except VirtualMachineError as e:
             print("Fee collection failed:", e.revert_msg)
-            print(f"contract_token0_balance - amount0Owed: {self.token0.balanceOf(self.pool)-position_info[3]} ,contract_token1_balance - amount1Owed: {self.token0.balanceOf(self.pool)-position_info[4]}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}")
+            print(f"contract_token0_balance - amount0Owed: {self.token0.balanceOf(self.pool)-amount0Owed} ,contract_token1_balance - amount1Owed: {self.token1.balanceOf(self.pool)-amount1Owed}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}")
 
         
         #print(f"Fee collected usd: {fee_collected_usd}")
@@ -731,18 +764,3 @@ sync_pool=True
 initial_liquidity_amount=10000
 env = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
 '''
-#env.add_liquidity(GOD_ACCOUNT, price_to_valid_tick(1000),price_to_valid_tick(3000),20000,b'')
-    #env.remove_liquidity(GOD_ACCOUNT,price_to_valid_tick(1700),price_to_valid_tick(2300),2000)
-
-#env.swap_token0_for_token1(GOD_ACCOUNT,toBase18(0.001),b'')
-#env.swap_token1_for_token0(GOD_ACCOUNT,toBase18(1000),b'')
-
-
-
-
-#print(env.get_wallet_balances(GOD_ACCOUNT))
-#print(env.get_all_liquidity_positions())
-#print(env.get_lp_all_positions(GOD_ACCOUNT))
-
-
-# Sync Pool state with positions_data, tick_data, events_data

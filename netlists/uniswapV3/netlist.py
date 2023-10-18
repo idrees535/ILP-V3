@@ -77,7 +77,7 @@ def netlist_createLogData(state: SimState):
         s.append(f"Trader_token1: {noise_trader.token1()}, Trader_token0: {noise_trader.token0()}")
         dataheader.extend(["Trader_token1", "Trader_token0"])
         datarow.extend([noise_trader.token1(), noise_trader.token0()])
-        
+        '''
         # Log global pool state
         global_state = weth_usdc_pool.get_global_state()  # Replace with the actual method call
         for key, value in global_state.items():
@@ -113,7 +113,7 @@ def netlist_createLogData(state: SimState):
 
         netlist_createLogData.tick_data_frames = []
         netlist_createLogData.position_data_frames = []
-        
+        '''
     except Exception as e:
         print("An error occurred while logging data:", e)
 
@@ -133,7 +133,7 @@ def retail_LP_policy(state,agent):
         current_price = sqrtp_to_price(weth_usdc_pool.pool.slot0()[0])
         tick_lower = price_to_valid_tick(current_price * random.uniform(0.5, 0.9))  
         tick_upper = price_to_valid_tick(current_price * random.uniform(1.1, 1.5))  
-        amount_usd = random.uniform(10, 5000)
+        amount_usd = random.uniform(1000, 10000)
 
         return action, tick_lower,tick_upper,amount_usd 
     
@@ -204,7 +204,7 @@ def noise_trader_policy(state):
     
     # Generate a random amount
     if action == 'swap_token0_for_token1':
-        amount = random.uniform(0.05, 1) 
+        amount = random.uniform(0.05, 0.1) 
     else:
         amount=random.uniform(100,2000)
 
