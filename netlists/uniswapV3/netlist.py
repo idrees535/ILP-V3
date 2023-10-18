@@ -151,7 +151,7 @@ def retail_LP_policy(state,agent):
             #print("This LP doesn't contain any positions.")
             return None   
 
-def inst_LP_policy(state):
+def inst_LP_policy(state,agent):
     # More capital to invest
     # has concentrated positions
     # Doesn't rebalnces frequently
@@ -166,7 +166,7 @@ def inst_LP_policy(state):
         current_price = sqrtp_to_price(weth_usdc_pool.pool.slot0()[0])
         price_lower = current_price * random.uniform(0.95, 0.98)
         price_upper = current_price * random.uniform(1.02, 1.05)
-        amount_usd = random.uniform(5000, 10000)
+        amount_usd = random.uniform(5000, 50000)
         return action, price_lower, price_upper, amount_usd
     
     elif action=='remove_liquidity':
@@ -179,7 +179,7 @@ def inst_LP_policy(state):
             amount = position_to_remove['liquidity']
             return action, tick_lower, tick_upper, amount
         else:
-            print("This LP doesn't contain any positions.")
+            #print("This LP doesn't contain any positions.")
             return None   
         
 def stoikov_LP_policy(state):
