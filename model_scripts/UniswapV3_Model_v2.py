@@ -38,9 +38,30 @@ class UniV3Model():
         w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
         self.base_fee = w3.eth.getBlock('latest')['baseFeePerGas']
         
+        self.ensure_valid_json_file("model_storage/token_pool_addresses.json")
+        self.ensure_valid_json_file("model_storage/liq_positions.json")
+        
         self.deploy_load_tokens()
         self.deploy_load_pool()
 
+
+    def ensure_valid_json_file(self, filepath, default_content="{}"):
+        """
+        Ensure the file contains valid JSON.
+        If the file doesn't exist or contains invalid JSON, 
+        initialize it with default_content.
+        """
+        try:
+            with open(filepath, "r") as f:
+                content = f.read().strip()  # Read and remove any leading/trailing whitespace
+                if not content:  # Check if file is empty
+                    raise ValueError("File is empty")
+                json.loads(content)  # Try to parse the JSON
+        except (FileNotFoundError, ValueError, json.JSONDecodeError):
+            with open(filepath, "w") as f:  # Create or overwrite the file
+                f.write(default_content)
+
+    
     def load_addresses(self):
         try:
             with open("model_storage/token_pool_addresses.json", "r") as f:
@@ -271,7 +292,7 @@ class UniV3Model():
 
         # Store position in json file
         liquidity_provider_str = str(liquidity_provider)
-        
+       
         try:
             with open("model_storage/liq_positions.json", "r") as f:
                 all_positions = json.load(f)
@@ -360,7 +381,7 @@ class UniV3Model():
 
         return tx_receipt
     
-    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity):
+    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity,collect_tokens=True):
         liquidity_provider_str = str(liquidity_provider)
         tx_receipt = None
         
@@ -370,7 +391,8 @@ class UniV3Model():
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
             tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
             print(tx_receipt.events)
-            self.collect_fee(liquidity_provider_str,tick_lower,tick_upper)
+            if collect_tokens==True:
+                self.collect_fee(liquidity_provider_str,tick_lower,tick_upper)
         except VirtualMachineError as e:
             print("Failed to remove liquidity", e.revert_msg)
             return tx_receipt  # Exit early if smart contract interaction fails
@@ -467,13 +489,15 @@ class UniV3Model():
             print(f'contract_token0_balance - approx_token0_amount: {self.token0.balanceOf(self.pool)-amount_specified/sqrtp_to_price(slot0_data[0])}, approx_token0_amount: {amount_specified/sqrtp_to_price(slot0_data[0])}, contract_token0_balance: {self.token0.balanceOf(self.pool)}, contract_token1_balance - amount_swap_token1: {self.token1.balanceOf(self.pool)-amount_specified}')
         return tx_receipt
 
-    def collect_fee(self,recipient,tick_lower,tick_upper):
+    def collect_fee(self,recipient,tick_lower,tick_upper,poke=False):
         tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 500000000, 'allow_revert': True}
+        
         # Poke to update variables
-        try:
-            tx_receipt = self.pool.burn(tick_lower, tick_upper, 0, tx_params)
-        except VirtualMachineError as e:
-            print("Poke:", e.revert_msg)
+        if poke==True:
+            try:
+                self.pool.burn(tick_lower, tick_upper, 0, tx_params)
+            except VirtualMachineError as e:
+                print("Poke:", e.revert_msg)
         
         position_key = Web3.solidityKeccak(['address', 'int24', 'int24'], [str(recipient), tick_lower, tick_upper]).hex()
 

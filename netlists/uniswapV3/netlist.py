@@ -23,7 +23,7 @@ class SimStrategy(SimStrategyBase):
         self.stop_condition = S_PER_MONTH
         
         self.log_interval = S_PER_DAY
-        self.max_ticks = 1
+        self.max_ticks = 3
 
         self.pool = weth_usdc_pool
 # SimState Class
@@ -204,9 +204,9 @@ def noise_trader_policy(state):
     
     # Generate a random amount
     if action == 'swap_token0_for_token1':
-        amount = random.uniform(0.05, 0.1) 
+        amount = random.uniform(1, 5) 
     else:
-        amount=random.uniform(100,2000)
+        amount=random.uniform(2000,10000)
 
     return action, amount
 

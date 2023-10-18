@@ -30,7 +30,7 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
             #log_event_to_csv(tx_receipt)
 
         elif liquidity_action == "remove_liquidity":
-            collect_tx_receipt,_ = self.pool.collect_fee(self._wallet.address, tick_lower, tick_upper)
+            # collect_tx_receipt,_ = self.pool.collect_fee(self._wallet.address, tick_lower, tick_upper)
             #log_event_to_csv(tx_receipt)
             burn_tx_receipt = self.pool.remove_liquidity_with_liquidty(self._wallet.address, tick_lower, tick_upper, amount)
             #print(burn_tx_receipt.events)
