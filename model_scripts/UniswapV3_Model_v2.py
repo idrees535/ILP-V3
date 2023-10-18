@@ -343,7 +343,9 @@ class UniV3Model():
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
             tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
             print(tx_receipt.events)
-            self.collect_fee(liquidity_provider_str,tick_lower,tick_upper)
+            #if collect_tokens==True:
+           #     self.collect_fee(liquidity_provider_str,tick_lower,tick_upper,poke=False)
+
         except VirtualMachineError as e:
             print("Failed to remove liquidity", e.revert_msg)
             return tx_receipt  # Exit early if smart contract interaction fails
@@ -391,8 +393,8 @@ class UniV3Model():
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
             tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
             print(tx_receipt.events)
-            if collect_tokens==True:
-                self.collect_fee(liquidity_provider_str,tick_lower,tick_upper)
+           #if collect_tokens==True:
+           #     self.collect_fee(liquidity_provider_str,tick_lower,tick_upper,poke=False)
         except VirtualMachineError as e:
             print("Failed to remove liquidity", e.revert_msg)
             return tx_receipt  # Exit early if smart contract interaction fails

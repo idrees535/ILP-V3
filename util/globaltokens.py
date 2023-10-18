@@ -50,9 +50,9 @@ def Token0_address() -> str:
 @enforce_types
 def fundToken1FromAbove(dst_address: str, amount_base: int):
     tx_receipt=Token1().transfer(dst_address, amount_base, txdict(GOD_ACCOUNT))
-    #print(tx_receipt.events)
+    print(f'funded account with token1: {tx_receipt.events}')
 
 @enforce_types
 def fundToken0FromAbove(dst_address: str, amount_base: int):
     tx_receipt=Token0().transfer(dst_address, amount_base, txdict(GOD_ACCOUNT))
-    #print(tx_receipt.events)
+    print(f'funded account with token0: {tx_receipt.events}')
