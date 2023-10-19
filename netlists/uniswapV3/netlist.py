@@ -25,11 +25,13 @@ class SimStrategy(SimStrategyBase):
         self.log_interval = S_PER_DAY
         self.max_ticks = 3
 
-        self.pool = weth_usdc_pool
+        #self.pool = weth_usdc_pool
 # SimState Class
 class SimState(SimStateBase):
-    def __init__(self, ss: SimStrategy):
+    def __init__(self, ss: SimStrategy, pool):
         super().__init__(ss)
+
+        self.pool = pool # Give pool as an arguemnet to simstate class
 
         # Liquidity provider agents
         self.retail_lp = UniswapV3LiquidityProviderAgent("retail_lp", 1000000000000.0,110000000000000.0,retail_LP_policy)
