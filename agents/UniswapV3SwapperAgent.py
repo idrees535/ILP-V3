@@ -9,16 +9,18 @@ from util.globaltokens import weth_usdc_pool
 
 @enforce_types
 class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
-    def __init__(self, name, token0, token1 ,policy_func):
+    def __init__(self, name, token0, token1 ,policy_func,pool):
         super().__init__(name, token0, token1)
         
-        self.pool=weth_usdc_pool
+        self.pool=pool
         self.policy=policy_func
         self._token0=token0
         self._token1=token1
+        self.pool.fundToken0FromAbove(self._wallet.address, toBase18(token0))
+        self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
 
     def takeStep(self, state):
-        action,amount = self.policy(state)
+        action,amount = self.policy(state,self)
 
         if action == 'swap_token0_for_token1':
             tx_receipt=self.pool.swap_token0_for_token1(self._wallet.address, toBase18(amount), data=b'')

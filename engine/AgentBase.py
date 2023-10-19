@@ -47,11 +47,11 @@ class AgentBaseAbstract(ABC):
 
 @enforce_types
 class AgentBaseEvmBoth(AgentBaseAbstract):
-    def __init__(self, name: str, token0: float, token1: float, policy_func=None):
+    def __init__(self, name: str, token0: float, token1: float, policy_func=None,pool=None):
         super().__init__(name)
         self._wallet = AgentWalletEvmBoth(token0, token1)  # Assuming this is defined
         self.policy = policy_func  # Store the policy function
-        
+        self.pool=pool
         #assert self.WETH() == WETH
         #assert self.USDC() == USDC
         

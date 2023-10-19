@@ -1,21 +1,24 @@
 import brownie
 from enforce_typing import enforce_types
 from engine import AgentBase
-from util.globaltokens import weth_usdc_pool
+from util.globaltokens import GOD_ACCOUNT
 import random
 import pandas as pd
 from util.base18 import log_event_to_csv
+from util.base18 import toBase18, fromBase18
 
 @enforce_types
 class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
-    def __init__(self, name: str,token0,token1,policy_func):
+    def __init__(self, name: str,token0,token1,policy_func,pool):
         super().__init__(name,token0,token1)
 
-        self.pool=weth_usdc_pool
+        self.pool=pool
         self.policy=policy_func
         self._token0=token0
         self._token1=token1
         self.agent_name=name
+        self.pool.fundToken0FromAbove(self._wallet.address, toBase18(token0))
+        self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
     
     def takeStep(self, state):
         try:

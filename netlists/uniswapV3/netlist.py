@@ -34,12 +34,12 @@ class SimState(SimStateBase):
         self.pool = pool # Give pool as an arguemnet to simstate class
 
         # Liquidity provider agents
-        self.retail_lp = UniswapV3LiquidityProviderAgent("retail_lp", 1000000000000.0,110000000000000.0,retail_LP_policy)
+        self.retail_lp = UniswapV3LiquidityProviderAgent("retail_lp", 1000000000000.0,110000000000000.0,retail_LP_policy,self.pool)
         #self.inst_lp = UniswapV3LiquidityProviderAgent("inst_lp", 1000000000000.0,110000000000000.0,inst_LP_policy)
         #self.rl_lp = UniswapV3LiquidityProviderAgent("rl_lp", 1000000000000.0,110000000000000.0,rl_LP_policy)
         
         # Trader agents
-        self.noise_trader = UniswapV3SwapperAgent("noise_trader",5000000000000000.0,5500000000000000.0, noise_trader_policy)
+        self.noise_trader = UniswapV3SwapperAgent("noise_trader",5000000000000000.0,5500000000000000.0, noise_trader_policy,self.pool)
         #self.whale_trader = UniswapV3SwapperAgent("whale_trader",5000000000000000.0,5500000000000000.0, whale_trader_policy)
       
         #self.agents = [self.lp, self.trader]
@@ -132,7 +132,7 @@ def retail_LP_policy(state,agent):
     # Choose a action (As price moves LP decides to add/ remove liquidty, more price movements more rebalancing)
     action = random.choice(actions)
     if action =='add_liquidity':
-        current_price = sqrtp_to_price(weth_usdc_pool.pool.slot0()[0])
+        current_price = sqrtp_to_price(agent.pool.pool.slot0()[0])
         tick_lower = price_to_valid_tick(current_price * random.uniform(0.5, 0.9))  
         tick_upper = price_to_valid_tick(current_price * random.uniform(1.1, 1.5))  
         amount_usd = random.uniform(1000, 10000)
@@ -140,7 +140,7 @@ def retail_LP_policy(state,agent):
         return action, tick_lower,tick_upper,amount_usd 
     
     elif action =='remove_liquidity':
-        lp_positions = weth_usdc_pool.get_lp_all_positions(agent._wallet.address)
+        lp_positions = agent.pool.get_lp_all_positions(agent._wallet.address)
         
         if lp_positions:
             position_to_remove = random.choice(lp_positions)
@@ -197,7 +197,7 @@ def rl_LP_policy(state):
     print("Implement RL policy here")   
     return action,None,None,None
 
-def noise_trader_policy(state):
+def noise_trader_policy(state,agent):
     actions = ['swap_token0_for_token1', 'swap_token1_for_token0']
 
     # Performs random swaps (No strategy)

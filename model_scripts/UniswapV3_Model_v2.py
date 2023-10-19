@@ -13,6 +13,8 @@ import json
 import math
 import random
 from brownie.exceptions import VirtualMachineError
+from util.tx import txdict
+from enforce_typing import enforce_types
 
 class UniV3Model():
     def __init__(self, token0='token0', token1='token1', token0_decimals=18, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=1000000):
@@ -715,6 +717,36 @@ class UniV3Model():
 
         
 
+    @enforce_types
+    def Token1(self):
+         # pylint: disable=global-statementcocoe
+        token=self.token1
+        return token
+
+    @enforce_types
+    def Token0(self):
+         # pylint: disable=global-statement
+        token=self.token0
+        return token
+
+    @enforce_types
+    def Token1_address(self) -> str:
+        return self.Token1().address
+
+    @enforce_types
+    def Token0_address(self) -> str:
+        return self.Token0().address
+
+    @enforce_types
+    def fundToken1FromAbove(self,dst_address: str, amount_base: int):
+        tx_receipt=self.Token1().transfer(dst_address, amount_base, txdict(GOD_ACCOUNT))
+        print(f'funded account with token1: {tx_receipt.events}')
+
+    @enforce_types
+    def fundToken0FromAbove(self,dst_address: str, amount_base: int):
+        tx_receipt=self.Token0().transfer(dst_address, amount_base, txdict(GOD_ACCOUNT))
+        print(f'funded account with token0: {tx_receipt.events}')
+        
     def get_wallet_balances(self, recipient):
         recipient_address = recipient.address  # Assuming recipient is a brownie account object
         balances = {

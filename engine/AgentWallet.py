@@ -369,8 +369,8 @@ class AgentWalletEvmBoth(AgentWalletAbstract):
         self._total_USDC_in: float = token1
 
         # Fund the account
-        globaltokens.fundToken0FromAbove(self._account.address, toBase18(token0))
-        globaltokens.fundToken1FromAbove(self._account.address, toBase18(token1))
+        #globaltokens.fundToken0FromAbove(self._account.address, toBase18(token0))
+        #globaltokens.fundToken1FromAbove(self._account.address, toBase18(token1))
         
         # Postconditions
         #assert self.WETH() == WETH
