@@ -806,19 +806,3 @@ class UniV3Model():
         
         liquidity=get_liquidity_for_amounts(sqrt_ratio_x96=sqrtp_cur, sqrt_ratio_a_x96=sqrtp_low, sqrt_ratio_b_x96=sqrtp_upp, amount0=amount_token0, amount1=amount_token1)
         return liquidity
-
-'''
-Usage
-token0 = "ETH"
-token1 = "DAI"
-supply_token0 = 1e18
-supply_token1 = 1e18
-decimals_token0 = 18
-decimals_token1 = 18
-fee_tier = 3000
-initial_pool_price = 2000
-deployer = GOD_ACCOUNT
-sync_pool=True
-initial_liquidity_amount=10000
-env = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
-'''

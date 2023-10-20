@@ -11,7 +11,6 @@ from util.constants import S_PER_HOUR,S_PER_MONTH, S_PER_YEAR,S_PER_DAY
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick,price_to_raw_tick,price_to_sqrtp,sqrtp_to_price,tick_to_sqrtp,liquidity0,liquidity1,eth
 import brownie
 import random
-from util.globaltokens import weth_usdc_pool
 import numpy as np
 import pandas as pd
 
@@ -52,6 +51,9 @@ class SimState(SimStateBase):
 
           # Initialize KPIs object
         self.kpis = KPIs(time_step=ss.time_step)
+
+    def reset(self):
+        self.tick = 0
 # KPIs Class
 class KPIs(KPIsBase):
     pass  # For now, we'll just use the base class
@@ -79,43 +81,7 @@ def netlist_createLogData(state: SimState):
         s.append(f"Trader_token1: {noise_trader.token1()}, Trader_token0: {noise_trader.token0()}")
         dataheader.extend(["Trader_token1", "Trader_token0"])
         datarow.extend([noise_trader.token1(), noise_trader.token0()])
-        '''
-        # Log global pool state
-        global_state = weth_usdc_pool.get_global_state()  # Replace with the actual method call
-        for key, value in global_state.items():
-            s.append(f"{key}: {value}")
-            dataheader.append(key)
-            datarow.append(value)
         
-        # Log pool state
-        # Initialize storage for tick and position data
-        if not hasattr(netlist_createLogData, "tick_data_frames"):
-            netlist_createLogData.tick_data_frames = []
-        if not hasattr(netlist_createLogData, "position_data_frames"):
-            netlist_createLogData.position_data_frames = []
-
-        # Retrieve tick and position data as dictionaries
-        tick_data_dict = weth_usdc_pool.get_pool_state_for_all_ticks(lower_price_interested=1000, upper_price_interested=2500)
-        position_data_dict = weth_usdc_pool.get_pool_state_for_all_positions()
-
-        # Convert dictionaries to DataFrames
-        tick_df = pd.DataFrame.from_dict(tick_data_dict, orient='index')
-        position_df = pd.DataFrame.from_dict(position_data_dict, orient='index')
-
-        # Append DataFrames to lists
-        netlist_createLogData.tick_data_frames.append(tick_df)
-        netlist_createLogData.position_data_frames.append(position_df)
-
-        # Write to CSV and reset
-        tick_final_df = pd.concat(netlist_createLogData.tick_data_frames, keys=range(len(netlist_createLogData.tick_data_frames)))
-        position_final_df = pd.concat(netlist_createLogData.position_data_frames, keys=range(len(netlist_createLogData.position_data_frames)))
-
-        tick_final_df.to_csv("model_outdir_csv/tick_data.csv")
-        position_final_df.to_csv("model_outdir_csv/position_data.csv")
-
-        netlist_createLogData.tick_data_frames = []
-        netlist_createLogData.position_data_frames = []
-        '''
     except Exception as e:
         print("An error occurred while logging data:", e)
 
@@ -165,7 +131,7 @@ def inst_LP_policy(state,agent):
         return action, None, None, None
     
     elif action=='add_liquidity':
-        current_price = sqrtp_to_price(weth_usdc_pool.pool.slot0()[0])
+        current_price = sqrtp_to_price(agent.pool.pool.slot0()[0])
         price_lower = current_price * random.uniform(0.95, 0.98)
         price_upper = current_price * random.uniform(1.02, 1.05)
         amount_usd = random.uniform(5000, 50000)
@@ -173,7 +139,7 @@ def inst_LP_policy(state,agent):
     
     elif action=='remove_liquidity':
         #Add logic to select position to reomve for this LP (e.g if position is inactive then romve it)
-        lp_positions = weth_usdc_pool.get_lp_all_positions(agent._wallet.address)
+        lp_positions = agent.pool.get_lp_all_positions(agent._wallet.address)
         if lp_positions:
             position_to_remove = random.choice(lp_positions)
             tick_lower = position_to_remove['tick_lower']
@@ -212,9 +178,9 @@ def noise_trader_policy(state,agent):
 
     return action, amount
 
-def whale_trader_policy(state):
+def whale_trader_policy(state,agent):
     # Swap amount a function of liquidity depth Elastisity to execution price data from ganutlet's analysis
-    current_price = sqrtp_to_price(weth_usdc_pool.pool.slot0()[0])
+    current_price = sqrtp_to_price(agent.pool.pool.slot0()[0])
     if current_price < 1450 and current_price > 2500:
         action = 'swap_token1_for_token0'
         amount = random.uniform(1000, 5000)

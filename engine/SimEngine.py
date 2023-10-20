@@ -61,6 +61,9 @@ class SimEngine:
         log.debug("=============================================")
         log.debug("Tick=%d: done", self.state.tick)
 
+    def reset(self):
+        self.state.reset()
+    
     def createLogData(self):
         """Compute this iter's status, and output in forms ready
         for console logging and csv logging."""
