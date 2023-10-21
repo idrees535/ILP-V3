@@ -31,6 +31,7 @@ class SimState(SimStateBase):
         super().__init__(ss)
 
         self.pool = pool # Give pool as an arguemnet to simstate class
+        print(f'Netlist {self.pool.pool_id} pool initializes')
 
         # Liquidity provider agents
         self.retail_lp = UniswapV3LiquidityProviderAgent("retail_lp", 1000000000000.0,110000000000000.0,retail_LP_policy,self.pool)
