@@ -22,9 +22,9 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
     
     def takeStep(self, state):
         try:
-            liquidity_action, tick_lower, tick_upper, amount = self.policy(state, self)
+            liquidity_action, tick_lower, tick_upper, amount = self.policy(self)
         except TypeError:
-            print(f"Policy returned None, no action will be taken by {self.agent_name} wallet: {self._wallet.address} at this timestep.")
+            print(f"Policy returned None, no action will be taken by {self.agent_name}")
             return None
 
         if liquidity_action == "add_liquidity":

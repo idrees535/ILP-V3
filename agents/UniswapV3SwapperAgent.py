@@ -20,7 +20,7 @@ class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
         self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
 
     def takeStep(self, state):
-        action,amount = self.policy(state,self)
+        action,amount = self.policy(self)
 
         if action == 'swap_token0_for_token1':
             tx_receipt=self.pool.swap_token0_for_token1(self._wallet.address, toBase18(amount), data=b'')
