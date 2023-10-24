@@ -168,7 +168,7 @@ def static_lp_policy(state, params):
     return 'fixed_range'
 
 def rl_lp_policy_1(state, params,agent):
-    obs=weth_usdc_pool.get_global_state()
+    obs=state.pool.get_global_state()
     # ML or optimization logic here
     model=agent.load_model()
     action, _states = model.predict(obs, deterministic=True)

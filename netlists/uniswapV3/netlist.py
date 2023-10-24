@@ -50,7 +50,7 @@ class SimState(SimStateBase):
         #self.agents["rl_lp"] = self.rl_lp
         
 
-          # Initialize KPIs object
+        # Initialize KPIs object
         self.kpis = KPIs(time_step=ss.time_step)
 
     def reset(self):
