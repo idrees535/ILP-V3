@@ -7,7 +7,7 @@
 
 - Linux/MacOS
 - Python 3.8.5+
-- solc 0.76.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
+- solc 0.7.6+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - ganache. To install: `npm install ganache --global`
 - nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`
 
@@ -49,9 +49,10 @@ This will start a Ganache chain, and populate 9 accounts.
 tsp compile
 ```
 ## RL Agent
-1. Go to model_notebooks/rl_agent_ipynb and run experiments. (No need to run reset env cell for first run or any subsequent run until you want to refresh deployed pools/tokens)
-2. util/globaltokens.py file loads brownie compiled project from util/constants.py and deploys pools using model_scripts/UniswapV3_Model_V2.py class which are ebing imported in model_notebooks/rl_agent_ipynb
-3. Instead of using Tokenspice CLI command (tsp run) to run agent based simulation based on Tokenspice in notebook we use Folllowing to initialize and run abm in agent environemnt:
+
+1. model_notebooks/rl_lp_agent_ipynb contains RL agent environemnt and DDPG defined with it's training and evaluation scripts and run experiments. (No need to run reset env cell for first run or any subsequent run until you want to refresh deployed pools/tokens)
+2. util/globaltokens.py file loads brownie compiled project from util/constants.py and deploys pools using model_scripts/UniswapV3_Model_V2.py class, which are being imported in model_notebooks/rl_lp_agent_ipynb to tarin RL agent
+3. Instead of using Tokenspice CLI command (tsp run) to run agent based simulation in model_notebook/rl_lp_agent.ipynb notebook we use Folllowing script to initialize and run abm in agent environemnt:
 
 ### Initialize ABM with specific Pool
 ```console
@@ -79,4 +80,10 @@ print(f'noise_trader_agent: {noise_trader}')
 engine.reset()
 engine.run()
 ```
-
+## Other Directories
+1. model_outdir_csv directory contains csv data of ABM, RL Agnt training and evaluation
+2. model_storage directory contains  tensorboard RL agent training logs, saved actor critic models, liq_positions.json (contains local storage of all liquiidty position agent wise and pool wise), token_pool_addresses.json (contains deployed token and pool addresses in local storage)
+3. For more details about setup and configuration of Tokenspice Agent based Simulator refer to tokenspice official Github Repo: https://github.com/tokenspice/tokenspice
+4. model_scripts/agent_policies.py defines the policies of Uniswap agents (trader and liquidity provider)
+5. model_scripts/plot.py contains visualization functions of training and evaluation
+ 
