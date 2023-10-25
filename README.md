@@ -1,7 +1,5 @@
 
-# Intelligent Liquidity Provisioning
-
-<div align="center">
+# Intelligent Liquidity Provisioning Framework - Reinforcement Learning Approach to Optimize Liquidity Provisioning on Uniswap V3 Pools
 
 # 🏗 Initial Setup
 
