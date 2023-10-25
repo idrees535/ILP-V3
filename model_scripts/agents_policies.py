@@ -3,6 +3,61 @@ import numpy as np
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick,price_to_raw_tick,price_to_sqrtp,sqrtp_to_price,tick_to_sqrtp,liquidity0,liquidity1,eth
 import random
 
+def noise_trader_policy(state):
+    actions = ['swap_token0_for_token1', 'swap_token1_for_token0']
+
+    # Performs random swaps (No strategy)
+    # Amount should be less than trader's token 0 balance and should be a function of liquidty in pool (If there is less slippage more volume will be tarded)
+    action = random.choice(actions)
+    
+    # Generate a random amount
+    if action == 'swap_token0_for_token1':
+        amount = random.uniform(1, 5) 
+    else:
+        amount=random.uniform(2000,10000)
+
+    return action, amount
+
+def informed_trader_policy(state):
+    # Swap amount a function of liquidity depth Elastisity to execution price data from ganutlet's analysis
+    current_price = sqrtp_to_price(state.pool.pool.slot0()[0])
+    if current_price < 1450 and current_price > 2500:
+        action = 'swap_token1_for_token0'
+        amount = random.uniform(1000, 5000)
+    else:
+        action='swap_token0_to_token1'
+        amount=random.uniform(0.1, 0.5)
+
+    return action, amount
+
+
+def noise_trader_policy_1(state, params):
+    drift, volatility, slippage_tolerance = params['drift'], params['volatility'], params['slippage_tolerance']
+    signal = np.random.normal(drift, volatility)
+    expected_slippage = state['expected_slippage']
+    
+    if expected_slippage > slippage_tolerance:
+        return 'no_action'
+    
+    action = 'buy' if signal > 0 else 'sell'
+    return action
+
+def whale_trader_policy_1(state, params):
+    market_depth = state['market_depth']
+    limit_price = params['limit_price']
+    market_price = state['market_price']
+    
+    if market_price > limit_price:
+        return 'no_action'
+    
+    if market_depth > params['threshold']:
+        return 'large_buy'
+    else:
+        return 'twap_buy'
+
+
+
+
 def retail_lp_policy(state):
     # for retail LP policy, ticks should be closer to current market price, positions should be added and reomved with price movement
     # State will carry the hyperparameters of policy (frequency, volatility,risk etc)
@@ -73,64 +128,6 @@ def stoikov_LP_policy(state):
 def grid_LP_policy(state):
     pass
 
-def rl_LP_policy(state):
-    # Here integrate RL agent which will perform some action based on it's policy
-    
-    action = "add_liquidity"
-    print("Implement RL policy here")   
-    return action,None,None,None
-
-def noise_trader_policy(state):
-    actions = ['swap_token0_for_token1', 'swap_token1_for_token0']
-
-    # Performs random swaps (No strategy)
-    # Amount should be less than trader's token 0 balance and should be a function of liquidty in pool (If there is less slippage more volume will be tarded)
-    action = random.choice(actions)
-    
-    # Generate a random amount
-    if action == 'swap_token0_for_token1':
-        amount = random.uniform(1, 5) 
-    else:
-        amount=random.uniform(2000,10000)
-
-    return action, amount
-
-def whale_trader_policy(state):
-    # Swap amount a function of liquidity depth Elastisity to execution price data from ganutlet's analysis
-    current_price = sqrtp_to_price(state.pool.pool.slot0()[0])
-    if current_price < 1450 and current_price > 2500:
-        action = 'swap_token1_for_token0'
-        amount = random.uniform(1000, 5000)
-    else:
-        action='swap_token0_to_token1'
-        amount=random.uniform(0.1, 0.5)
-
-    return action, amount
-
-
-def noise_trader_policy_1(state, params):
-    drift, volatility, slippage_tolerance = params['drift'], params['volatility'], params['slippage_tolerance']
-    signal = np.random.normal(drift, volatility)
-    expected_slippage = state['expected_slippage']
-    
-    if expected_slippage > slippage_tolerance:
-        return 'no_action'
-    
-    action = 'buy' if signal > 0 else 'sell'
-    return action
-
-def whale_trader_policy_1(state, params):
-    market_depth = state['market_depth']
-    limit_price = params['limit_price']
-    market_price = state['market_price']
-    
-    if market_price > limit_price:
-        return 'no_action'
-    
-    if market_depth > params['threshold']:
-        return 'large_buy'
-    else:
-        return 'twap_buy'
 
 def arb_trader_policy_1(state, params):
     price_diff = state['price_pool1'] - state['price_pool2']
@@ -162,10 +159,6 @@ def stoikov_lp_policy_1(state, params):
     # Implement Stoikov's model and return action
     pass
 
-def static_lp_policy(state, params):
-    # +- 10%, 20%,30% around current price and passively readjust position when out of the money
-    
-    return 'fixed_range'
 
 def rl_lp_policy_1(state, params,agent):
     obs=state.pool.get_global_state()
