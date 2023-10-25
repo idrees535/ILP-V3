@@ -96,7 +96,7 @@ In my previous article on market making [Market Making Mechanics and Strategies]
 Decentralized finance (DeFi) has undergone remarkable growth, introducing innovative financial products and services accessible to a global audience. Uniswap V3, at the forefront of this innovation, has revolutionized liquidity provisioning with its concentrated liquidity feature. However, this advancement brings forth complex decision-making challenges for liquidity providers. This article introduces a comprehensive framework designed to address these challenges, offering a simulated environment for studying and optimizing liquidity provisioning strategies.
 Our framework comprises three key components: the Uniswap V3 model, an agent-based model (ABM), and a reinforcement learning agent. The Uniswap V3 model provides a representation of the pool, enabling the deployment and interaction with tokens and pools. The ABM introduces complexity by simulating agent interactions and market dynamics, creating a rich environment for strategy evaluation. The reinforcement learning agent, operating within this environment, adopts a deep deterministic policy gradient approach to learn and adapt strategies, aiming for optimal performance in liquidity provisioning.
 
-![Alt text](Images/a.png)
+![Alt text](Images/b.png)
 
 ILP FrameworkThis research aims to develop an intelligent liquidity provisioning (ILP) mechanism using reinforcement learning (RL) to autonomously manage and optimize liquidity within the Uniswap V3 environment. The mechanism seeks to maximize the utility function, considering fees earned, impermanent loss, and other metrics based on liquidity providers' preferences while adapting to the complex dynamics of the CFMM market.
 
@@ -116,7 +116,7 @@ RL training is an iterative process where the agent continuously updates its pol
 
 # Components of Intelligent Liquidity Provisioning Framework
 The framework comprises three major components:
-![Alt text](Images/b.png)
+![Alt text](Images/a.png)
 ## UniswapV3 Model
 The Uniswap V3 model implemented in Python offers a detailed and functional simulation of the Uniswap V3 protocol, capturing its nuanced mechanics and providing users with a comprehensive toolset for interacting with the protocol. The UniswapV3_Model class handles the deployment of tokens and pools, initializes pools, and provides an interface for pool actions and pool state retrieval.
 ### Overview
