@@ -52,9 +52,15 @@ tsp compile
 
 1. model_notebooks/rl_lp_agent_ipynb contains RL agent environemnt and DDPG defined with it's training and evaluation scripts and run experiments. (No need to run reset env cell for first run or any subsequent run until you want to refresh deployed pools/tokens)
 2. util/globaltokens.py file loads brownie compiled project from util/constants.py and deploys pools using model_scripts/UniswapV3_Model_V2.py class, which are being imported in model_notebooks/rl_lp_agent_ipynb to tarin RL agent
-3. Instead of using Tokenspice CLI command (tsp run) to run agent based simulation in model_notebook/rl_lp_agent.ipynb notebook we use Folllowing script to initialize and run abm in agent environemnt:
+3. model_outdir_csv directory contains csv data of ABM, RL Agnt training and evaluation
+4. model_storage directory contains  tensorboard RL agent training logs, saved actor critic models, liq_positions.json (contains local storage of all liquiidty position agent wise and pool wise), token_pool_addresses.json (contains deployed token and pool addresses in local storage)
+5. For more details about setup and configuration of Tokenspice Agent based Simulator refer to tokenspice official Github Repo: https://github.com/tokenspice/tokenspice
+6. model_scripts/agent_policies.py defines the policies of Uniswap agents (trader and liquidity provider)
+7. model_scripts/plot.py contains visualization functions of training and evaluation
+8. Instead of using Tokenspice CLI command (tsp run) to run agent based simulation in model_notebook/rl_lp_agent.ipynb notebook we use Folllowing script to initialize and run abm in agent environemnt:
 
 ### Initialize ABM with specific Pool
+
 ```console
 from netlists.uniswapV3.netlist import SimStrategy,SimState,netlist_createLogData
 from util.globaltokens import weth_usdc_pool,eth_dai_pool,btc_usdt_pool
@@ -74,16 +80,10 @@ print(f'retail_lp_agent: {retail_lp_agent}')
 noise_trader=sim_state.agents['noise_trader']._wallet.address
 print(f'noise_trader_agent: {noise_trader}')
 ```
+
 ### Run ABM
 
 ```console
 engine.reset()
 engine.run()
 ```
-## Other Directories
-1. model_outdir_csv directory contains csv data of ABM, RL Agnt training and evaluation
-2. model_storage directory contains  tensorboard RL agent training logs, saved actor critic models, liq_positions.json (contains local storage of all liquiidty position agent wise and pool wise), token_pool_addresses.json (contains deployed token and pool addresses in local storage)
-3. For more details about setup and configuration of Tokenspice Agent based Simulator refer to tokenspice official Github Repo: https://github.com/tokenspice/tokenspice
-4. model_scripts/agent_policies.py defines the policies of Uniswap agents (trader and liquidity provider)
-5. model_scripts/plot.py contains visualization functions of training and evaluation
- 
