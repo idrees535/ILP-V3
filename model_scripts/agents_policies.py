@@ -18,6 +18,51 @@ def noise_trader_policy(state):
 
     return action, amount
 
+import random
+
+def noise_trader_policy_1(state):
+    # Define actions
+    actions = ['swap_token0_for_token1', 'swap_token1_for_token0']
+
+    global_state = state.get_global_state()
+    tick_state = state.get_tick_state(global_state['tick'])
+    lp_positions = state.get_lp_all_positions(state._wallet.address)
+
+    # Extract relevant information from the Uniswap model
+    liquidity_depth = global_state['liquidity_raw']
+    tick_liquidity_net = tick_state['liquidityNet_raw']
+    pool_price = global_state['curr_price']
+    recent_price_trend = random.choice(['up','down'])
+
+    # Define threshold for price impact
+    price_impact_threshold = 0.01  # 1% price impact threshold
+
+    # Choose an action based on the state
+    if liquidity_depth > 1000:
+        # Check recent price trend and price impact
+        if recent_price_trend == 'up':
+            action = 'swap_token1_for_token0'
+        elif recent_price_trend == 'down':
+            action = 'swap_token0_for_token1'
+        else:
+            action = random.choice(actions)
+    else:
+        # Low liquidity, perform a random action
+        action = random.choice(actions)
+
+    # Generate a random amount
+    max_amount = liquidity_depth / 10  # Example: Trade up to 10% of liquidity
+    amount = random.uniform(1, max_amount)
+
+    if amount<state.pool.token0.balanceOf(state._wallet_address) and action=='swap_token0_for_token1':
+        amount=state.pool.token0.balanceOf(state._wallet_address)
+        
+    if amount<state.pool.token1.balanceOf(state._wallet_address) and action=='swap_token1_for_token0':
+        amount=state.pool.token1.balanceOf(state._wallet_address)
+
+    return action, amount
+
+
 def informed_trader_policy(state):
     # Swap amount a function of liquidity depth Elastisity to execution price data from ganutlet's analysis
     current_price = sqrtp_to_price(state.pool.pool.slot0()[0])
@@ -29,32 +74,6 @@ def informed_trader_policy(state):
         amount=random.uniform(0.1, 0.5)
 
     return action, amount
-
-
-def noise_trader_policy_1(state, params):
-    drift, volatility, slippage_tolerance = params['drift'], params['volatility'], params['slippage_tolerance']
-    signal = np.random.normal(drift, volatility)
-    expected_slippage = state['expected_slippage']
-    
-    if expected_slippage > slippage_tolerance:
-        return 'no_action'
-    
-    action = 'buy' if signal > 0 else 'sell'
-    return action
-
-def whale_trader_policy_1(state, params):
-    market_depth = state['market_depth']
-    limit_price = params['limit_price']
-    market_price = state['market_price']
-    
-    if market_price > limit_price:
-        return 'no_action'
-    
-    if market_depth > params['threshold']:
-        return 'large_buy'
-    else:
-        return 'twap_buy'
-
 
 
 
@@ -129,7 +148,7 @@ def grid_LP_policy(state):
     pass
 
 
-def arb_trader_policy_1(state, params):
+def arb_trader_policy(state, params):
     price_diff = state['price_pool1'] - state['price_pool2']
     expected_slippage = state['expected_slippage']
     execution_cost = state['execution_cost']
@@ -149,20 +168,9 @@ def update_slippage_tolerance(state, params):
     new_tolerance = avg_recent_slippage * elasticity_coefficient
     return new_tolerance
 
-def retail_lp_policy_1(state, params):
-    if state['price'] > params['high_threshold']:
-        return 'remove_liquidity'
-    elif state['price'] < params['low_threshold']:
-        return 'add_liquidity'
-    
-def stoikov_lp_policy_1(state, params):
-    # Implement Stoikov's model and return action
-    pass
-
 
 def rl_lp_policy_1(state, params,agent):
     obs=state.pool.get_global_state()
-    # ML or optimization logic here
     model=agent.load_model()
     action, _states = model.predict(obs, deterministic=True)
     return action

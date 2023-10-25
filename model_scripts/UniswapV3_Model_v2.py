@@ -288,7 +288,7 @@ class UniV3Model():
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
 
-        #Transfer tokens token0 and token1 from GOD_ACCOUNT to agent's wallet(For safety instaed of this add acheck statement in policy which checks that agent's abalnce should be greater than amound he is adding in liquidty)
+        
         #self.token0.transfer(liquidity_provider, amount0, tx_params1)
         #self.token1.transfer(liquidity_provider, amount1, tx_params1)
 
@@ -479,7 +479,7 @@ class UniV3Model():
         
             amount1 = tx_receipt.events['Swap']['amount1']
 
-            #Transfer tokens token0 and token1 from GOD_ACCOUNT to agent's wallet (This should be removed latter as our agent will have balace in their accounts while initialized and they should not be allowed to make a transaction greater than their balance which will result in failure of transaction)
+            
             #self.token1.transfer(recipient, amount1, tx_params1)
 
             # Trasfer token1 to pool (callabck)
