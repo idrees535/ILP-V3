@@ -12,6 +12,7 @@ from web3 import Web3
 import json
 import math
 import random
+import pandas as pd
 from brownie.exceptions import VirtualMachineError
 from util.tx import txdict
 from enforce_typing import enforce_types
@@ -35,6 +36,8 @@ class UniV3Model():
         self.sync_pool_with_events=sync_pool_with_events
         self.initial_liquidity_amount=initial_liquidity_amount
         self.pool_id = f"{token0}_{token1}_{fee_tier}"
+
+        self.synced_uniswap_pool_state=state
         
 
         w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
@@ -150,46 +153,58 @@ class UniV3Model():
     def sync_pool_state(self):
         # Can add any other logic to sync pool with real pool
         if self.sync_pool_with_liq:
-            tick_lower = price_to_valid_tick(self.initial_pool_price-self.initial_pool_price*0.5)
-            tick_upper =price_to_valid_tick(self.initial_pool_price+self.initial_pool_price*0.5)
-            self.add_liquidity(self.deployer, tick_lower, tick_upper, self.initial_liquidity_amount, b'')
-            print(f'Initial liq amount {self.initial_liquidity_amount} added in pool')
+            num_positions = 20
+            price_increment = 0.05  # 5% price increment
+
+            # Loop through positions
+            for position in range(1, num_positions + 1):
+                # Calculate price range
+                price_lower = self.initial_pool_price - (price_increment * position * self.initial_pool_price)
+                price_upper = self.initial_pool_price + (price_increment * position * self.initial_pool_price)
+
+                if price_lower<=0:
+                    price_lower=random.uniform(0.1,1.0)
+                if price_upper<=0:
+                    price_upper=random.uniform(0.1,1.0)
+
+                liquidity_amount = self.initial_liquidity_amount * random.uniform(0.5,1.5)
+
+                # Convert prices to ticks
+                tick_lower = price_to_valid_tick(price_lower)
+                tick_upper = price_to_valid_tick(price_upper)
+
+                # Add liquidity
+                self.add_liquidity(self.deployer, tick_lower, tick_upper, liquidity_amount, b'')
+                print(f'Position {position}: Added liquidity amount {liquidity_amount} in the price range {price_lower} to {price_upper}')
+
 
         elif self.sync_pool_with_positions:
-            for tick_idx, liquidity_gross, liquidity_net in self.state['ticks']:
-                # Determine the tickLower and tickUpper based on tick_idx.
-                # This is a simplified example; in a real scenario, you'd need to be more precise.
-                tick_lower = int(tick_idx - 10)
-                tick_upper = int(tick_idx + 10)
+            df_positions=pd.DataFrame(self.synced_uniswap_pool_state['positions'], columns=['tick_lower', 'tick_upper', 'liquidity'])
 
-                # Calculate the amount of liquidity to add. 
-                # This is a simplified example; you'd need to calculate this based on the pool's requirements.
-                amount_liquidity = int((liquidity_gross + liquidity_net) / 2)
-
-                # Call the contract method to add liquidity.
-                # This is a placeholder; replace it with an actual contract interaction.
-                self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount_liquidity, '')
+            for index, row in df_positions.iterrows():
+                tick_lower, tick_upper, liquidity = row['positions']
+                
+                self.add_liquidity_with_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount_liquidity, '')
 
                 print(f"Liquidity of {amount_liquidity} added between ticks {tick_lower} and {tick_upper}")
 
         elif self.sync_pool_with_ticks:
-                for tick_idx, liquidity_gross, liquidity_net in self.state['ticks']:
-                    # Determine the tickLower and tickUpper based on tick_idx.
-                    # This is a simplified example; in a real scenario, you'd need to be more precise.
-                    tick_lower = int(tick_idx - 10)
-                    tick_upper = int(tick_idx + 10)
+                df_ticks = pd.DataFrame(self.synced_uniswap_pool_state['ticks'], columns=['tick_idx', 'liquidityGross', 'liquidityNet'])
 
-                    # Calculate the amount of liquidity to add. 
-                    # This is a simplified example; you'd need to calculate this based on the pool's requirements.
+                for index, row in df_ticks.iterrows():
+                    tick_idx = row['tick_idx']
+                    liquidity_gross = row['liquidityGross']
+                    liquidity_net = row['liquidityNet']
+            
+                    tick_lower = int(tick_idx - 60)
+                    tick_upper = int(tick_idx + 60)
+
                     amount_liquidity = int((liquidity_gross + liquidity_net) / 2)
-
-                    # Call the contract method to add liquidity.
-                    # This is a placeholder; replace it with an actual contract interaction.
-                    self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount_liquidity, '')
+                    self.add_liquidity_with_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount_liquidity, '')
 
                     print(f"Liquidity of {amount_liquidity} added between ticks {tick_lower} and {tick_upper}")
         elif self.sync_pool_with_events:
-            print("Computionally expensive process")
+            print("Computionally very expensive to replicate every event on local pool")
         else:
             print("No pool sync applied")
 
@@ -218,10 +233,6 @@ class UniV3Model():
 
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
-
-        #Transfer tokens token0 and token1 from GOD_ACCOUNT to agent's wallet(For safety instaed of this add acheck statement in policy which checks that agent's abalnce should be greater than amound he is adding in liquidty)
-        #self.token0.transfer(liquidity_provider, amount0, tx_params1)
-        #self.token1.transfer(liquidity_provider, amount1, tx_params1)
 
         # Store position in json file
         liquidity_provider_str = str(liquidity_provider)
@@ -287,10 +298,6 @@ class UniV3Model():
 
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
-
-        
-        #self.token0.transfer(liquidity_provider, amount0, tx_params1)
-        #self.token1.transfer(liquidity_provider, amount1, tx_params1)
 
         # Store position in json file
         liquidity_provider_str = str(liquidity_provider)
@@ -450,9 +457,6 @@ class UniV3Model():
             print(tx_receipt.events)
             amount0 = tx_receipt.events['Swap']['amount0']
 
-            #Transfer tokens from GOD_ACCOUNT to agent's wallet
-            #self.token0.transfer(recipient, amount0, tx_params1)
-
             # Transfer token0 to pool (callback)
             tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
             
@@ -479,14 +483,8 @@ class UniV3Model():
         
             amount1 = tx_receipt.events['Swap']['amount1']
 
-            
-            #self.token1.transfer(recipient, amount1, tx_params1)
-
             # Trasfer token1 to pool (callabck)
             tx_receipt_token1_transfer = self.token1.transfer(self.pool.address, amount1, tx_params)
-            #print(f'token1 amount:{amount1} transfered to contract:{tx_receipt_token1_transfer}')
-            
-        
         except VirtualMachineError as e:
             print("Swap token 1 to Token 0 Transaction failed:", e.revert_msg)
             slot0_data = self.pool.slot0()
@@ -527,11 +525,7 @@ class UniV3Model():
             print("Fee collection failed:", e.revert_msg)
             print(f"contract_token0_balance - amount0Owed: {self.token0.balanceOf(self.pool)-amount0Owed} ,contract_token1_balance - amount1Owed: {self.token1.balanceOf(self.pool)-amount1Owed}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}")
 
-        
-        #print(f"Fee collected usd: {fee_collected_usd}")
-        return tx_receipt,fee_collected_usd
-    
-   
+        return tx_receipt,fee_collected_usd 
     # Get All positions of all LPs in the pool
     def get_all_liquidity_positions(self):
         try:
@@ -715,17 +709,14 @@ class UniV3Model():
 
         return position_states
 
-        
-
     @enforce_types
     def Token1(self):
-         # pylint: disable=global-statementcocoe
         token=self.token1
         return token
 
     @enforce_types
     def Token0(self):
-         # pylint: disable=global-statement
+        
         token=self.token0
         return token
 
@@ -779,7 +770,6 @@ class UniV3Model():
    
     def budget_to_liquidity(self,tick_lower,tick_upper,usd_budget):
             
-        # Calculating liquidity (Not needed here: Can shift this function to helper_functions)
         def get_liquidity_for_amounts(sqrt_ratio_x96, sqrt_ratio_a_x96, sqrt_ratio_b_x96, amount0, amount1):
             if sqrt_ratio_a_x96 > sqrt_ratio_b_x96:
                 sqrt_ratio_a_x96, sqrt_ratio_b_x96 = sqrt_ratio_b_x96, sqrt_ratio_a_x96

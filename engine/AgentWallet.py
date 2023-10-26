@@ -1,15 +1,3 @@
-"""
-Main classes in this module:
--AgentWalletAbstract - abstract interface
--AgentWalletNoEvm - no-EVM wallet
--AgentWalletEvm - EVM wallet
-
-Support classes include:
--UsdNoEvmWalletMixIn - no-EVM implement USD deposit/withdraw/..
--OceanNoEvmWalletMixIn - no-EVM implement OCEAN deposit/withdraw/..
--StrMixIn - for __str__()
--BurnWallet - special wallet to burn to
-"""
 
 from abc import abstractmethod, ABC
 import logging
@@ -27,8 +15,6 @@ from util.strutil import asCurrency
 from util.tx import txdict, transferETH
 
 log = logging.getLogger("wallet")
-
-
 
 
 @enforce_types

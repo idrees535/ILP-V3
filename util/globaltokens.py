@@ -6,6 +6,7 @@ from .constants import  GOD_ACCOUNT
 from util.base18 import toBase18
 from util.tx import txdict
 from model_scripts.UniswapV3_Model_v2 import UniV3Model
+from model_scripts.sync_pool_subgraph_data import sync_pool_data
 
 
 _TOKEN1 = None
@@ -22,6 +23,7 @@ initial_pool_price = 2000
 deployer = GOD_ACCOUNT
 sync_pool=True
 initial_liquidity_amount=10000000
+state=sync_pool_data(pool_id= "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36")
 weth_usdc_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
 
 token0 = "ETH"
@@ -48,6 +50,7 @@ initial_pool_price = 25000
 deployer = GOD_ACCOUNT
 sync_pool=True
 initial_liquidity_amount=100000000
+
 btc_usdt_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
 
 #Instantiante pool class

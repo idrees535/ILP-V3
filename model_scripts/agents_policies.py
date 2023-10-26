@@ -12,11 +12,42 @@ def noise_trader_policy(state):
     
     # Generate a random amount
     if action == 'swap_token0_for_token1':
-        amount = random.uniform(1, 5) 
+        amount = random.uniform(5,25) 
     else:
-        amount=random.uniform(2000,10000)
+        amount=random.uniform(10000,50000)
 
     return action, amount
+
+def retail_lp_policy(state):
+    # for retail LP policy, ticks should be closer to current market price, positions should be added and reomved with price movement
+    # retail has less capital to invest
+
+    actions = ['add_liquidity', 'remove_liquidity']
+    
+    # Choose a action (As price moves LP decides to add/ remove liquidty, more price movements more rebalancing)
+    action = random.choice(actions)
+    if action =='add_liquidity':
+        current_price = sqrtp_to_price(state.pool.pool.slot0()[0])
+        tick_lower = price_to_valid_tick(current_price * random.uniform(0.5, 0.9))  
+        tick_upper = price_to_valid_tick(current_price * random.uniform(1.1, 1.5))  
+        amount_usd = random.uniform(5000, 50000)
+
+        return action, tick_lower,tick_upper,amount_usd 
+    
+    elif action =='remove_liquidity':
+        lp_positions = state.pool.get_lp_all_positions(state._wallet.address)
+        
+        if lp_positions:
+            position_to_remove = random.choice(lp_positions)
+            
+            tick_lower = position_to_remove['tick_lower']
+            tick_upper = position_to_remove['tick_upper']
+            amount = position_to_remove['liquidity']
+            return action, tick_lower, tick_upper, amount
+        else:
+            #print("This LP doesn't contain any positions.")
+            return None
+        
 
 import random
 
@@ -75,40 +106,6 @@ def informed_trader_policy(state):
 
     return action, amount
 
-
-
-def retail_lp_policy(state):
-    # for retail LP policy, ticks should be closer to current market price, positions should be added and reomved with price movement
-    # State will carry the hyperparameters of policy (frequency, volatility,risk etc)
-    # retail has less capital to invest
-    # More wide position range choices
-
-    actions = ['add_liquidity', 'remove_liquidity']
-    
-    # Choose a action (As price moves LP decides to add/ remove liquidty, more price movements more rebalancing)
-    action = random.choice(actions)
-    if action =='add_liquidity':
-        current_price = sqrtp_to_price(state.pool.pool.slot0()[0])
-        tick_lower = price_to_valid_tick(current_price * random.uniform(0.5, 0.9))  
-        tick_upper = price_to_valid_tick(current_price * random.uniform(1.1, 1.5))  
-        amount_usd = random.uniform(1000, 10000)
-
-        return action, tick_lower,tick_upper,amount_usd 
-    
-    elif action =='remove_liquidity':
-        lp_positions = state.pool.get_lp_all_positions(state._wallet.address)
-        
-        if lp_positions:
-            position_to_remove = random.choice(lp_positions)
-            
-            tick_lower = position_to_remove['tick_lower']
-            tick_upper = position_to_remove['tick_upper']
-            amount = position_to_remove['liquidity']
-            return action, tick_lower, tick_upper, amount
-        else:
-            #print("This LP doesn't contain any positions.")
-            return None
-        
 
 def inst_lp_policy(state):
     # More capital to invest

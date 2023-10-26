@@ -1,6 +1,4 @@
-# Note: this file no longer contains magic numbers, just useful
-# numbers for running TokenSPICE. Magic numbers have been
-# moved into netlists.
+
 
 import configparser
 import math
@@ -10,7 +8,7 @@ import brownie
 from brownie._config import CONFIG  # pylint: disable=no-name-in-module
 from enforce_typing import enforce_types  # pylint: disable=unused-import
 
-# from sol080.contracts.oceanv4.test.test_SideStaking import ZERO_ADDRESS  # pylint: disable=unused-import
+
 
 from util.configutil import CONF_FILE_PATH
 
@@ -29,6 +27,7 @@ if brownie.network.show_active() != "ganache":
     brownie.network.connect("ganache")
 
 GOD_ACCOUNT = brownie.network.accounts[9]
+RL_AGENT_ACCOUNT = brownie.network.accounts[8]
 
 SAFETY = config["general"].getboolean("SAFETY")
 assert SAFETY is not None

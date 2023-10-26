@@ -48,10 +48,11 @@ This will start a Ganache chain, and populate 9 accounts.
 ```console
 tsp compile
 ```
-## RL Agent
+## RL Agent - Instructions
 
-1. model_notebooks/rl_lp_agent_ipynb contains RL agent environemnt and DDPG defined with it's training and evaluation scripts and run experiments. 2. No need to run reset env cell for first run or any subsequent run until you want to refresh/delete deployed pools/tokens
-3. util/globaltokens.py file loads brownie compiled project from util/constants.py and deploys pools using model_scripts/UniswapV3_Model_V2.py class, which are being imported in model_notebooks/rl_lp_agent_ipynb to tarin RL agent
+1. model_notebooks/rl_lp_agent_ipynb contains RL agent environemnt and DDPG defined with it's training and evaluation scripts and run experiments. 
+ (No need to run reset env cell for first run or any subsequent run until you want to refresh/delete deployed pools/tokens)
+3. util/globaltokens.py module loads brownie compiled project from util/constants.py and deploys pools using model_scripts/UniswapV3_Model_V2.py class, which are being imported in model_notebooks/rl_lp_agent_ipynb to tarin RL agent
 4. model_outdir_csv directory contains csv data of ABM, RL Agnt training and evaluation
 5. model_storage directory contains  tensorboard RL agent training logs, saved actor critic models, liq_positions.json (contains local storage of all liquiidty position agent wise and pool wise), token_pool_addresses.json (contains deployed token and pool addresses in local storage)
 6. For more details about setup and configuration of Tokenspice Agent based Simulator refer to tokenspice official Github Repo: https://github.com/tokenspice/tokenspice
@@ -75,10 +76,8 @@ from engine.SimEngine import SimEngine
 engine = SimEngine(sim_state, output_dir, netlist_log_func)
 
 retail_lp_agent=sim_state.agents['retail_lp']._wallet.address
-print(f'retail_lp_agent: {retail_lp_agent}')
 
 noise_trader=sim_state.agents['noise_trader']._wallet.address
-print(f'noise_trader_agent: {noise_trader}')
 ```
 
 ### Run ABM
@@ -128,7 +127,7 @@ Tokenspice agent based simulator is used to simulate Uniswap V3 environment, age
 ### Introduction
 Tokenspice Agent-Based Model (ABM) simulates the actions and interactions of individual agents within the Uniswap V3 ecosystem. By modeling the complex behaviors of different participants, the ABM provides a comprehensive interface of Uniswap V3 dynamic environment, enabling the analysis and optimization of liquidity provisioning strategies.
 ### Agent Types and Behaviors
-The ABM includes various agent types, each representing a specific role within the Uniswap V3 ecosystem. The two main agents are the Liquidity Provider Agent and the Swapper Agent, which interact with the Uniswap pools to provide liquidity and perform token swaps, respectively. The behavior of these agents is dictated by policies defined in the agents_policies.py file, ensuring that their actions are aligned with real-world strategies and market conditions.
+The ABM includes various agent types, each representing a specific role within the Uniswap V3 ecosystem. The two main agents are the Liquidity Provider Agent and the Swapper Agent, which interact with the Uniswap pools to provide liquidity and perform token swaps, respectively. The behavior of these agents is dictated by policies defined in the agents_policies.py module, ensuring that their actions are aligned with real-world strategies and market conditions.
 #### Liquidity Provider Agent:
  This agent adds and removes liquidity from the Uniswap pools. It follows a set of policies that dictate its actions based on the current state of the market and the agent's preferences.
 #### Swapper Agent:
