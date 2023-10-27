@@ -23,7 +23,7 @@ class SimEngine:
     def __init__(self, state, output_dir: str, netlist_log_func=None):
         self.state = state
         self.output_dir = output_dir
-        self.output_csv = "data.csv"  # magic number
+        self.output_csv = "abm_data.csv"  # magic number
         self.netlist_log_func = netlist_log_func
 
     def run(self):
