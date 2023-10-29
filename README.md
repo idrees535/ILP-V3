@@ -11,7 +11,7 @@
 - ganache. To install: `npm install ganache --global`
 - nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`
 
-## Install TokenSPICE
+## Install TokenSPICE ABM
 
 Open a new terminal and:
 ```console
@@ -44,10 +44,36 @@ tsp ganache
 This will start a Ganache chain, and populate 9 accounts.
 
 ## Compile the contracts
+
 Open a new terminal and:
 ```console
 tsp compile
 ```
+
+### Initialize ABM with Specific Pool
+
+```console
+from netlists.uniswapV3.netlist import SimStrategy,SimState,netlist_createLogData
+from util.globaltokens import weth_usdc_pool,eth_dai_pool,btc_usdt_pool
+from engine.SimEngine import SimEngine
+
+sim_strategy = SimStrategy()
+sim_state = SimState(ss=sim_strategy,pool=weth_usdc_pool)
+
+output_dir = "model_outdir_csv"
+netlist_log_func = netlist_createLogData
+
+engine = SimEngine(sim_state, output_dir, netlist_log_func)
+```
+
+### Run ABM
+
+```console
+engine.reset()
+engine.run()
+```
+
+
 ## RL Agent - Instructions
 
 1. model_notebooks/rl_lp_agent_ipynb contains RL agent environemnt and DDPG defined with it's training and evaluation scripts and run experiments. 
@@ -60,32 +86,6 @@ tsp compile
 8. model_scripts/plot.py contains visualization functions of training and evaluation
 9. Instead of using Tokenspice CLI command (tsp run) to run agent based simulation in model_notebook/rl_lp_agent.ipynb notebook we use Folllowing script to initialize and run abm in agent environemnt:
 
-### Initialize ABM with specific Pool
-
-```console
-from netlists.uniswapV3.netlist import SimStrategy,SimState,netlist_createLogData
-from util.globaltokens import weth_usdc_pool,eth_dai_pool,btc_usdt_pool
-
-sim_strategy = SimStrategy()
-sim_state = SimState(ss=sim_strategy,pool=weth_usdc_pool)
-
-output_dir = "model_outdir_csv"
-netlist_log_func = netlist_createLogData
-
-from engine.SimEngine import SimEngine
-engine = SimEngine(sim_state, output_dir, netlist_log_func)
-
-retail_lp_agent=sim_state.agents['retail_lp']._wallet.address
-
-noise_trader=sim_state.agents['noise_trader']._wallet.address
-```
-
-### Run ABM
-
-```console
-engine.reset()
-engine.run()
-```
 
 # Abstract
 Liquidity provisioning in Uniswap V3 presents a stochastic optimal control problem with a well-defined utility function to maximize. This article introduces an innovative framework for intelligent liquidity provisioning, utilizing a combination of agent-based modeling and reinforcement learning. Our framework provides a robust and adaptive solution for optimizing liquidity provisioning strategies. The Uniswap V3 model mimics real-world market conditions, while the agent-based model (ABM) creates an environment for simulating agent interactions with Uniswap V3 pools. The reinforcement learning agent, trained using deep deterministic policy gradients (DDPG), learns optimal strategies, showcasing the potential of machine learning in enhancing DeFi participation. This approach aims to improve liquidity providers' profitability and understanding of CFMM markets.
