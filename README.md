@@ -44,7 +44,7 @@ tsp ganache
 This will start a Ganache chain, and populate 9 accounts.
 
 ## Compile the contracts
-
+Open a new terminal and:
 ```console
 tsp compile
 ```
