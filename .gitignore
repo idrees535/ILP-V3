@@ -22,4 +22,5 @@ node_modules
 tsp_venv/
 *.pyc
 *.swp
+ilp_venv/
 
