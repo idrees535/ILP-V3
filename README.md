@@ -6,12 +6,20 @@
 ## Prerequisites
 
 - Linux/MacOS
-- Python 3.8.5+
+- Python 3.9.18
 - solc 0.7.6+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - ganache. To install: `npm install ganache --global`
 - nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`
 
-## Install TokenSPICE ABM
+## Handling Line Endings for Cross-Platform Compatibility
+
+When cloning the repository on Windows, line ending differences can cause unexpected behavior in scripts. If you encounter an issue with running scripts due to line ending problems, you may need to convert them manually. On Unix systems, you can use the dos2unix utility, or manually convert them using a text editor that supports line ending conversion.
+Before you clone the repository, run the following command in your Git Bash terminal to ensure Git converts line endings appropriately:
+
+```console
+git config --global core.autocrlf true
+```
+## Setup TokenSPICE ABM
 
 Open a new terminal and:
 ```console
@@ -19,10 +27,10 @@ Open a new terminal and:
 git clone https://github.com/idrees535/Intelligent-Liquidity-Provisioning-Framework-V1
 
 #create a virtual environment
-python3 -m venv venv
+python3 -m venv ilp_venv
 
 #activate env
-source venv/bin/activate
+source ilp_venv/bin/activate
 
 #install dependencies
 pip install -r requirements.txt
@@ -39,16 +47,20 @@ source venv/bin/activate
 export PATH=$PATH:.
 
 #run ganache
-tsp ganache
+./ganache.py
 ```
 This will start a Ganache chain, and populate 9 accounts.
 
-## Compile the contracts
+## Compile contracts
 
 Open a new terminal and:
 ```console
-tsp compile
+./compile.sh
 ```
+This will compile contracts
+
+### Additional Steps
+1. Change path in UniswapV3_Model_V2.py module and rl_lp_agent.ipynb notebook to root directory of you cloned project 
 
 ### Initialize ABM with Specific Pool
 
@@ -81,11 +93,10 @@ engine.run()
 3. util/globaltokens.py module loads brownie compiled project from util/constants.py and deploys pools using model_scripts/UniswapV3_Model_V2.py class, which are being imported in model_notebooks/rl_lp_agent_ipynb to tarin RL agent
 4. model_outdir_csv directory contains csv data of ABM, RL Agnt training and evaluation
 5. model_storage directory contains  tensorboard RL agent training logs, saved actor critic models, liq_positions.json (contains local storage of all liquiidty position agent wise and pool wise), token_pool_addresses.json (contains deployed token and pool addresses in local storage)
-6. For more details about setup and configuration of Tokenspice Agent based Simulator refer to tokenspice official Github Repo: https://github.com/tokenspice/tokenspice
+6. For more details about setup and configuration of Tokenspice Agent based Simulator, refer to tokenspice official Github Repo: https://github.com/tokenspice/tokenspice
 7. model_scripts/agent_policies.py defines the policies of Uniswap agents (trader and liquidity provider)
 8. model_scripts/plot.py contains visualization functions of training and evaluation
-9. Instead of using Tokenspice CLI command (tsp run) to run agent based simulation in model_notebook/rl_lp_agent.ipynb notebook we use Folllowing script to initialize and run abm in agent environemnt:
-
+9. model_notebooks/tsp_abm.ipynb notebook cofigures and runs tokenSPICE ABM to simulate and test any baseline liquiidty provisoining strategies 
 
 # Abstract
 Liquidity provisioning in Uniswap V3 presents a stochastic optimal control problem with a well-defined utility function to maximize. This article introduces an innovative framework for intelligent liquidity provisioning, utilizing a combination of agent-based modeling and reinforcement learning. Our framework provides a robust and adaptive solution for optimizing liquidity provisioning strategies. The Uniswap V3 model mimics real-world market conditions, while the agent-based model (ABM) creates an environment for simulating agent interactions with Uniswap V3 pools. The reinforcement learning agent, trained using deep deterministic policy gradients (DDPG), learns optimal strategies, showcasing the potential of machine learning in enhancing DeFi participation. This approach aims to improve liquidity providers' profitability and understanding of CFMM markets.
