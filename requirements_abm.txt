@@ -3,7 +3,5 @@ enforce_typing
 pandas 
 ipykernel
 tensorflow
-stable_baseline3
-gymnasium
 matplotlib
 seaborn

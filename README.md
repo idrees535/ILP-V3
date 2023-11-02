@@ -88,8 +88,8 @@ engine.run()
 
 ## RL Agent - Instructions
 
-1. model_notebooks/rl_lp_agent_ipynb contains RL agent environemnt and DDPG defined with it's training and evaluation scripts and run experiments. 
- (No need to run reset env cell for first run or any subsequent run until you want to refresh/delete deployed pools/tokens)
+1. model_notebooks/rl_lp_agent.ipynb notebook contains RL agent environemnt and DDPG defined with it's training and evaluation 
+2. (No need to run reset env cell for first run or any subsequent run until you want to refresh/delete deployed pools/tokens)
 3. util/globaltokens.py module loads brownie compiled project from util/constants.py and deploys pools using model_scripts/UniswapV3_Model_V2.py class, which are being imported in model_notebooks/rl_lp_agent_ipynb to tarin RL agent
 4. model_outdir_csv directory contains csv data of ABM, RL Agnt training and evaluation
 5. model_storage directory contains  tensorboard RL agent training logs, saved actor critic models, liq_positions.json (contains local storage of all liquiidty position agent wise and pool wise), token_pool_addresses.json (contains deployed token and pool addresses in local storage)
