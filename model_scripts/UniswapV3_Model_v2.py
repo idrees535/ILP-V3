@@ -15,7 +15,7 @@ import pandas as pd
 from brownie.exceptions import VirtualMachineError
 from util.tx import txdict
 from enforce_typing import enforce_types
-from scipy.optimize import minimize
+#from scipy.optimize import minimize
 import numpy as np
 import math
 
@@ -830,7 +830,7 @@ class UniV3Model():
 
             # Calculate the x_to_y_ratio
             x_to_y_ratio = calculate_x_to_y_ratio(P=sqrtp_to_price(sqrtp_cur), pa=tick_to_price(tick_lower), pb=tick_to_price(tick_upper))
-            print(f'ratio: {x_to_y_ratio}')
+            #print(f'ratio: {x_to_y_ratio}')
         
             budget_token0 = (usd_budget * x_to_y_ratio) / (1 + x_to_y_ratio)
             budget_token1 = usd_budget - budget_token0
@@ -841,8 +841,8 @@ class UniV3Model():
             amount_token1 = budget_token1 
 
         # Convert amounts to the smallest unit of the tokens based on their decimals
-        print(f'amount0: {amount_token0}')
-        print(f'amount1: {amount_token1}')
+        #print(f'amount0: {amount_token0}')
+        #print(f'amount1: {amount_token1}')
         
         amount_token0 = toBase18(amount_token0)
         amount_token1 = toBase18(amount_token1)
