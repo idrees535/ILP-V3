@@ -5,7 +5,7 @@ os.environ["PATH"] += ":."
 
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
-from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick,price_to_raw_tick,price_to_sqrtp,sqrtp_to_price,tick_to_sqrtp,liquidity0,liquidity1,eth
+from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick,price_to_raw_tick,price_to_sqrtp,sqrtp_to_price,tick_to_sqrtp,liquidity0,liquidity1,eth,tick_to_price
 import brownie
 from web3 import Web3
 import json
@@ -15,6 +15,9 @@ import pandas as pd
 from brownie.exceptions import VirtualMachineError
 from util.tx import txdict
 from enforce_typing import enforce_types
+from scipy.optimize import minimize
+import numpy as np
+import math
 
 class UniV3Model():
     def __init__(self, token0='token0', token1='token1', token0_decimals=18, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=1000000):
@@ -769,6 +772,7 @@ class UniV3Model():
    
     def budget_to_liquidity(self,tick_lower,tick_upper,usd_budget):
             
+        q96 = 2**96
         def get_liquidity_for_amounts(sqrt_ratio_x96, sqrt_ratio_a_x96, sqrt_ratio_b_x96, amount0, amount1):
             if sqrt_ratio_a_x96 > sqrt_ratio_b_x96:
                 sqrt_ratio_a_x96, sqrt_ratio_b_x96 = sqrt_ratio_b_x96, sqrt_ratio_a_x96
@@ -782,16 +786,68 @@ class UniV3Model():
             else:
                 return liquidity1(amount1, sqrt_ratio_a_x96, sqrt_ratio_b_x96)
 
+        def liquidity0(amount, pa, pb):
+            if pa > pb:
+                pa, pb = pb, pa
+            return (amount * (pa * pb) / q96) / (pb - pa)
+
+        def liquidity1(amount, pa, pb):
+            if pa > pb:
+                pa, pb = pb, pa
+            return amount * q96 / (pb - pa)
+
+        
         slot0_data = self.pool.slot0()
         sqrtp_cur =slot0_data[0]
-
         usdp_cur = sqrtp_to_price(sqrtp_cur)
-        amount_token0 =  ((0.5 * usd_budget)/usdp_cur) * eth
-        amount_token1 = 0.5 * usd_budget * eth
+
+        #amount_token0 =  ((0.5 * usd_budget)/usdp_cur) * eth
+        #amount_token1 = 0.5 * usd_budget * eth
 
         sqrtp_low = tick_to_sqrtp(tick_lower)
         sqrtp_upp = tick_to_sqrtp(tick_upper)
+
+        #'''
+        # Allocate budget based on the current price
+        if sqrtp_cur <= sqrtp_low:  # Current price is below the range
+            # Allocate all budget to token0
+            amount_token0 = usd_budget / usdp_cur  
+            amount_token1 = 0
+        elif sqrtp_cur >= sqrtp_upp:  # Current price is above the range
+            # Allocate all budget to token1
+            amount_token0 = 0
+            amount_token1 = usd_budget 
+        else:  # Current price is within the range
+            # Calculate amounts for token0 and token1 using Eqs. 11 and 12 of eltas paper
+            #amount_token0 = L * (sqrtp_upp - sqrtp_cur) / (sqrtp_cur * sqrtp_upp)
+            #amount_token1 = L * (sqrtp_cur - sqrtp_low)
+            def calculate_x_to_y_ratio(P, pa, pb):
+                """Calculate the x to y ratio from given prices."""
+                sqrtP = math.sqrt(P)
+                sqrtpa = math.sqrt(pa)
+                sqrtpb = math.sqrt(pb)
+                return (sqrtpb - sqrtP) / (sqrtP * sqrtpb * (sqrtP - sqrtpa)) * P
+
+            # Calculate the x_to_y_ratio
+            x_to_y_ratio = calculate_x_to_y_ratio(P=sqrtp_to_price(sqrtp_cur), pa=tick_to_price(tick_lower), pb=tick_to_price(tick_upper))
+            print(f'ratio: {x_to_y_ratio}')
         
+            budget_token0 = (usd_budget * x_to_y_ratio) / (1 + x_to_y_ratio)
+            budget_token1 = usd_budget - budget_token0
+
+            # Calculate the amount of token0 and token1 to be purchased with the allocated budget
+            # Assuming token0 is priced at cur_price and token1 is the stablecoin priced at $1
+            amount_token0 = budget_token0 / usdp_cur
+            amount_token1 = budget_token1 
+
+        # Convert amounts to the smallest unit of the tokens based on their decimals
+        print(f'amount0: {amount_token0}')
+        print(f'amount1: {amount_token1}')
+        
+        amount_token0 = toBase18(amount_token0)
+        amount_token1 = toBase18(amount_token1)
+        #'''
         
         liquidity=get_liquidity_for_amounts(sqrt_ratio_x96=sqrtp_cur, sqrt_ratio_a_x96=sqrtp_low, sqrt_ratio_b_x96=sqrtp_upp, amount0=amount_token0, amount1=amount_token1)
+        
         return liquidity
