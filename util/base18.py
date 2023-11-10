@@ -2,9 +2,13 @@ import math
 import csv
 from collections import OrderedDict
 
+min_tick = -887272
+max_tick = 887272
+q96 = 2**96
+eth = 10**18
+
 def toBase18(amt: float) -> int:
     return int(amt * 1e18)
-
 
 def fromBase18(amt_base: int) -> float:
     return amt_base / 1e18
@@ -14,14 +18,6 @@ def fromBase128(value):
 
 def toBase128(value):
     return value *(2 **128)
-
-
-
-min_tick = -887272
-max_tick = 887272
-
-q96 = 2**96
-eth = 10**18
 
 def price_to_raw_tick(price):
     return math.floor(math.log(price) / math.log(1.0001))
@@ -34,6 +30,9 @@ def price_to_valid_tick(price, tick_spacing=60):
         raw_tick += tick_spacing - remainder if remainder >= tick_spacing // 2 else -remainder
     return raw_tick
 
+def tick_to_price(tick):
+    price = (1.0001 ** tick)
+    return price
 
 def price_to_sqrtp(p):
     return int(math.sqrt(p) * q96)
