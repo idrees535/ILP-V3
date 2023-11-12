@@ -346,7 +346,7 @@ class AgentWalletEvmBoth(AgentWalletAbstract):
             self._account = accounts.add(private_key=private_key)
 
         # Give the new wallet ETH to pay gas fees (but don't track otherwise)
-        transferETH(GOD_ACCOUNT, self._account, "0.01 ether")
+        transferETH(GOD_ACCOUNT, self._account, "1 ether")
 
         self._cached_WETH_base: typing.Union[int, None] = None
         self._cached_USDC_base: typing.Union[int, None] = None

@@ -6,6 +6,8 @@ import random
 import pandas as pd
 from util.base18 import log_event_to_csv
 from util.base18 import toBase18, fromBase18
+from util.tx import _fees, transferETH
+
 
 @enforce_types
 class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
@@ -19,7 +21,8 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
         self.agent_name=name
         self.pool.fundToken0FromAbove(self._wallet.address, toBase18(token0))
         self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
-    
+        transferETH(GOD_ACCOUNT,self._wallet.address,1)
+        
     def takeStep(self, state):
         try:
             liquidity_action, tick_lower, tick_upper, amount = self.policy(self)

@@ -1,7 +1,0 @@
-eth-brownie==1.19.3
-enforce_typing
-pandas 
-ipykernel
-tensorflow
-matplotlib
-seaborn

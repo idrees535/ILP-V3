@@ -1,0 +1,9 @@
+eth-brownie==1.19.3
+enforce_typing
+ipykernel
+pandas 
+#protobuf==3.19.5
+tensorflow==2.14.0
+matplotlib
+seaborn
+gymnasium==0.29.1
