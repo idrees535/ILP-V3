@@ -6,6 +6,7 @@ from util.tx import txdict
 import brownie
 from util.base18 import toBase18,log_event_to_csv
 from util.globaltokens import weth_usdc_pool
+from util.tx import _fees, transferETH
 
 @enforce_types
 class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
@@ -18,6 +19,7 @@ class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
         self._token1=token1
         self.pool.fundToken0FromAbove(self._wallet.address, toBase18(token0))
         self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
+        transferETH(GOD_ACCOUNT,self._wallet.address,1)
 
     def takeStep(self, state):
         action,amount = self.policy(self)

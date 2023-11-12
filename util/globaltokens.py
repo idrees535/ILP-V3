@@ -23,7 +23,7 @@ initial_pool_price = 2000
 deployer = GOD_ACCOUNT
 sync_pool=True
 initial_liquidity_amount=10000000
-state=sync_pool_data(pool_id= "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36")
+#state=sync_pool_data(pool_id= "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36")
 weth_usdc_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
 
 token0 = "ETH"

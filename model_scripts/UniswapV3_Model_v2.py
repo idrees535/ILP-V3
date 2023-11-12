@@ -740,36 +740,6 @@ class UniV3Model():
         tx_receipt=self.Token0().transfer(dst_address, amount_base, txdict(GOD_ACCOUNT))
         print(f'funded account with token0: {tx_receipt.events}')
         
-    def get_wallet_balances(self, recipient):
-        recipient_address = recipient.address  # Assuming recipient is a brownie account object
-        balances = {
-        recipient_address: {
-            'ETH': fromBase18(recipient.balance()),
-            'token0': fromBase18(self.token0.balanceOf(recipient_address)),
-            'token1': fromBase18(self.token1.balanceOf(recipient_address))
-        }
-    }
-        return balances    
-        
-
-    def set_pool_allowance(self, recipient, amount0,amount1):
-        '''
-        w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
-        base_fee = w3.eth.getBlock('latest')['baseFeePerGas']
-        '''
-        tx_params = {'from': str(recipient),'gas_price': self.base_fee + 1}
-        
-        tx_receipt_token0 = self.token0.approve(self.pool.address, amount0, tx_params)
-           
-        print(tx_receipt_token0.events)
-            
-        
-        
-        tx_receipt_token1 = self.token1.approve(self.pool.address, amount1, tx_params)
-            
-        print(tx_receipt_token1.events)
-    
-   
     def budget_to_liquidity(self,tick_lower,tick_upper,usd_budget):
             
         q96 = 2**96
@@ -851,3 +821,14 @@ class UniV3Model():
         liquidity=get_liquidity_for_amounts(sqrt_ratio_x96=sqrtp_cur, sqrt_ratio_a_x96=sqrtp_low, sqrt_ratio_b_x96=sqrtp_upp, amount0=amount_token0, amount1=amount_token1)
         
         return liquidity
+
+    def get_wallet_balances(self, recipient):
+            recipient_address = recipient  # Assuming recipient is a brownie account object
+            balances = {
+            recipient_address: {
+                'ETH': fromBase18(recipient.balance()),
+                'token0': fromBase18(self.token0.balanceOf(recipient_address)),
+                'token1': fromBase18(self.token1.balanceOf(recipient_address))
+            }
+        }
+            return balances  
