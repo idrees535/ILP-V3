@@ -36,7 +36,7 @@ fee_tier = 3000
 initial_pool_price = 1000
 deployer = GOD_ACCOUNT
 sync_pool=True
-initial_liquidity_amount=1000000
+initial_liquidity_amount=10000000
 eth_dai_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
 
 token0 = "BTC"
@@ -49,7 +49,7 @@ fee_tier = 3000
 initial_pool_price = 25000
 deployer = GOD_ACCOUNT
 sync_pool=True
-initial_liquidity_amount=100000000
+initial_liquidity_amount=10000000000
 
 btc_usdt_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount)
 
