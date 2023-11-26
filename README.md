@@ -27,7 +27,7 @@ Open a new terminal and:
 git clone https://github.com/idrees535/Intelligent-Liquidity-Provisioning-Framework-V1
 
 #create a virtual environment
-python3 -m venv ilp_venv
+python3.9 -m venv ilp_venv
 
 #activate env
 source ilp_venv/bin/activate
