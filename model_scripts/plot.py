@@ -101,6 +101,12 @@ def train_scaled_actions_plot(data):
 
 def eval_rewards_plot(data):
     # Find out how many unique episodes are in the data
+    data['cumulative_raw_reward_rl_agent'] = data.groupby('episode')['raw_reward_rl_agent'].cumsum()
+    data['cumulative_raw_reward_baseline_agent'] = data.groupby('episode')['raw_reward_baseline_agent'].cumsum()
+    data['cumulative_fee_rl_agent'] = data.groupby('episode')['fee_income_rl_agent'].cumsum()
+    data['cumulative_fee_baseline_agent'] = data.groupby('episode')['fee_income_baseline_agent'].cumsum()
+    data['cumulative_impermanent_loss_rl_agent'] = data.groupby('episode')['impermanent_loss_rl_agent'].cumsum()
+    data['cumulative_impermanent_loss_baseline_agent'] = data.groupby('episode')['impermanent_loss_baseline_agent'].cumsum()
     unique_episodes = data['episode'].unique()
     num_episodes = len(unique_episodes)
 
@@ -117,16 +123,22 @@ def eval_rewards_plot(data):
         axes[0, i].set_title(f'Episode {episode} - Raw Rewards')
         axes[0, i].legend()
 
+        # Cumulative Raw Rewards
+        sns.lineplot(x='step_count', y='cumulative_raw_reward_rl_agent', data=episode_data, ax=axes[2, i], label='RL Agent')
+        sns.lineplot(x='step_count', y='cumulative_raw_reward_baseline_agent', data=episode_data, ax=axes[2, i], label='Baseline Agent', linestyle='--')
+        axes[2, i].set_title(f'Episode {episode} - Cumulative Raw Rewards')
+        axes[2, i].legend()
+
         # Scaled Rewards
         sns.lineplot(x='step_count', y='scaled_reward_rl_agent', data=episode_data, ax=axes[1, i], label='RL Agent')
         sns.lineplot(x='step_count', y='scaled_reward_baseline_agent', data=episode_data, ax=axes[1, i], label='Baseline Agent', linestyle='--')
         axes[1, i].set_title(f'Episode {episode} - Scaled Rewards')
         axes[1, i].legend()
 
-        # Cumulative Rewards
+        # Cumulative scaled Rewards
         sns.lineplot(x='step_count', y='cumulative_reward_rl_agent', data=episode_data, ax=axes[2, i], label='RL Agent')
         sns.lineplot(x='step_count', y='cumulative_reward_baseline_agent', data=episode_data, ax=axes[2, i], label='Baseline Agent', linestyle='--')
-        axes[2, i].set_title(f'Episode {episode} - Cumulative Rewards')
+        axes[2, i].set_title(f'Episode {episode} - Cumulative Scaled Rewards')
         axes[2, i].legend()
 
         # Fee Income
@@ -135,11 +147,22 @@ def eval_rewards_plot(data):
         axes[3, i].set_title(f'Episode {episode} - Fee Income')
         axes[3, i].legend()
 
+        # Cumulative Fee Income
+        sns.lineplot(x='step_count', y='cumulative_fee_rl_agent', data=episode_data, ax=axes[5, i], label='RL Agent')
+        sns.lineplot(x='step_count', y='cumulative_fee_baseline_agent', data=episode_data, ax=axes[5, i], label='Baseline Agent', linestyle='--')
+        axes[5, i].set_title(f'Episode {episode} - Cumulative Fee Income')
+        axes[5, i].legend()
+        
         # Impermanent Loss
         sns.lineplot(x='step_count', y='impermanent_loss_rl_agent', data=episode_data, ax=axes[4, i], label='RL Agent')
         sns.lineplot(x='step_count', y='impermanent_loss_baseline_agent', data=episode_data, ax=axes[4, i], label='Baseline Agent', linestyle='--')
         axes[4, i].set_title(f'Episode {episode} - Impermanent Loss')
         axes[4, i].legend()
+
+        # Cumulative Impermanent Loss
+        sns.lineplot(x='step_count', y='cumulative_impermanent_loss_rl_agent', data=episode_data, ax=axes[7, i], label='RL Agent')
+        sns.lineplot(x='step_count', y='cumulative_impermanent_loss_baseline_agent', data=episode_data, ax=axes[7, i], label='Baseline Agent', linestyle='--')
+        axes[7, i].set_title
 
     plt.tight_layout()
     plt.show()
