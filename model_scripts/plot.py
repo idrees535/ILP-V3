@@ -111,7 +111,7 @@ def eval_rewards_plot(data):
     num_episodes = len(unique_episodes)
 
     # Set up the plotting area
-    fig, axes = plt.subplots(nrows=5, ncols=num_episodes, figsize=(5 * num_episodes, 25), sharey='row')
+    fig, axes = plt.subplots(nrows=7, ncols=num_episodes, figsize=(5 * num_episodes, 25))#, sharey='row')
 
     # Define the plots for each episode
     for i, episode in enumerate(unique_episodes):
@@ -160,9 +160,10 @@ def eval_rewards_plot(data):
         axes[4, i].legend()
 
         # Cumulative Impermanent Loss
-        sns.lineplot(x='step_count', y='cumulative_impermanent_loss_rl_agent', data=episode_data, ax=axes[7, i], label='RL Agent')
-        sns.lineplot(x='step_count', y='cumulative_impermanent_loss_baseline_agent', data=episode_data, ax=axes[7, i], label='Baseline Agent', linestyle='--')
-        axes[7, i].set_title
+        sns.lineplot(x='step_count', y='cumulative_impermanent_loss_rl_agent', data=episode_data, ax=axes[6, i], label='RL Agent')
+        sns.lineplot(x='step_count', y='cumulative_impermanent_loss_baseline_agent', data=episode_data, ax=axes[6, i], label='Baseline Agent', linestyle='--')
+        axes[6, i].set_title(f'Episode {episode} - Cumulative Impermanent Loss')
+        axes[6, i].legend()
 
     plt.tight_layout()
     plt.show()
