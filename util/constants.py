@@ -25,6 +25,8 @@ BROWNIE_PROJECTUniV3 = brownie.project.load("./v3_core/", name="UniV3Project1")
 
 if brownie.network.show_active() != "ganache":
     brownie.network.connect("ganache")
+#if brownie.network.show_active() != "ganache":
+#    brownie.network.connect("ganache")
 
 GOD_ACCOUNT = brownie.network.accounts[9]
 RL_AGENT_ACCOUNT = brownie.network.accounts[8]
