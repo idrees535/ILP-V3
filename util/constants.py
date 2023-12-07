@@ -15,16 +15,12 @@ from util.configutil import CONF_FILE_PATH
 config = configparser.ConfigParser()
 config.read(os.path.expanduser(CONF_FILE_PATH))
 
-
-BROWNIE_PROJECTUniV3 = brownie.project.load("./v3_core/", name="UniV3Project12")
+BROWNIE_PROJECTUniV3 = brownie.project.load("./v3_core/", name="UniV3Project1234")
 #print(BROWNIE_PROJECTUniV3.available_contracts)
-
-# brownie auto-reverts in "development". If needed, set to "ganache"
-#brownie.network.connect("development")
-#brownie.network.connect("ganache")
 
 #if brownie.network.show_active() != "ganache":
 #    brownie.network.connect("ganache")
+
 if brownie.network.show_active() != "development":
     brownie.network.connect("development")
 
