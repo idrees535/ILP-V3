@@ -9,9 +9,12 @@ def noise_trader_policy(state):
     # Performs random swaps (No strategy)
     # Amount should be less than trader's token 0 balance and should be a function of liquidty in pool (If there is less slippage more volume will be tarded)
     action = random.choice(actions)
+    #global_state = state.get_global_state()
+    #pool_price = global_state['curr_price']
     
     # Generate a random amount
     if action == 'swap_token0_for_token1':
+        #amount = random.uniform(10000/pool_price,50000/pool_price)
         amount = random.uniform(5,25) 
     else:
         amount=random.uniform(10000,50000)
@@ -48,8 +51,6 @@ def retail_lp_policy(state):
             #print("This LP doesn't contain any positions.")
             return None
         
-
-import random
 
 def noise_trader_policy_1(state):
     # Define actions
