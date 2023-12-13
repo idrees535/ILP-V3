@@ -67,3 +67,33 @@ def sync_pool_data(pool_id= "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36", UNISWA
     }
 
     return state
+
+import requests
+def fetch_inference_pool_data(pool_id):
+    UNISWAP_V3_SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
+    
+    # GraphQL query
+    query = """
+    {
+      pool(id: \"%s\") {
+        feeGrowthGlobal0X128
+        feeGrowthGlobal1X128
+        liquidity
+        token1Price
+      }
+    }
+    """ % pool_id
+
+    response = requests.post(UNISWAP_V3_SUBGRAPH_URL,json={'query': query}).json()
+
+    # Extracting data from response
+    data = response['data']['pool']
+
+    # Constructing the state representation with float data type
+    state = {
+        'feeGrowthGlobal0X128': float(data['feeGrowthGlobal0X128']),
+        'feeGrowthGlobal1X128': float(data['feeGrowthGlobal1X128']),
+        'liquidity': float(data['liquidity']),
+        'token1Price': float(data['token1Price'])
+    }
+    return state
