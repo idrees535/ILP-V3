@@ -15,14 +15,14 @@ from util.configutil import CONF_FILE_PATH
 config = configparser.ConfigParser()
 config.read(os.path.expanduser(CONF_FILE_PATH))
 
-BROWNIE_PROJECTUniV3 = brownie.project.load("./v3_core/", name="UniV3Project1234")
+BROWNIE_PROJECTUniV3 = brownie.project.load("./v3_core/", name="UniV3Project1")
 #print(BROWNIE_PROJECTUniV3.available_contracts)
 
-#if brownie.network.show_active() != "ganache":
-#    brownie.network.connect("ganache")
+if brownie.network.show_active() != "ganache":
+    brownie.network.connect("ganache")
 
-if brownie.network.show_active() != "development":
-    brownie.network.connect("development")
+#if brownie.network.show_active() != "development":
+#    brownie.network.connect("development")
 
 GOD_ACCOUNT = brownie.network.accounts[9]
 RL_AGENT_ACCOUNT = brownie.network.accounts[8]
