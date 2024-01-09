@@ -1,0 +1,20 @@
+artifact_path: ppo_actor_model
+flavors:
+  python_function:
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.tensorflow
+    python_version: 3.9.18
+  tensorflow:
+    code: null
+    data: data
+    keras_version: 2.14.0
+    model_type: keras
+    save_format: tf
+mlflow_version: 2.9.2
+model_size_bytes: 1126835
+model_uuid: 468c397030714bd495c156cd9dade6fb
+run_id: 626a652ac9f64159b216c54abdf85575
+utc_time_created: '2024-01-09 15:16:35.745711'

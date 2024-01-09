@@ -1,0 +1,15 @@
+artifact_uri: file:///mnt/c/Users/hijaz%20tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1/mlruns/0/d32fa349918c4e029328b88bad6c555d/artifacts
+end_time: 1704817869088
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d32fa349918c4e029328b88bad6c555d
+run_name: PPO_Training
+run_uuid: d32fa349918c4e029328b88bad6c555d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704817222201
+status: 3
+tags: []
+user_id: root

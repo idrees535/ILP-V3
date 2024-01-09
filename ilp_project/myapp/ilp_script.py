@@ -1,6 +1,8 @@
-ilp_script.py
+# %% [markdown]
+# # Set Paths
+
 # %%
-#!export PATH=$PATH:.
+!export PATH=$PATH:.
 #base_path="/home/azureuser/Intelligent-Liquidity-Provisioning-Framework"
 base_path="/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1"
 import os
@@ -49,7 +51,9 @@ from util.constants import GOD_ACCOUNT,RL_AGENT_ACCOUNT
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick
 from model_scripts.plot import train_rewards_plot,eval_rewards_plot,train_raw_actions_plot,train_scaled_actions_plot,train_combined_metrics_plot,train_separate_episode_action_plot
 from model_scripts.sync_pool_subgraph_data import fetch_inference_pool_data
+
 #Imports
+import requests
 import numpy as np
 import pandas as pd
 import random
@@ -61,12 +65,16 @@ import tensorflow_probability as tfp
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 
+import mlflow
+import mlflow.tensorflow
+mlflow.tensorflow.autolog()
+
 # %% [markdown]
 # # Training env
 
 # %%
 class DiscreteSimpleEnv(gym.Env):
-    def __init__(self,agent_budget_usd,alpha = 0.5, exploration_std_dev = 0.01, beta=0.1,penalty_param_magnitude=-1,use_running_statistics=False,action_transform='linear'):
+    def __init__(self, agent_budget_usd=10000,alpha = 0.5, exploration_std_dev = 0.01, beta=0.1,penalty_param_magnitude=-1,use_running_statistics=False,action_transform='linear'):
         super(DiscreteSimpleEnv, self).__init__()
 
         self.pool=None
@@ -77,6 +85,7 @@ class DiscreteSimpleEnv(gym.Env):
         self.state=None
         self.engine=None
         self.action_transform=action_transform
+        self.train_data_log=[]
         
         self.action_space = gym.spaces.Dict({
             'price_relative_lower': gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
@@ -207,7 +216,7 @@ class DiscreteSimpleEnv(gym.Env):
         print(f"sclaed_pool_state: {self.state}")
         print()
 
-        train_data_log.append((self.episode, self.step_count, action, self.pool.get_global_state(), raw_action, self.state, raw_reward, self.reward, self.cumulative_reward, fee_income, impermanent_loss))
+        self.train_data_log.append((self.episode, self.step_count, action, self.pool.get_global_state(), raw_action, self.state, raw_reward, self.reward, self.cumulative_reward, fee_income, impermanent_loss))
 
         self.done = self._is_done()
         return self.state, self.reward, self.done, {}
@@ -391,18 +400,100 @@ class DiscreteSimpleEnv(gym.Env):
         else:
             return False
 
-env=DiscreteSimpleEnv(agent_budget_usd=10000,use_running_statistics=False)
-n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
-input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
+#env=DiscreteSimpleEnv(agent_budget_usd=10000,use_running_statistics=False)
+#n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
+#input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
+
+class DiscreteSimpleEnvEval(DiscreteSimpleEnv):
+    def __init__(self, agent_budget_usd, percentage_range=0.3, seed=32,penalty_param_magnitude=0,use_running_statistics=False,action_transform='linear'):
+        #super().__init__(agent_budget_usd)
+        # Call to the parent class's __init__ method
+        super(DiscreteSimpleEnvEval, self).__init__(agent_budget_usd=agent_budget_usd, alpha=0.5, exploration_std_dev=0.01, beta=0.1, penalty_param_magnitude=penalty_param_magnitude, use_running_statistics=use_running_statistics,action_transform=action_transform)
+        self.percentage_range = percentage_range
+        if seed is not None:
+            np.random.seed(seed)
+        self.cumulative_reward_rl_agent = 0
+        self.cumulative_reward_baseline_agent = 0
+        self.penalty_param_magnitude=penalty_param_magnitude
+        self.eval_data_log=[]
+
+    def _take_action(self, action):
+        # Disable exploration noise
+        self.exploration_std_dev = 0.0
+        return super()._take_action(action)
+    
+    def step(self, raw_action_rl_agent):
+        # The RL agent takes an action
+        mint_tx_receipt_rl_agent, action_rl_agent = self._take_action(raw_action_rl_agent)
+        raw_action_baseline_agent=self.baseline_agent_policy()
+        # The baseline agent takes an action
+        mint_tx_receipt_baseline_agent, action_baseline_agent = self._take_action_baseline(raw_action_baseline_agent)
+
+        # Perform environment step
+        print('Environment Step')
+        self.engine.reset()
+        self.engine.run()
+        print()
+
+        # Calculate rewards for both agents
+        scaled_reward_rl_agent, raw_reward_rl_agent, fee_income_rl_agent, impermanent_loss_rl_agent = self._calculate_reward(action_rl_agent, mint_tx_receipt_rl_agent)
+        scaled_reward_baseline_agent, raw_reward_baseline_agent, fee_income_baseline_agent, impermanent_loss_baseline_agent = self._calculate_reward(action_baseline_agent, mint_tx_receipt_baseline_agent)
+
+        # Update cumulative rewards
+        self.cumulative_reward_rl_agent += scaled_reward_rl_agent
+        self.cumulative_reward_baseline_agent += scaled_reward_baseline_agent
+
+        self.step_count+=1
+        # Print rewards and cumulative rewards for both agents
+        print(f"episode: {self.episode}, step_count: {self.step_count}")
+        print(f"rl_agent_scaled_reward: {scaled_reward_rl_agent}, rl_agent_raw_reward: {raw_reward_rl_agent}, rl_agent_cumulative_reward: {self.cumulative_reward_rl_agent}")
+        print(f"baseline_agent_scaled_reward: {scaled_reward_baseline_agent}, baseline_agent_raw_reward: {raw_reward_baseline_agent}, baseline_agent_cumulative_reward: {self.cumulative_reward_baseline_agent}")
+        print(f"raw_pool_state: {self.pool.get_global_state()}")
+        print(f"sclaed_pool_state: {self.state}")
+        print()
+      
+
+        # Update the state and check if the episode is done
+        self.state = self.get_obs_space()
+        self.done = self._is_done()
+        self.eval_data_log.append((self.episode, self.step_count, self.pool.get_global_state(), raw_action_rl_agent,action_rl_agent,raw_action_baseline_agent,action_baseline_agent, self.state, raw_reward_rl_agent, raw_reward_baseline_agent,scaled_reward_rl_agent,scaled_reward_baseline_agent, self.cumulative_reward_rl_agent, self.cumulative_reward_baseline_agent, fee_income_rl_agent, impermanent_loss_rl_agent,fee_income_baseline_agent,impermanent_loss_baseline_agent))
+        # Return the necessary information
+        return self.state, raw_reward_rl_agent, self.done, {}
+    
+    def _take_action_baseline(self, action_dict):
+        
+        print('Baseline Agent Action')
+        print(f"action: {action_dict}")
+
+        tick_lower=price_to_valid_tick(action_dict['price_lower'])
+        tick_upper=price_to_valid_tick(action_dict['price_upper'])
+        amount=self.agent_budget_usd
+
+        mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount, b'')
+
+        return mint_tx_receipt,action_dict
+    
+    
+    def baseline_agent_policy(self):
+        global_state = self.pool.get_global_state()
+        raw_curr_price = global_state['curr_price']
+        
+        # Calculate the price range based on the raw current price
+        lower_price = raw_curr_price * (1 - self.percentage_range)
+        upper_price = raw_curr_price * (1 + self.percentage_range)
+
+        action_baseline={
+            'price_lower':lower_price,
+            'price_upper':upper_price
+        }
+        
+        return action_baseline
 
 # %% [markdown]
 # # RL Agents
 
 # %% [markdown]
 # ## DDPG Agent
-
-# %% [markdown]
-# ### Model
 
 # %%
 class ReplayBuffer:
@@ -423,7 +514,6 @@ class ReplayBuffer:
         self.reward_memory[index] = reward
         self.terminal_memory[index] = done
         self.mem_cntr += 1
-        #print(f"action_memory:{self.action_memory}")
 
     def sample_buffer(self, batch_size):
         max_mem = min(self.mem_cntr, self.mem_size)
@@ -630,17 +720,21 @@ class DDPG:
             tf.summary.scalar('critic_loss', critic_loss.numpy(), step=self.memory.mem_cntr)
             tf.summary.scalar('actor_loss', actor_loss.numpy(), step=self.memory.mem_cntr)
 
-
         self.update_network_parameters()
 
-# %% [markdown]
-# ### Training
-
-# %%
+class DDGPEval(DDPG):
+    def choose_action(self, state):
+        # Disable exploration noise
+        action = super().choose_action(state)
+        return action
+    
 # Training Loop
-def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddpg/lstm_actor_critic_batch_norm',alpha=0.001, beta=0.001, input_dims=input_dims, tau=0.8, env=env,n_actions=n_actions, batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
+def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddpg/ddpg_2',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
     env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics,action_transform=action_transform)
+    n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
+    input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
     ddpg_agent = DDPG(alpha=alpha, beta=beta, input_dims=input_dims, tau=tau, env=env, n_actions=n_actions, batch_size=batch_size, training=training)
+    
     for i in range(n_episodes):
         state = env.reset()
         episode_reward = 0
@@ -656,24 +750,36 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
                 break
         print(f"Episode {i+1}: Reward = {episode_reward}")
         #ddpg_agent.memory.clear()
+    
+    # Create dummy data for model input shape
+    dummy_state = np.random.random((1, input_dims))
+    dummy_action = np.random.random((1, n_actions))
 
-    # Saved Trained weights
+    # Run dummy data through models to build them
+    ddpg_agent.actor(dummy_state)
+    ddpg_agent.critic(dummy_state, dummy_action)
+
+    
     model_base_path = os.path.join(base_path,model_name)
     ddpg_actor_model_path = os.path.join(model_base_path, 'actor')
     ddpg_critic_model_path = os.path.join(model_base_path, 'critic')
+
+    # Saved Trained weights
     ddpg_agent.actor.save_weights(ddpg_actor_model_path)
     ddpg_agent.critic.save_weights(ddpg_critic_model_path)
 
-#train_ddpg_agent(max_steps=100,n_episodes=10,model_name='model_storage/ddpg/lstm_actor_critic_batch_norm')
+    # Save trained model
+    ddpg_agent.actor.save(ddpg_actor_model_path)
+    ddpg_agent.critic.save(ddpg_critic_model_path)
 
-# %% [markdown]
-# ### Training Visulalizations
+    ddpg_train_data_log=env.train_data_log
 
-# %%
-def ddpg_training_vis():
+    return ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path
+
+def ddpg_training_vis(ddpg_train_data_log):
     df_data = []
 
-    for entry in train_data_log:
+    for entry in ddpg_train_data_log:
         episode, step_count, scaled_action, raw_state, tensor_data, scaled_state, raw_reward, scaled_reward, cumulative_reward, fee_earned, impermanent_loss = entry
         
         # Extract raw_action values from tensor_data
@@ -714,11 +820,95 @@ def ddpg_training_vis():
     train_combined_metrics_plot(ddpg_train_data_df)
     #train_separate_episode_action_plot(ddpg_train_data_df)
 
-# %% [markdown]
-# ## PPO Agent (Stochastic Policy)
+def eval_ddpg_agent(eval_steps=100,eval_episodes=2,model_name='model_storage/ddpg/200_100_step_running_stats_lstm_bn_global_obs_norm',percentage_range=0.5,agent_budget_usd=10000,use_running_statistics=False):
+
+    eval_env = DiscreteSimpleEnvEval(agent_budget_usd=agent_budget_usd,percentage_range=percentage_range, seed=42,use_running_statistics=use_running_statistics)
+    n_actions = sum(action_space.shape[0] for action_space in eval_env.action_space.values())
+    input_dims = sum(np.prod(eval_env.observation_space.spaces[key].shape) for key in eval_env.observation_space.spaces.keys())
+    ddpg_eval_agent = DDGPEval(env=eval_env, n_actions=n_actions, input_dims=input_dims, training=False)
+    model_base_path = os.path.join(base_path, model_name)
+
+    ddpg_actor_model_path = os.path.join(model_base_path, 'actor')
+    ddpg_critic_model_path = os.path.join(model_base_path, 'critic')
+
+    ddpg_eval_agent.actor.load_weights(ddpg_actor_model_path)
+    ddpg_eval_agent.critic.load_weights(ddpg_critic_model_path)
+
+    for episode in range(eval_episodes):
+        state = eval_env.reset()
+        episode_reward = 0
+        
+        for step in range(eval_steps):
+            action = ddpg_eval_agent.choose_action(state)
+            next_state, reward, done, _ = eval_env.step(action)
+            
+            episode_reward += reward
+            state = next_state
+            if done:
+                break
+        print(f"Episode {episode+1}/{eval_episodes}, Reward: {episode_reward}")
+
+    ppo_eval_data_log=eval_env.eval_data_log
+
+    return ppo_eval_data_log
+
+def ddpg_eval_vis(ppo_eval_data_log):
+    df_eval_data = []
+
+    for entry in ppo_eval_data_log:
+        (episode, step_count, global_state, raw_action_rl_agent, action_rl_agent, 
+        raw_action_baseline_agent, action_baseline_agent, state, 
+        raw_reward_rl_agent, raw_reward_baseline_agent,scaled_reward_rl_agent,scaled_reward_baseline_agent, cumulative_reward_rl_agent, 
+        cumulative_reward_baseline_agent, fee_income_rl_agent, impermanent_loss_rl_agent, 
+        fee_income_baseline_agent, impermanent_loss_baseline_agent) = entry
+        
+        # Extract raw_action values for RL agent
+        raw_action_rl_agent_0 = float(raw_action_rl_agent[0][0].numpy())
+        raw_action_rl_agent_1 = float(raw_action_rl_agent[0][1].numpy())
+
+        scaled_action_rl_agent_0 = action_rl_agent['price_lower']
+        scaled_action_rl_agent_1 = action_rl_agent['price_upper']
+        
+        # Extract raw_action values for baseline agent
+        raw_action_baseline_agent_0 = raw_action_baseline_agent['price_lower']
+        raw_action_baseline_agent_1 = raw_action_baseline_agent['price_upper']
+        
+        # Combine all data into a single dictionary
+        data = {
+            'episode': episode,
+            'step_count': step_count,
+            'raw_reward_rl_agent': raw_reward_rl_agent,
+            'scaled_reward_rl_agent':scaled_reward_rl_agent,
+            'cumulative_reward_rl_agent': cumulative_reward_rl_agent,
+            'scaled_action_rl_agent_0':scaled_action_rl_agent_0,
+            'scaled_action_rl_agent_1':scaled_action_rl_agent_1,
+            'fee_income_rl_agent': fee_income_rl_agent,
+            'impermanent_loss_rl_agent': impermanent_loss_rl_agent,
+            'raw_reward_baseline_agent': raw_reward_baseline_agent,
+            'scaled_reward_baseline_agent':scaled_reward_baseline_agent,
+            'cumulative_reward_baseline_agent': cumulative_reward_baseline_agent,
+            'raw_action_baseline_agent_0': raw_action_baseline_agent_0,
+            'raw_action_baseline_agent_1': raw_action_baseline_agent_1,
+            'fee_income_baseline_agent': fee_income_baseline_agent,
+            'impermanent_loss_baseline_agent': impermanent_loss_baseline_agent,
+            'raw_action_rl_agent_0': raw_action_rl_agent_0,
+            'raw_action_rl_agent_1': raw_action_rl_agent_1,
+
+        }
+        
+        # Add action, global_state, and state data
+        
+        data.update(global_state)
+        data.update(state)
+        
+        df_eval_data.append(data)
+
+    ddpg_eval_data_df = pd.DataFrame(df_eval_data)
+    ddpg_eval_data_df.to_csv('model_outdir_csv/ddpg_agent_eval_data.csv', index=False)
+    eval_rewards_plot(ddpg_eval_data_df)
 
 # %% [markdown]
-# ### Model
+# ## PPO Agent (Stochastic Policy)
 
 # %%
 class RolloutBuffer:
@@ -976,13 +1166,17 @@ class PPO:
         }
         return action_dict
 
-# %% [markdown]
-# ### Training
+class PPOEval(PPO):
+    def choose_action(self, state):
+        # Disable exploration noise
+        action = super().choose_action(state)
+        return action
 
-# %%
-def train_ppo_agent(max_steps=100, n_episodes=10, model_name='model_storage/ppo/lstm_actor_critic_batch_norm', n_actions=n_actions, observation_dims=input_dims,buffer_size=50,n_epochs=10, gamma=0.5, alpha=0.01, gae_lambda=0.75, policy_clip=0.8, max_grad_norm=10,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
+def train_ppo_agent(max_steps=100, n_episodes=10, model_name='model_storage/ppo/ppo2', buffer_size=50,n_epochs=10, gamma=0.5, alpha=0.01, gae_lambda=0.75, policy_clip=0.8, max_grad_norm=10,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
     
-    env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics,action_transform=action_transform)
+    env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics, action_transform=action_transform)
+    n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
+    input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
     ppo_agent = PPO(env, n_actions, observation_dims=input_dims,buffer_size=buffer_size,n_epochs=n_epochs, gamma=gamma, alpha=alpha, gae_lambda=gae_lambda, policy_clip=policy_clip, max_grad_norm=max_grad_norm)
     for i in range(n_episodes):
         state = env.reset()
@@ -1008,18 +1202,23 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name='model_storage/ppo/
     ppo_model_base_path = os.path.join(base_path,model_name)
     ppo_actor_model_path = os.path.join(ppo_model_base_path, 'actor')
     ppo_critic_model_path = os.path.join(ppo_model_base_path, 'critic')
+    
+    # Save trained weights
     ppo_agent.actor.save_weights(ppo_actor_model_path)
     ppo_agent.critic.save_weights(ppo_critic_model_path)
 
+    # Save trained model
+    ppo_agent.actor.save(ppo_actor_model_path)
+    ppo_agent.critic.save(ppo_critic_model_path)
 
-# %% [markdown]
-# ### Training Visulizations
+    ppo_train_data_log=env.train_data_log
 
-# %%
-def ppo_training_vis():
+    return ppo_train_data_log,ppo_actor_model_path,ppo_critic_model_path
+
+def ppo_training_vis(ppo_train_data_log):
     df_data = []
 
-    for entry in train_data_log:
+    for entry in ppo_train_data_log:
         episode, step_count, scaled_action, raw_state, tensor_data, scaled_state, raw_reward, scaled_reward, cumulative_reward, fee_earned, impermanent_loss = entry
         
         # Extract raw_action values from tensor_data
@@ -1060,209 +1259,13 @@ def ppo_training_vis():
     train_combined_metrics_plot(ppo_train_data_df)
     train_separate_episode_action_plot(ppo_train_data_df)
 
-# %%
-#%load_ext tensorboard
-#%tensorboard --logdir ./model_storage
+def eval_ppo_agent(eval_steps=100, eval_episodes=2, model_name='model_storage/ppo/lstm_actor_critic_batch_norm',percentage_range=0.6,agent_budget_usd=10000, use_running_statistics=False, action_transform="linear"):
 
-# %% [markdown]
-# # Eval Env
-
-# %%
-class DiscreteSimpleEnvEval(DiscreteSimpleEnv):
-    def __init__(self, agent_budget_usd, percentage_range=0.3, seed=32,penalty_param_magnitude=0,use_running_statistics=False,action_transform='linear'):
-        #super().__init__(agent_budget_usd)
-        # Call to the parent class's __init__ method
-        super(DiscreteSimpleEnvEval, self).__init__(agent_budget_usd=agent_budget_usd, alpha=0.5, exploration_std_dev=0.01, beta=0.1, penalty_param_magnitude=penalty_param_magnitude, use_running_statistics=use_running_statistics,action_transform=action_transform)
-        self.percentage_range = percentage_range
-        if seed is not None:
-            np.random.seed(seed)
-        self.cumulative_reward_rl_agent = 0
-        self.cumulative_reward_baseline_agent = 0
-        self.penalty_param_magnitude=penalty_param_magnitude
-
-    def _take_action(self, action):
-        # Disable exploration noise
-        self.exploration_std_dev = 0.0
-        return super()._take_action(action)
-    
-    def step(self, raw_action_rl_agent):
-        # The RL agent takes an action
-        mint_tx_receipt_rl_agent, action_rl_agent = self._take_action(raw_action_rl_agent)
-        raw_action_baseline_agent=self.baseline_agent_policy()
-        # The baseline agent takes an action
-        mint_tx_receipt_baseline_agent, action_baseline_agent = self._take_action_baseline(raw_action_baseline_agent)
-
-        # Perform environment step
-        print('Environment Step')
-        self.engine.reset()
-        self.engine.run()
-        print()
-
-        # Calculate rewards for both agents
-        scaled_reward_rl_agent, raw_reward_rl_agent, fee_income_rl_agent, impermanent_loss_rl_agent = self._calculate_reward(action_rl_agent, mint_tx_receipt_rl_agent)
-        scaled_reward_baseline_agent, raw_reward_baseline_agent, fee_income_baseline_agent, impermanent_loss_baseline_agent = self._calculate_reward(action_baseline_agent, mint_tx_receipt_baseline_agent)
-
-        # Update cumulative rewards
-        self.cumulative_reward_rl_agent += scaled_reward_rl_agent
-        self.cumulative_reward_baseline_agent += scaled_reward_baseline_agent
-
-        self.step_count+=1
-        # Print rewards and cumulative rewards for both agents
-        print(f"episode: {self.episode}, step_count: {self.step_count}")
-        print(f"rl_agent_scaled_reward: {scaled_reward_rl_agent}, rl_agent_raw_reward: {raw_reward_rl_agent}, rl_agent_cumulative_reward: {self.cumulative_reward_rl_agent}")
-        print(f"baseline_agent_scaled_reward: {scaled_reward_baseline_agent}, baseline_agent_raw_reward: {raw_reward_baseline_agent}, baseline_agent_cumulative_reward: {self.cumulative_reward_baseline_agent}")
-        print(f"raw_pool_state: {self.pool.get_global_state()}")
-        print(f"sclaed_pool_state: {self.state}")
-        print()
-      
-
-        # Update the state and check if the episode is done
-        self.state = self.get_obs_space()
-        self.done = self._is_done()
-        eval_data_log.append((self.episode, self.step_count, self.pool.get_global_state(), raw_action_rl_agent,action_rl_agent,raw_action_baseline_agent,action_baseline_agent, self.state, raw_reward_rl_agent, raw_reward_baseline_agent,scaled_reward_rl_agent,scaled_reward_baseline_agent, self.cumulative_reward_rl_agent, self.cumulative_reward_baseline_agent, fee_income_rl_agent, impermanent_loss_rl_agent,fee_income_baseline_agent,impermanent_loss_baseline_agent))
-        # Return the necessary information
-        return self.state, raw_reward_rl_agent, self.done, {}
-    
-    def _take_action_baseline(self, action_dict):
-        
-        print('Baseline Agent Action')
-        print(f"action: {action_dict}")
-
-        tick_lower=price_to_valid_tick(action_dict['price_lower'])
-        tick_upper=price_to_valid_tick(action_dict['price_upper'])
-        amount=self.agent_budget_usd
-
-        mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount, b'')
-
-        return mint_tx_receipt,action_dict
-    
-    
-    def baseline_agent_policy(self):
-        global_state = self.pool.get_global_state()
-        raw_curr_price = global_state['curr_price']
-        
-        # Calculate the price range based on the raw current price
-        lower_price = raw_curr_price * (1 - self.percentage_range)
-        upper_price = raw_curr_price * (1 + self.percentage_range)
-
-        action_baseline={
-            'price_lower':lower_price,
-            'price_upper':upper_price
-        }
-        
-        return action_baseline
-
-class DDGPEval(DDPG):
-    def choose_action(self, state):
-        # Disable exploration noise
-        action = super().choose_action(state)
-        return action
-    
-class PPOEval(PPO):
-    def choose_action(self, state):
-        # Disable exploration noise
-        action = super().choose_action(state)
-        return action
-
-# %% [markdown]
-# # Policy Evaluation
-
-# %% [markdown]
-# ## DDPG Eval
-
-# %%
-def eval_ddpg_agent(eval_steps=100,eval_episodes=2,model_name='model_storage/ddpg/200_100_step_running_stats_lstm_bn_global_obs_norm',percentage_range=0.5,agent_budget_usd=10000,use_running_statistics=False):    
-    eval_env = DiscreteSimpleEnvEval(agent_budget_usd=agent_budget_usd,percentage_range=percentage_range, seed=42,use_running_statistics=use_running_statistics)
-    ddpg_eval_agent = DDGPEval(env=eval_env, n_actions=n_actions, input_dims=input_dims, training=False)
-    model_base_path = os.path.join(base_path,model_name)
-
-    ddpg_actor_model_path = os.path.join(model_base_path, 'actor')
-    ddpg_critic_model_path = os.path.join(model_base_path, 'critic')
-
-    ddpg_eval_agent.actor.load_weights(ddpg_actor_model_path)
-    ddpg_eval_agent.critic.load_weights(ddpg_critic_model_path)
-
-    for episode in range(eval_episodes):
-        state = eval_env.reset()
-        episode_reward = 0
-        
-        for step in range(eval_steps):
-            action = ddpg_eval_agent.choose_action(state)
-            next_state, reward, done, _ = eval_env.step(action)
-            
-            episode_reward += reward
-            state = next_state
-            if done:
-                break
-        print(f"Episode {episode+1}/{eval_episodes}, Reward: {episode_reward}")
-
-# %%
-def ddpg_eval_vis():
-    df_eval_data = []
-
-    for entry in eval_data_log:
-        (episode, step_count, global_state, raw_action_rl_agent, action_rl_agent, 
-        raw_action_baseline_agent, action_baseline_agent, state, 
-        raw_reward_rl_agent, raw_reward_baseline_agent,scaled_reward_rl_agent,scaled_reward_baseline_agent, cumulative_reward_rl_agent, 
-        cumulative_reward_baseline_agent, fee_income_rl_agent, impermanent_loss_rl_agent, 
-        fee_income_baseline_agent, impermanent_loss_baseline_agent) = entry
-        
-        # Extract raw_action values for RL agent
-        raw_action_rl_agent_0 = float(raw_action_rl_agent[0][0].numpy())
-        raw_action_rl_agent_1 = float(raw_action_rl_agent[0][1].numpy())
-
-        scaled_action_rl_agent_0 = action_rl_agent['price_lower']
-        scaled_action_rl_agent_1 = action_rl_agent['price_upper']
-        
-        # Extract raw_action values for baseline agent
-        raw_action_baseline_agent_0 = raw_action_baseline_agent['price_lower']
-        raw_action_baseline_agent_1 = raw_action_baseline_agent['price_upper']
-        
-        # Combine all data into a single dictionary
-        data = {
-            'episode': episode,
-            'step_count': step_count,
-            'raw_reward_rl_agent': raw_reward_rl_agent,
-            'scaled_reward_rl_agent':scaled_reward_rl_agent,
-            'cumulative_reward_rl_agent': cumulative_reward_rl_agent,
-            'scaled_action_rl_agent_0':scaled_action_rl_agent_0,
-            'scaled_action_rl_agent_1':scaled_action_rl_agent_1,
-            'fee_income_rl_agent': fee_income_rl_agent,
-            'impermanent_loss_rl_agent': impermanent_loss_rl_agent,
-            'raw_reward_baseline_agent': raw_reward_baseline_agent,
-            'scaled_reward_baseline_agent':scaled_reward_baseline_agent,
-            'cumulative_reward_baseline_agent': cumulative_reward_baseline_agent,
-            'raw_action_baseline_agent_0': raw_action_baseline_agent_0,
-            'raw_action_baseline_agent_1': raw_action_baseline_agent_1,
-            'fee_income_baseline_agent': fee_income_baseline_agent,
-            'impermanent_loss_baseline_agent': impermanent_loss_baseline_agent,
-            'raw_action_rl_agent_0': raw_action_rl_agent_0,
-            'raw_action_rl_agent_1': raw_action_rl_agent_1,
-
-        }
-        
-        # Add action, global_state, and state data
-        
-        data.update(global_state)
-        data.update(state)
-        
-        df_eval_data.append(data)
-
-    ddpg_eval_data_df = pd.DataFrame(df_eval_data)
-    ddpg_eval_data_df.to_csv('model_outdir_csv/ddpg_agent_eval_data.csv', index=False)
-    eval_rewards_plot(ddpg_eval_data_df)
-
-# %% [markdown]
-# ## PPO Eval
-
-# %%
-def eval_ppo_agent(eval_steps=100, eval_episodes=2, model_name='model_storage/ppo/lstm_actor_critic_batch_norm',percentage_range=0.6,agent_budget_usd=10000, use_running_statistics=False):
-    eval_env = DiscreteSimpleEnvEval(agent_budget_usd=agent_budget_usd,percentage_range=percentage_range, seed=42, penalty_param_magnitude=0, use_running_statistics=use_running_statistics)
+    eval_env = DiscreteSimpleEnvEval(agent_budget_usd=agent_budget_usd,percentage_range=percentage_range, seed=42, penalty_param_magnitude=0, use_running_statistics=use_running_statistics, action_transform=action_transform)
+    n_actions = sum(action_space.shape[0] for action_space in eval_env.action_space.values())
+    input_dims = sum(np.prod(eval_env.observation_space.spaces[key].shape) for key in eval_env.observation_space.spaces.keys())
     ppo_eval_agent = PPOEval(eval_env, n_actions, observation_dims=input_dims, buffer_size=5,training=False)
 
-    #model_base_path = os.path.join(base_path,'model_storage/ppo/200_100_step_running_stats_lstm_bn_global_obs_norm')
-    #ppo_actor_model_path = os.path.join(model_base_path, 'actor')
-    #ppo_critic_model_path = os.path.join(model_base_path, 'critic')
     model_base_path = os.path.join(base_path,model_name)
 
     ppo_actor_model_path = os.path.join(model_base_path, 'actor')
@@ -1285,11 +1288,13 @@ def eval_ppo_agent(eval_steps=100, eval_episodes=2, model_name='model_storage/pp
             if done:
                 break
         print(f"Episode {episode+1}/{eval_episodes}, Reward: {episode_reward}")
+    ppo_eval_data_log=eval_env.eval_data_log
+    return ppo_eval_data_log
 
-# %%
-def ppo_eval_vis():
+
+def ppo_eval_vis(ppo_eval_data_log):
     df_eval_data = []    
-    for entry in eval_data_log:
+    for entry in ppo_eval_data_log:
         (episode, step_count, global_state, raw_action_rl_agent, action_rl_agent, 
         raw_action_baseline_agent, action_baseline_agent, state, 
         raw_reward_rl_agent, raw_reward_baseline_agent,scaled_reward_rl_agent,scaled_reward_baseline_agent, cumulative_reward_rl_agent, 
@@ -1329,9 +1334,7 @@ def ppo_eval_vis():
             'raw_action_rl_agent_1': raw_action_rl_agent_1,
 
         }
-        
         # Add action, global_state, and state data
-        
         data.update(global_state)
         data.update(state)
         
@@ -1340,6 +1343,11 @@ def ppo_eval_vis():
     ppo_eval_data_df = pd.DataFrame(df_eval_data)
     ppo_eval_data_df.to_csv('model_outdir_csv/ppo_agent_eval_data.csv', index=False)
     eval_rewards_plot(ppo_eval_data_df)
+
+
+# %%
+#%load_ext tensorboard
+#%tensorboard --logdir ./model_storage
 
 # %% [markdown]
 # # Inference Pipeline
@@ -1434,10 +1442,6 @@ def load_inference_agent(ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_p
 
     return ddpg_eval_agent,ppo_eval_agent, eval_env
 
-# %% [markdown]
-# ## Inference Strategy
-
-# %%
 def liquidity_strategy(user_preferences,pool_state,pool_id="0x99ac8ca7087fa4a2a1fb6357269965a2014abc35",ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm'):
     # Extracting necessary information from the pool state
     current_profit = pool_state['current_profit']
@@ -1483,29 +1487,47 @@ def liquidity_strategy(user_preferences,pool_state,pool_id="0x99ac8ca7087fa4a2a1
 # ## DDPG Interface
 
 # %%
-'''
-train_data_log=[]
-ddpg_model_name='model_storage/ddpg/ddpg_1'
-train_ddpg_agent(max_steps=200, n_episodes=10, model_name=ddpg_model_name,alpha=0.001, beta=0.001, input_dims=input_dims, tau=0.8, env=env,n_actions=n_actions, batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False)
-eval_data_log=[]
-eval_ddpg_agent(eval_steps=100,eval_episodes=3,model_name=ddpg_model_name,percentage_range=0.6,agent_budget_usd=10000,use_running_statistics=False)
-ddpg_training_vis()
-ddpg_eval_vis()
-'''
+with mlflow.start_run(run_name="DDPG_Training") as run:
+    ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path=train_ddpg_agent(max_steps=2, n_episodes=2, model_name='model_storage/ddpg/ddpg_fazool',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False)
+    ddpg_training_vis(ddpg_train_data_log)
+
+    # Log models after loading them
+    actor_model = tf.keras.models.load_model(ddpg_actor_model_path)
+    critic_model = tf.keras.models.load_model(ddpg_critic_model_path)
+
+    mlflow.tensorflow.log_model(actor_model, "ddpg_actor_model")
+    mlflow.tensorflow.log_model(critic_model, "ddpg_critic_model")
+    
+with mlflow.start_run(run_name="DDPG_Evaluation"):
+    ddpg_eval_data_log=eval_ddpg_agent(eval_steps=2, eval_episodes=2, model_name='model_storage/ddpg/ddpg_fazool', percentage_range=0.6, agent_budget_usd=10000, use_running_statistics=False)
+    ddpg_eval_vis(ddpg_eval_data_log)
+
+#run_id = run.info.run_id
+#print(f"run_id: {run_id}")
+#!mlflow models serve -m "runs:/97ab3853db6642d6b3abd7f9284aa6cc/ddpg_actor_model" -p 123
 
 # %% [markdown]
 # ## PPO Interface
 
 # %%
-'''
-train_data_log=[]
-ppo_model_name='model_storage/ppo/ppo_1_linear_action_transform'
-train_ppo_agent(max_steps=200, n_episodes=5, model_name=ppo_model_name, n_actions=n_actions, observation_dims=input_dims,buffer_size=50,n_epochs=20, gamma=0.5, alpha=0.001, gae_lambda=0.75, policy_clip=0.6, max_grad_norm=0.6,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear')
-eval_data_log=[]
-eval_ppo_agent(eval_steps=50,eval_episodes=3,model_name=ppo_model_name,percentage_range=0.5,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear')
-ppo_training_vis()
-ppo_eval_vis()
-'''
+with mlflow.start_run(run_name="PPO_Training") as run:
+    ppo_train_data_log,ppo_actor_model_path,ppo_critic_model_path=train_ppo_agent(max_steps=2, n_episodes=2, model_name='model_storage/ppo/ppo2_fazool', buffer_size=5,n_epochs=20, gamma=0.5, alpha=0.001, gae_lambda=0.75, policy_clip=0.6, max_grad_norm=0.6,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear')
+    ppo_training_vis(ppo_train_data_log)
+
+    ppo_actor_model = tf.keras.models.load_model(ppo_actor_model_path)
+    ppo_critic_model = tf.keras.models.load_model(ppo_critic_model_path)
+
+    mlflow.tensorflow.log_model(ppo_actor_model, "ppo_actor_model")
+    mlflow.tensorflow.log_model(ppo_critic_model, "ppo_critic_model")
+    
+
+with mlflow.start_run(run_name="PPO_Evaluation"):
+    ppo_eval_data_log=eval_ppo_agent(eval_steps=2, eval_episodes=2, model_name='model_storage/ppo/ppo2_fazool', percentage_range=0.5, agent_budget_usd=10000, use_running_statistics=False, action_transform='linear')
+    ppo_eval_vis(ppo_eval_data_log)
+
+#run_id = run.info.run_id
+#print("run_id: {run_id}")
+#!mlflow models serve -m "runs:/run_id/ppo_actor_model" -p 1234
 
 # %% [markdown]
 # ## Strategy Interface
@@ -1533,7 +1555,7 @@ pool="0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" #ETH/USDT
 #pool="0x99ac8ca7087fa4a2a1fb6357269965a2014abc35" #WBTC/USDC
 #pool="0xcbcdf9626bc03e24f779434178a73a0b4bad62ed" #WBTC/ETH
 strategy_action, ddpg_action,ppo_action = liquidity_strategy(user_preferences,pool_state,pool_id=pool,ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm')
-print(f"/nStartegy Action: {strategy_action}, /nDDPG Agent Action: {ddpg_action}, /nPPO Agent Action: {ppo_action}")
+print(f"Startegy Action: {strategy_action}, DDPG Agent Action: {ddpg_action}, PPO Agent Action: {ppo_action}")
 
 # %% [markdown]
 # Liquidity Strategy Framework
@@ -1582,4 +1604,30 @@ print(f"/nStartegy Action: {strategy_action}, /nDDPG Agent Action: {ddpg_action}
 # Adaptive Strategy: Ensure the strategy adapts to changes in user preferences and ongoing market developments.
 # 
 
+# %% [markdown]
+# # Query Served Model
 
+# %%
+pool_id="0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" #ETH/USDT
+
+pool_data = fetch_inference_pool_data(pool_id)
+print(f"State Space: {pool_data}")
+
+global_state = pool_data
+curr_price = global_state['token1Price']
+liquidity = global_state['liquidity']
+fee_growth_0 = global_state['feeGrowthGlobal0X128']
+fee_growth_1 = global_state['feeGrowthGlobal1X128']
+
+data = {'scaled_curr_price': curr_price/5000, 'scaled_liquidity': liquidity/1e20, 
+        'scaled_feeGrowthGlobal0x128': fee_growth_0/1e34, 'scaled_feeGrowthGlobal1x128': fee_growth_1/1e34}
+
+# URL for the predict endpoint
+url = 'http://127.0.0.1:123/invocations'
+
+# Send POST request
+response = requests.post(url, json=data)
+
+# Print the response
+print("Response Code:", response.status_code)
+print("Predicted Response:", response.json())

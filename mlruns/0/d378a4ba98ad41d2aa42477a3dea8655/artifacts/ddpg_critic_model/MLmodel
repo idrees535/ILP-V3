@@ -1,0 +1,20 @@
+artifact_path: ddpg_critic_model
+flavors:
+  python_function:
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.tensorflow
+    python_version: 3.9.18
+  tensorflow:
+    code: null
+    data: data
+    keras_version: 2.14.0
+    model_type: keras
+    save_format: tf
+mlflow_version: 2.9.2
+model_size_bytes: 1298265
+model_uuid: 0a4bc265017c4dff876adb4a0f63ca67
+run_id: d378a4ba98ad41d2aa42477a3dea8655
+utc_time_created: '2024-01-09 10:33:15.333707'
