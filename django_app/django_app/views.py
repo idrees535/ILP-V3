@@ -2,7 +2,7 @@ import sys
 sys.path.append('/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1/model_notebooks')
 
 #from rl_ilp_script import train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, liquidity_strategy
-from .rl_ilp_script import train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, perform_inference,ddpg_training_vis,ppo_training_vis,ddpg_eval_vis,ppo_eval_vis
+from .rl_ilp_script import env_setup,train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, perform_inference,ddpg_training_vis,ppo_training_vis,ddpg_eval_vis,ppo_eval_vis
 
 
 import json
@@ -11,10 +11,30 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 # Import your training, evaluation, and inference functions
 #from .ilp_script import train_ddpg_agent, train_ppo_agent,eval_ddpg_agent, eval_ppo_agent,liquidity_strategy
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def home(request):
     return HttpResponse("Intelligent Liquidity Provisioning Framework")
 
+@csrf_exempt
+def initialize_script(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            base_path = data.get('base_path')
+            reset_env_var = data.get('reset_env_var')
+
+            # Call the function to set the base path in rl_ilp_scripts.py
+            env_setup(base_path,reset_env_var)
+
+            return JsonResponse({'message': 'Base path and reset env var configured successfully'})
+        except Exception as e:
+            return JsonResponse({'error': str(e)})
+    else:
+        return JsonResponse({'error': 'Only POST requests are allowed'})
+
+@csrf_exempt
 def train_ddpg(request):
     if request.method == 'POST':
         try:
@@ -58,6 +78,7 @@ def train_ddpg(request):
         return JsonResponse({'error': 'Only POST requests are allowed'})
 
 
+@csrf_exempt
 def evaluate_ddpg(request):
     if request.method == 'POST':
         try:
@@ -92,6 +113,7 @@ def evaluate_ddpg(request):
         return JsonResponse({'error': 'Only POST requests are allowed'})
 
 
+@csrf_exempt
 def train_ppo(request):
     if request.method == 'POST':
         try:
@@ -130,7 +152,7 @@ def train_ppo(request):
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'})
 
-
+@csrf_exempt
 def evaluate_ppo(request):
     if request.method == 'POST':
         try:
@@ -159,7 +181,7 @@ def evaluate_ppo(request):
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'})
 
-
+@csrf_exempt
 def inference(request):
     if request.method == 'POST':
         try:

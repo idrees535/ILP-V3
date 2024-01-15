@@ -4,11 +4,20 @@
 # %%
 #export PATH=$PATH:.
 #base_path="/home/azureuser/Intelligent-Liquidity-Provisioning-Framework"
-base_path="/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1"
+import sys
 import os
+base_path="/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1"
+reset_env_var=False
+sys.path.append(base_path)
 os.chdir(base_path)
 os.environ["PATH"] += ":."
-reset_env_var=False
+
+def env_setup(base_path, reset_env_var):
+    base_path=base_path
+    sys.path.append(base_path)
+    os.chdir(base_path)
+    os.environ["PATH"] += ":."
+    reset_env_var=reset_env_var
 
 # %% [markdown]
 # # Reset Env
@@ -1441,7 +1450,7 @@ def load_inference_agent(ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_p
 
     return ddpg_eval_agent,ppo_eval_agent, eval_env
 
-def liquidity_strategy(user_preferences,pool_state,pool_id="0x99ac8ca7087fa4a2a1fb6357269965a2014abc35",ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm'):
+def perform_inference(user_preferences,pool_state,pool_id="0x99ac8ca7087fa4a2a1fb6357269965a2014abc35",ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm'):
     # Extracting necessary information from the pool state
     current_profit = pool_state['current_profit']
     price_out_of_range = pool_state['price_out_of_range']
@@ -1486,6 +1495,7 @@ def liquidity_strategy(user_preferences,pool_state,pool_id="0x99ac8ca7087fa4a2a1
 # ## DDPG Interface
 
 # %%
+'''
 with mlflow.start_run(run_name="DDPG_Training") as run:
     ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path=train_ddpg_agent(max_steps=2, n_episodes=2, model_name='model_storage/ddpg/ddpg_fazool',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False)
     ddpg_training_vis(ddpg_train_data_log)
@@ -1631,4 +1641,4 @@ response = requests.post(url, json=data)
 print("Response Code:", response.status_code)
 print("Predicted Response:", response.json())
 
-
+'''

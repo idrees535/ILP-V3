@@ -4,6 +4,8 @@
 # %%
 #export PATH=$PATH:.
 #base_path="/home/azureuser/Intelligent-Liquidity-Provisioning-Framework"
+import sys
+sys.path.append('/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1')
 base_path="/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1"
 import os
 os.chdir(base_path)
