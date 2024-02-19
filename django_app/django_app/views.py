@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 sys.path.append('/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1/model_notebooks')
 
 #from rl_ilp_script import train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, liquidity_strategy
@@ -67,7 +68,7 @@ def train_ddpg(request):
 
         # Prepare and return the response
             response_data = {
-            'ddpg_train_data_log': ddpg_train_data_log, 
+            'ddpg_train_data_log': ddpg_train_data_log.tolist(), 
             'ddpg_actor_model_path': ddpg_actor_model_path, 
             'ddpg_critic_model_path': ddpg_critic_model_path
                                         }
@@ -105,7 +106,7 @@ def evaluate_ddpg(request):
 
             # Prepare and return the response
             return JsonResponse({
-                'ddpg_eval_data_log': ddpg_eval_data_log,
+                'ddpg_eval_data_log': ddpg_eval_data_log.tolist(),
             })
         except Exception as e:
             return JsonResponse({'error': str(e)})
@@ -142,7 +143,7 @@ def train_ppo(request):
                 use_running_statistics=use_running_statistics, action_transform=action_transform
                 )
             response_data = {
-            'ppo_train_data_log': ppo_train_data_log,
+            'ppo_train_data_log': ppo_train_data_log.tolist(),
             'ppo_actor_model_path': ppo_actor_model_path,
             'ppo_critic_model_path': ppo_critic_model_path
             }
@@ -175,7 +176,7 @@ def evaluate_ppo(request):
             )
 
             # Prepare and return the response
-            return JsonResponse({'ppo_eval_data_log': ppo_eval_data_log})
+            return JsonResponse({'ppo_eval_data_log': ppo_eval_data_log.tolist()})
         except Exception as e:
             return JsonResponse({'error': str(e)})
     else:

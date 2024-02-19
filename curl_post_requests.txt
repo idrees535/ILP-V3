@@ -1,5 +1,5 @@
 curl -X POST http://127.0.0.1:8000/initialize_script/ -H "Content-Type: application/json" -d '{
-    "base_path": "/your/base/path",
+    "base_path": "/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1",
     "reset_env_var": true
 }'
 
@@ -30,7 +30,7 @@ curl -X POST http://127.0.0.1:8000/evaluate_ddpg/ -H "Content-Type: application/
 curl -X POST http://127.0.0.1:8000/train_ppo/ -H "Content-Type: application/json" -d '{
     "max_steps": 2,
     "n_episodes": 2,
-    "model_name": "model_storage/ppo/ppo2_fazool",
+    "model_name": "model_storage/ppo/ppo2_fazool22",
     "buffer_size": 5,
     "n_epochs": 20,
     "gamma": 0.5,
