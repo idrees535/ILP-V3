@@ -43,7 +43,10 @@ class UniV3Model():
         
 
         w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
-        self.base_fee = w3.eth.getBlock('latest')['baseFeePerGas']
+        #self.base_fee = w3.eth.get_block('latest')['baseFeePerGas']
+
+        latest_block = w3.eth.get_block('latest')
+        self.base_fee = latest_block.get('baseFeePerGas', 0)  # Provide a default if not present
         
         self.ensure_valid_json_file("model_storage/token_pool_addresses.json")
         self.ensure_valid_json_file("model_storage/liq_positions.json")

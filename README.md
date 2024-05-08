@@ -58,7 +58,7 @@ pip install -r requirements.txt
 1. Navigate to the Django project directory:
 
 ```bash
-cd path/to/django_app
+cd django_app
 ```
 
 2. Apply migrations to initialize the database:
