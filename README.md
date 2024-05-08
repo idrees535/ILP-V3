@@ -20,10 +20,35 @@ The Intelligent Liquidity Provisioning (ILP) Framework V2 for Uniswap V3 pools i
 ### Prerequisites
 
 - Linux/MacOS environment
-- Python 3.9 or newer
-- Django
-- Other Python dependencies as listed in `requirements.txt`
+- Python 3.10.12 or newer
+- NVM, Node.js, ganache and solc
 
+Install NVM:
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+```
+Note: Ensure you have curl installed. If not, install it with sudo apt install curl.
+Replace v0.39.1 with the latest release available on the nvm GitHub page.
+Restart your terminal or source your profile to ensure nvm commands are available:
+
+```bash
+source ~/.bashrc
+```
+Install Node.js using nvm:
+```bash
+nvm install node 
+nvm use node
+```
+
+Install Ganache CLI using npm:
+```bash
+npm install -g ganache-cli
+```
+
+Install solc-js via npm: 
+```bash
+npm install -g solc
+```
 ### Installing Dependencies
 
 1. Clone the repository:
@@ -48,14 +73,19 @@ source ilp_venv/bin/activate
 4. Install required Python packages:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements_td.txt
 ```
 
-5. Ensure you have the `solc`, `ganache`, and `nvm` installed as per the prerequisites mentioned earlier.
+5. Ensure you have the `solc`, `ganache`, and `nvm` installed
+
+6. Open a new terminal and start ganache cli in this, please ensure that latest version of ganache is installed in your systems
+```bash
+ganache-cli
+```
 
 ### Django App Deployment
 
-1. Navigate to the Django project directory:
+1. In a new terminal Navigate to the Django project directory:
 
 ```bash
 cd django_app
