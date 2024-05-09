@@ -26,6 +26,6 @@ def transferETH(from_account, to_account, amount):
 
 def _fees() -> tuple:
     assert brownie.network.is_connected()
-    priority_fee = chain.priority_fee
-    max_fee = chain.base_fee + 2 * chain.priority_fee
+    priority_fee = 875000000#chain.priority_fee
+    max_fee = 875000000#chain.base_fee + 2 * chain.priority_fee
     return (priority_fee, max_fee)

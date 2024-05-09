@@ -20,7 +20,7 @@ The Intelligent Liquidity Provisioning (ILP) Framework V2 for Uniswap V3 pools i
 ### Prerequisites
 
 - Linux/MacOS environment
-- Python 3.10.12 or newer
+- Python 3.9.19 (Please ensure this strictly, otherwise you will get into dependency conflict issues)
 - NVM, Node.js, ganache and solc
 
 Install NVM:
@@ -76,7 +76,7 @@ source ilp_venv/bin/activate
 pip install -r requirements_td.txt
 ```
 
-5. Ensure you have the `solc`, `ganache`, and `nvm` installed
+5. Ensure you have the `solc`, `ganache`, and `nvm` installed and upto date
 
 6. Open a new terminal and start ganache cli in this, please ensure that latest version of ganache is installed in your systems
 ```bash
