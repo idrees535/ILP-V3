@@ -22,6 +22,7 @@ The Intelligent Liquidity Provisioning (ILP) Framework V2 for Uniswap V3 pools i
 - Linux/MacOS environment
 - Python 3.9.19 (Please ensure this strictly, otherwise you will get into dependency conflict issues)
 - NVM, Node.js, ganache and solc
+- Ganache CLI v6.12.2 (ganache-core: 2.13.2)
 
 Install NVM:
 ```bash
@@ -36,13 +37,13 @@ source ~/.bashrc
 ```
 Install Node.js using nvm:
 ```bash
-nvm install node 
-nvm use node
+nvm install 16.3.0
+nvm use 16.3.0
 ```
 
 Install Ganache CLI using npm:
 ```bash
-npm install -g ganache-cli
+npm install -g ganache-cli@7.9.1
 ```
 
 Install solc-js via npm: 
