@@ -5,6 +5,7 @@ networks:
   default: development
   development:
     ganache:
+      evm_version: istanbul
       host: http://127.0.0.1
       port: 8545
       network_id: 5777

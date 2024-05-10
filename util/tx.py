@@ -19,13 +19,16 @@ def transferETH(from_account, to_account, amount):
     Returns a TransactionReceipt instance.
     """
     priority_fee, max_fee = _fees()
-    return from_account.transfer(
-        to_account, amount, priority_fee=priority_fee, max_fee=max_fee
-    )
+    #return from_account.transfer(to_account, amount, priority_fee=priority_fee, max_fee=max_fee)
+    return from_account.transfer(to_account, amount)
 
 
 def _fees() -> tuple:
     assert brownie.network.is_connected()
-    priority_fee = 875000000#chain.priority_fee
-    max_fee = 875000000#chain.base_fee + 2 * chain.priority_fee
+    #priority_fee = chain.priority_fee #875000000
+    #max_fee = chain.base_fee + 2 * chain.priority_fee #875000000
+
+    priority_fee = 875000000
+    max_fee = 875000000
+
     return (priority_fee, max_fee)

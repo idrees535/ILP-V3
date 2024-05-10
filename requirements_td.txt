@@ -1,12 +1,9 @@
 eth-brownie
-#==1.19.3
 enforce_typing
 ipykernel
 pandas 
-#protobuf==3.19.5
 seaborn
 gymnasium
-#==0.29.1
 mlflow
 celery
 django
@@ -15,6 +12,3 @@ requests
 tensorflow==2.14.0
 tensorflow_probability==0.22.1
 keras==2.14.0
-#yaml
-#semantic_version
-#py-solc-x

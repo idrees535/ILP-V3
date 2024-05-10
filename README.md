@@ -80,7 +80,7 @@ pip install -r requirements_td.txt
 
 6. Open a new terminal and start ganache cli in this, please ensure that latest version of ganache is installed in your systems
 ```bash
-ganache-cli
+ganache-cli --gasLimit 10000000000 --gasPrice 1 --hardfork istanbul
 ```
 
 ### Django App Deployment
