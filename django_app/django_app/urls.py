@@ -12,6 +12,7 @@ urlpatterns = [
     path('train_ppo/', train_ppo, name='train_ppo'),
     path('evaluate_ppo/', evaluate_ppo, name='evaluate_ppo'),
     path('inference/', inference, name='inference'),
+    path('predict-action/', inference, name='predict_action'),
     path('initialize_script/', initialize_script, name='initialize_script'), 
 ]
 
