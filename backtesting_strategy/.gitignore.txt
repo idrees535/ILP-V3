@@ -1,5 +1,0 @@
-__pycache__/
-data/
-hour-data/
-iterations-weekly/
-week-data/
