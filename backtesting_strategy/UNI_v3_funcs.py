@@ -1,15 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jun 14 18:53:09 2021
-
-@author: JNP
-"""
-
-
-
-'''liquitidymath'''
-'''Python library to emulate the calculations done in liquiditymath.sol of UNI_V3 peryphery contract'''
-
 #sqrtP: format X96 = int(1.0001**(tick/2)*(2**96))
 #liquidity: int
 #sqrtA = price for lower tick
@@ -193,7 +181,142 @@ def Swapped_1(L,current_Tick,Lower_Tick,Upper_Tick,Delta_X,decimal_0,decimal_1,f
     return Delta_Y
 
 
-        
+import math
+import csv
+from collections import OrderedDict
+
+min_tick = -887272
+max_tick = 887272
+q96 = 2**96
+eth = 10**18
+
+def toBase18(amt: float) -> int:
+    return int(amt * 1e18)
+
+def fromBase18(amt_base: int) -> float:
+    return amt_base / 1e18
+
+def fromBase128(value):
+    return value / (2 ** 128)
+
+def toBase128(value):
+    return value *(2 **128)
+
+def price_to_raw_tick(price):
+    return math.floor(math.log(price) / math.log(1.0001))
+
+def price_to_valid_tick(price, tick_spacing=60):
+    raw_tick = math.floor(math.log(price, 1.0001))
+    remainder = raw_tick % tick_spacing
+    if remainder != 0:
+        # Round to the nearest valid tick, considering tick spacing.
+        raw_tick += tick_spacing - remainder if remainder >= tick_spacing // 2 else -remainder
+    return raw_tick
+
+def tick_to_price(tick):
+    price = (1.0001 ** tick)
+    return price
+
+def price_to_sqrtp(p):
+    return int(math.sqrt(p) * q96)
+
+def sqrtp_to_price(sqrtp):
+    return (sqrtp / q96) ** 2
+
+def tick_to_sqrtp(t):
+    return int((1.0001 ** (t / 2)) * q96)
+
+def liquidity0(amount, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return (amount * (pa * pb) / q96) / (pb - pa)
+
+def liquidity1(amount, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return amount * q96 / (pb - pa)
+    
+
+def budget_to_liquidity(tick_lower,tick_upper,usd_budget,current_price):
+            
+        q96 = 2**96
+        def get_liquidity_for_amounts(sqrt_ratio_x96, sqrt_ratio_a_x96, sqrt_ratio_b_x96, amount0, amount1):
+            if sqrt_ratio_a_x96 > sqrt_ratio_b_x96:
+                sqrt_ratio_a_x96, sqrt_ratio_b_x96 = sqrt_ratio_b_x96, sqrt_ratio_a_x96
+            
+            if sqrt_ratio_x96 <= sqrt_ratio_a_x96:
+                return liquidity0(amount0, sqrt_ratio_a_x96, sqrt_ratio_b_x96)
+            elif sqrt_ratio_x96 < sqrt_ratio_b_x96:
+                liquidity0_value = liquidity0(amount0, sqrt_ratio_x96, sqrt_ratio_b_x96)
+                liquidity1_value = liquidity1(amount1, sqrt_ratio_a_x96, sqrt_ratio_x96)
+                return min(liquidity0_value, liquidity1_value)
+            else:
+                return liquidity1(amount1, sqrt_ratio_a_x96, sqrt_ratio_b_x96)
+
+        def liquidity0(amount, pa, pb):
+            if pa > pb:
+                pa, pb = pb, pa
+            return (amount * (pa * pb) / q96) / (pb - pa)
+
+        def liquidity1(amount, pa, pb):
+            if pa > pb:
+                pa, pb = pb, pa
+            return amount * q96 / (pb - pa)
 
         
+        
+        usdp_cur = current_price
+        sqrtp_cur=price_to_sqrtp(usdp_cur)
+
+        #amount_token0 =  ((0.5 * usd_budget)/usdp_cur) * eth
+        #amount_token1 = 0.5 * usd_budget * eth
+
+        sqrtp_low = tick_to_sqrtp(tick_lower)
+        sqrtp_upp = tick_to_sqrtp(tick_upper)
+
+        #'''
+        # Allocate budget based on the current price
+        if sqrtp_cur <= sqrtp_low:  # Current price is below the range
+            # Allocate all budget to token0
+            amount_token0 = usd_budget / usdp_cur  
+            amount_token1 = 0
+        elif sqrtp_cur >= sqrtp_upp:  # Current price is above the range
+            # Allocate all budget to token1
+            amount_token0 = 0
+            amount_token1 = usd_budget 
+        else:  # Current price is within the range
+            # Calculate amounts for token0 and token1 using Eqs. 11 and 12 of eltas paper
+            #amount_token0 = L * (sqrtp_upp - sqrtp_cur) / (sqrtp_cur * sqrtp_upp)
+            #amount_token1 = L * (sqrtp_cur - sqrtp_low)
+            def calculate_x_to_y_ratio(P, pa, pb):
+                """Calculate the x to y ratio from given prices."""
+                sqrtP = math.sqrt(P)
+                sqrtpa = math.sqrt(pa)
+                sqrtpb = math.sqrt(pb)
+                return (sqrtpb - sqrtP) / (sqrtP * sqrtpb * (sqrtP - sqrtpa)) * P
+
+            # Calculate the x_to_y_ratio
+            x_to_y_ratio = calculate_x_to_y_ratio(P=sqrtp_to_price(sqrtp_cur), pa=tick_to_price(tick_lower), pb=tick_to_price(tick_upper))
+            #print(f'ratio: {x_to_y_ratio}')
+        
+            budget_token0 = (usd_budget * x_to_y_ratio) / (1 + x_to_y_ratio)
+            budget_token1 = usd_budget - budget_token0
+
+            # Calculate the amount of token0 and token1 to be purchased with the allocated budget
+            # Assuming token0 is priced at cur_price and token1 is the stablecoin priced at $1
+            amount_token0 = budget_token0 / usdp_cur
+            amount_token1 = budget_token1 
+
+        # Convert amounts to the smallest unit of the tokens based on their decimals
+        #print(f'amount0: {amount_token0}')
+        #print(f'amount1: {amount_token1}')
+        
+        amount_token0 = toBase18(amount_token0)
+        amount_token1 = toBase18(amount_token1)
+        #'''
+        
+        liquidity=get_liquidity_for_amounts(sqrt_ratio_x96=sqrtp_cur, sqrt_ratio_a_x96=sqrtp_low, sqrt_ratio_b_x96=sqrtp_upp, amount0=amount_token0, amount1=amount_token1)
+        
+        return liquidity
+    
         
