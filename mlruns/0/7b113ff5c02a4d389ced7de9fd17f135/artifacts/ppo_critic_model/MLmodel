@@ -1,0 +1,20 @@
+artifact_path: ppo_critic_model
+flavors:
+  python_function:
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.tensorflow
+    python_version: 3.9.18
+  tensorflow:
+    code: null
+    data: data
+    keras_version: 2.14.0
+    model_type: keras
+    save_format: tf
+mlflow_version: 2.9.2
+model_size_bytes: 1112520
+model_uuid: cf17810523284801aa22271b5a5c9fcd
+run_id: 7b113ff5c02a4d389ced7de9fd17f135
+utc_time_created: '2024-01-15 05:04:13.456927'

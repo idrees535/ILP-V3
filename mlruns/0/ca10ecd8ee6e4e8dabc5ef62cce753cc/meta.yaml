@@ -1,0 +1,15 @@
+artifact_uri: file:///mnt/c/Users/hijaz%20tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1/mlruns/0/ca10ecd8ee6e4e8dabc5ef62cce753cc/artifacts
+end_time: 1715772810992
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ca10ecd8ee6e4e8dabc5ef62cce753cc
+run_name: DDPG_Evaluation
+run_uuid: ca10ecd8ee6e4e8dabc5ef62cce753cc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1715772756501
+status: 3
+tags: []
+user_id: idrees535

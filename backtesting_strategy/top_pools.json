@@ -1,0 +1,15 @@
+[
+    {
+        "token0": "WBTC",
+        "token1": "WETH",
+        "decimals0": 8,
+        "decimals1": 18,
+        "fee": 3000,
+        "address": "0xcbcdf9626bc03e24f779434178a73a0b4bad62ed",
+        "init_sqrtPriceX96": "31703474972180322262301571401662639",
+        "init_tick": 258005,
+        "init_tx_hash": "0xf87d91f3d72a8e912c020c2e316151f3557b1217b44d4f6b6bec126448318530",
+        "init_block_number": 12369821
+    }
+    
+]

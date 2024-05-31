@@ -1,0 +1,20 @@
+artifact_path: critic_model
+flavors:
+  python_function:
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.tensorflow
+    python_version: 3.9.18
+  tensorflow:
+    code: null
+    data: data
+    keras_version: 2.14.0
+    model_type: keras
+    save_format: tf
+mlflow_version: 2.9.2
+model_size_bytes: 1667036
+model_uuid: 14ddeac1a6694228985dfe3b9bff90ec
+run_id: 658760171441458d813cb67647bbc583
+utc_time_created: '2024-01-09 10:52:40.377800'
