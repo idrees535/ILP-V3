@@ -228,9 +228,8 @@ curl -X POST http://127.0.0.1:8000/inference/ \
     },
     "pool_id": "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36",
     "ddpg_agent_path": "model_storage/ddpg/ddpg_1",
-    "
 
-ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm"
+    "ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm"
 }'
 ```
 
