@@ -30,3 +30,7 @@ djnago_app/ilp_venv_7
 /backtesting_strategy/data/
 backtesting_strategy/data/
 /backtesting_strategy/data
+
+/backtesting_strategy_scratch/
+backtesting_strategy_scratch/
+/backtesting_strategy_scratch
