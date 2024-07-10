@@ -40,3 +40,7 @@ backtesting_strategy_scratch/
 /backtesting_strategy_scratch/data/
 backtesting_strategy_scratch/data/
 /backtesting_strategy_scratch/data
+
+backtesting_strategy_scratch/data/crawl/WBTC_WETH_500/swap_events.csv
+backtesting_strategy_scratch/data/crawl/WBTC_WETH_3000/swap_events.csv
+backtesting_strategy_scratch/data/crawl/WETH_USDT_3000/swap_events.csv
