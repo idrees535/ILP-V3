@@ -5,8 +5,8 @@
 #export PATH=$PATH:.
 #base_path="/home/azureuser/Intelligent-Liquidity-Provisioning-Framework"
 import sys
-sys.path.append('/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1')
-base_path="/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1"
+sys.path.append('/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2/model_storage')
+base_path="/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2"
 import os
 os.chdir(base_path)
 os.environ["PATH"] += ":."
@@ -401,14 +401,9 @@ class DiscreteSimpleEnv(gym.Env):
         else:
             return False
 
-#env=DiscreteSimpleEnv(agent_budget_usd=10000,use_running_statistics=False)
-#n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
-#input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
-
 class DiscreteSimpleEnvEval(DiscreteSimpleEnv):
     def __init__(self, agent_budget_usd, percentage_range=0.3, seed=32,penalty_param_magnitude=0,use_running_statistics=False,action_transform='linear'):
         #super().__init__(agent_budget_usd)
-        # Call to the parent class's __init__ method
         super(DiscreteSimpleEnvEval, self).__init__(agent_budget_usd=agent_budget_usd, alpha=0.5, exploration_std_dev=0.01, beta=0.1, penalty_param_magnitude=penalty_param_magnitude, use_running_statistics=use_running_statistics,action_transform=action_transform)
         self.percentage_range = percentage_range
         if seed is not None:
@@ -1503,9 +1498,6 @@ with mlflow.start_run(run_name="DDPG_Evaluation"):
     ddpg_eval_data_log=eval_ddpg_agent(eval_steps=2, eval_episodes=2, model_name='model_storage/ddpg/ddpg_fazool', percentage_range=0.6, agent_budget_usd=10000, use_running_statistics=False)
     ddpg_eval_vis(ddpg_eval_data_log)
 
-#run_id = run.info.run_id
-#print(f"run_id: {run_id}")
-#!mlflow models serve -m "runs:/97ab3853db6642d6b3abd7f9284aa6cc/ddpg_actor_model" -p 123
 
 # %% [markdown]
 # ## PPO Interface
@@ -1526,9 +1518,6 @@ with mlflow.start_run(run_name="PPO_Evaluation"):
     ppo_eval_data_log=eval_ppo_agent(eval_steps=2, eval_episodes=2, model_name='model_storage/ppo/ppo2_fazool', percentage_range=0.5, agent_budget_usd=10000, use_running_statistics=False, action_transform='linear')
     ppo_eval_vis(ppo_eval_data_log)
 
-#run_id = run.info.run_id
-#print("run_id: {run_id}")
-#!mlflow models serve -m "runs:/run_id/ppo_actor_model" -p 1234
 
 # %% [markdown]
 # ## Strategy Interface
@@ -1557,80 +1546,3 @@ pool="0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" #ETH/USDT
 #pool="0xcbcdf9626bc03e24f779434178a73a0b4bad62ed" #WBTC/ETH
 strategy_action, ddpg_action,ppo_action = liquidity_strategy(user_preferences,pool_state,pool_id=pool,ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm')
 print(f"Startegy Action: {strategy_action}, DDPG Agent Action: {ddpg_action}, PPO Agent Action: {ppo_action}")
-
-# %% [markdown]
-# Liquidity Strategy Framework
-# 1. User Profile Assessment
-# Risk Tolerance Assessment: Gauge the user's appetite for risk (low, medium, high) and set profit-taking and stop-loss thresholds accordingly.
-# Investment Horizon: Determine the duration the user plans to engage in liquidity provisioning (short-term, mid-term, long-term).
-# Liquidity Preference: Assess the user's preference for types of pools (e.g., stablecoin pairs vs. high-volatility pairs).
-# 2. Market and Pool Analysis
-# Volatility Analysis: Use historical data to analyze the volatility of the pool. Higher volatility may require a more dynamic strategy.
-# Fee vs. Impermanent Loss Analysis: Assess the historical balance between fee income and impermanent loss in the pool.
-# Token Pair Correlation: Study the correlation between the assets in the pool and how it affects price movements and liquidity depth.
-# 3. Integration of RL Agent Predictions
-# Predictive Modeling: Regularly run the DDPG and PPO agents to predict optimal liquidity ranges based on the current pool state.
-# Adjustment Frequency: Decide the frequency of querying the RL agents for adjustments based on market conditions and user preferences.
-# 4. Strategy Implementation
-# Initiating Position: Enter the liquidity pool based on initial RL agent predictions and user preferences.
-# Continuous Monitoring: Set up a system to continuously monitor the pool's state and the performance of the liquidity position.
-# Adjustment Protocols:
-# Profit Taking: If the profit reaches the user's threshold, adjust or rebalance as per the RL agent's suggestions.
-# Price Range Exit: If the pool price moves out of the predicted range significantly, adjust the position.
-# Stop Loss: Exit the position if losses reach the user-defined stop-loss threshold.
-# Handling Volatility: In high volatility, reduce exposure or exit based on impermanent loss risk and market trends.
-# Regular Review and Rebalancing: Periodically review the position independent of the RL predictions and rebalance if necessary based on market shifts.
-
-# %% [markdown]
-# 1. Initial Setup and User Input
-# User Interface: Develop a user interface where the user can select a pool, allocate a budget (e.g., 10000 USD), choose a time horizon, and specify risk preferences (risk aversion and tolerance).
-# Pool Selection: Allow the user to select a Uniswap V3 pool for liquidity provisioning.
-# User Preferences: Capture the user's risk tolerance, investment horizon, and other relevant preferences.
-# 2. Initial Liquidity Provisioning
-# Predict Action: When a new user decides to add liquidity, the strategy uses both DDPG and PPO agents to predict the optimal liquidity range (price_lower and price_upper) based on the current state of the selected pool.
-# Action Selection: The strategy selects one of the predicted actions (from DDPG or PPO) to initiate the liquidity provisioning in the pool.
-# Execute Liquidity Provision: Add liquidity to the selected pool within the predicted range using the user's allocated budget.
-# 3. Continuous Strategy Management
-# Data Fetching: Regularly (e.g., hourly) fetch data from the pool to monitor the state of the liquidity position and the pool's market conditions.
-# State Assessment: Assess the current state of the liquidity position in terms of profit/loss, whether the price is within the range, and other relevant metrics.
-# Decision Criteria: Define criteria for adjusting, maintaining, or exiting the position based on user preferences and real-time market data.
-# 4. Ongoing Position Management
-# Rebalance Position: If the strategy determines that rebalancing is needed (e.g., price out of the current range or based on time interval), it again uses DDPG and PPO agents to predict a new optimal range and adjusts the position accordingly.
-# Maintain Position: If the current position is deemed optimal, the strategy will continue to hold the position without changes.
-# Exit Position: If the strategy identifies adverse market conditions or meets the user's risk parameters (like stop loss), it exits the position to protect the user's capital.
-# 5. Strategy Execution Loop
-# Loop Implementation: Implement a loop that continuously monitors the pool state, re-evaluates the position, and executes the strategy's decisions (adjust, maintain, or exit) based on real-time data and user preferences.
-# 6. User Feedback and Adjustment
-# Feedback Mechanism: Allow users to review their position performance and adjust their preferences if needed.
-# Adaptive Strategy: Ensure the strategy adapts to changes in user preferences and ongoing market developments.
-# 
-
-# %% [markdown]
-# # Query Served Model
-
-# %%
-pool_id="0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" #ETH/USDT
-
-pool_data = fetch_inference_pool_data(pool_id)
-print(f"State Space: {pool_data}")
-
-global_state = pool_data
-curr_price = global_state['token1Price']
-liquidity = global_state['liquidity']
-fee_growth_0 = global_state['feeGrowthGlobal0X128']
-fee_growth_1 = global_state['feeGrowthGlobal1X128']
-
-data = {'scaled_curr_price': curr_price/5000, 'scaled_liquidity': liquidity/1e20, 
-        'scaled_feeGrowthGlobal0x128': fee_growth_0/1e34, 'scaled_feeGrowthGlobal1x128': fee_growth_1/1e34}
-
-# URL for the predict endpoint
-url = 'http://127.0.0.1:123/invocations'
-
-# Send POST request
-response = requests.post(url, json=data)
-
-# Print the response
-print("Response Code:", response.status_code)
-print("Predicted Response:", response.json())
-
-

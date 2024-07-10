@@ -8,7 +8,7 @@ import sys
 import os
 from datetime import datetime, timedelta,timezone
 base_path="/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2"
-reset_env_var=False
+reset_env_var=True
 sys.path.append(base_path)
 os.chdir(base_path)
 os.environ["PATH"] += ":."
