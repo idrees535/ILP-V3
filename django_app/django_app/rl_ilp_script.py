@@ -6,9 +6,10 @@
 #base_path="/home/azureuser/Intelligent-Liquidity-Provisioning-Framework"
 import sys
 import os
-from datetime import datetime, timedelta,timezone
-base_path="/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2"
-reset_env_var=False
+import pathlib
+
+base_path = pathlib.Path().resolve().parent.as_posix()
+reset_env_var = False
 sys.path.append(base_path)
 os.chdir(base_path)
 os.environ["PATH"] += ":."
