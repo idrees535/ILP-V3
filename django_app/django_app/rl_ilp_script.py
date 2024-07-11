@@ -8,7 +8,7 @@ import sys
 import os
 from datetime import datetime, timedelta,timezone
 base_path="/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2"
-reset_env_var=True
+reset_env_var=False
 sys.path.append(base_path)
 os.chdir(base_path)
 os.environ["PATH"] += ":."
@@ -782,10 +782,12 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
     ddpg_agent.critic.save(ddpg_critic_model_path)
 
     ddpg_train_data_log=env.train_data_log
+    output_file=ddpg_training_vis(ddpg_train_data_log,model_name)
+
 
     return ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path
 
-def ddpg_training_vis(ddpg_train_data_log):
+def ddpg_training_vis(ddpg_train_data_log,model_name):
     df_data = []
 
     for entry in ddpg_train_data_log:
@@ -821,13 +823,26 @@ def ddpg_training_vis(ddpg_train_data_log):
         df_data.append(data)
 
     ddpg_train_data_df = pd.DataFrame(df_data)
-    ddpg_train_data_df.to_csv('model_outdir_csv/ddpg_agent_train_data.csv', index=False)
+    base_model_name = os.path.basename(model_name)
+    output_dir = os.path.join('model_outdir_csv', 'ddpg', base_model_name)
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, f'train_logs.csv')
+            
+    ddpg_train_data_df.to_csv(output_file, index=False)
 
-    train_rewards_plot(ddpg_train_data_df)
-    train_raw_actions_plot(ddpg_train_data_df)
-    train_scaled_actions_plot(ddpg_train_data_df)
-    train_combined_metrics_plot(ddpg_train_data_df)
+    #train_rewards_plot(ddpg_train_data_df)
+    #train_raw_actions_plot(ddpg_train_data_df)
+    #train_scaled_actions_plot(ddpg_train_data_df)
+    #train_combined_metrics_plot(ddpg_train_data_df)
     #train_separate_episode_action_plot(ddpg_train_data_df)
+    
+    train_rewards_plot(ddpg_train_data_df, output_dir)
+    train_raw_actions_plot(ddpg_train_data_df, output_dir)
+    train_scaled_actions_plot(ddpg_train_data_df, output_dir)
+    train_combined_metrics_plot(ddpg_train_data_df, output_dir)
+    train_separate_episode_action_plot(ddpg_train_data_df, output_dir)
+
+    return output_file
 
 def eval_ddpg_agent(eval_steps=100,eval_episodes=2,model_name='model_storage/ddpg/200_100_step_running_stats_lstm_bn_global_obs_norm',percentage_range=0.5,agent_budget_usd=10000,use_running_statistics=False):
 
@@ -858,10 +873,11 @@ def eval_ddpg_agent(eval_steps=100,eval_episodes=2,model_name='model_storage/ddp
         print(f"Episode {episode+1}/{eval_episodes}, Reward: {episode_reward}")
 
     ppo_eval_data_log=eval_env.eval_data_log
+    ddpg_eval_vis(ppo_eval_data_log,model_name)
 
     return ppo_eval_data_log
 
-def ddpg_eval_vis(ppo_eval_data_log):
+def ddpg_eval_vis(ppo_eval_data_log,model_name):
     df_eval_data = []
 
     for entry in ppo_eval_data_log:
@@ -913,8 +929,14 @@ def ddpg_eval_vis(ppo_eval_data_log):
         df_eval_data.append(data)
 
     ddpg_eval_data_df = pd.DataFrame(df_eval_data)
-    ddpg_eval_data_df.to_csv('model_outdir_csv/ddpg_agent_eval_data.csv', index=False)
-    eval_rewards_plot(ddpg_eval_data_df)
+    base_model_name = os.path.basename(model_name)
+    output_dir = os.path.join('model_outdir_csv', 'ddpg', base_model_name)
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, f'eval_logs.csv')
+            
+    ddpg_eval_data_df.to_csv(output_file, index=False)
+
+    eval_rewards_plot(ddpg_eval_data_df,output_dir)
 
 # %% [markdown]
 # ## PPO Agent (Stochastic Policy)
@@ -1221,10 +1243,11 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name='model_storage/ppo/
     ppo_agent.critic.save(ppo_critic_model_path)
 
     ppo_train_data_log=env.train_data_log
+    ppo_training_vis(ppo_train_data_log,model_name)
 
     return ppo_train_data_log,ppo_actor_model_path,ppo_critic_model_path
 
-def ppo_training_vis(ppo_train_data_log):
+def ppo_training_vis(ppo_train_data_log,model_name):
     df_data = []
 
     for entry in ppo_train_data_log:
@@ -1260,13 +1283,18 @@ def ppo_training_vis(ppo_train_data_log):
         df_data.append(data)
 
     ppo_train_data_df = pd.DataFrame(df_data)
-    ppo_train_data_df.to_csv('model_outdir_csv/ppo_agent_train_data.csv', index=False)
+    base_model_name = os.path.basename(model_name)
+    output_dir = os.path.join('model_outdir_csv', 'ppo', base_model_name)
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, f'train_logs.csv')
+            
+    ppo_train_data_df.to_csv(output_file, index=False)
 
-    train_rewards_plot(ppo_train_data_df)
-    train_raw_actions_plot(ppo_train_data_df)
-    train_scaled_actions_plot(ppo_train_data_df)
-    train_combined_metrics_plot(ppo_train_data_df)
-    train_separate_episode_action_plot(ppo_train_data_df)
+    train_rewards_plot(ppo_train_data_df,output_dir)
+    train_raw_actions_plot(ppo_train_data_df,output_dir)
+    train_scaled_actions_plot(ppo_train_data_df,output_dir)
+    train_combined_metrics_plot(ppo_train_data_df,output_dir)
+    train_separate_episode_action_plot(ppo_train_data_df,output_dir)
 
 def eval_ppo_agent(eval_steps=100, eval_episodes=2, model_name='model_storage/ppo/lstm_actor_critic_batch_norm',percentage_range=0.6,agent_budget_usd=10000, use_running_statistics=False, action_transform="linear"):
 
@@ -1298,10 +1326,11 @@ def eval_ppo_agent(eval_steps=100, eval_episodes=2, model_name='model_storage/pp
                 break
         print(f"Episode {episode+1}/{eval_episodes}, Reward: {episode_reward}")
     ppo_eval_data_log=eval_env.eval_data_log
+    ppo_eval_vis(ppo_eval_data_log,model_name)
     return ppo_eval_data_log
 
 
-def ppo_eval_vis(ppo_eval_data_log):
+def ppo_eval_vis(ppo_eval_data_log,model_name):
     df_eval_data = []    
     for entry in ppo_eval_data_log:
         (episode, step_count, global_state, raw_action_rl_agent, action_rl_agent, 
@@ -1350,8 +1379,15 @@ def ppo_eval_vis(ppo_eval_data_log):
         df_eval_data.append(data)
 
     ppo_eval_data_df = pd.DataFrame(df_eval_data)
-    ppo_eval_data_df.to_csv('model_outdir_csv/ppo_agent_eval_data.csv', index=False)
-    eval_rewards_plot(ppo_eval_data_df)
+
+    base_model_name = os.path.basename(model_name)
+    output_dir = os.path.join('model_outdir_csv', 'ppo', base_model_name)
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, f'eval_logs.csv')
+            
+    ppo_eval_data_df.to_csv(output_file, index=False)
+
+    eval_rewards_plot(ppo_eval_data_df,output_dir)
 
 
 # %%

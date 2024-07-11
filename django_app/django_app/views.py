@@ -74,9 +74,14 @@ def train_ddpg(request):
             'ddpg_actor_model_path': ddpg_actor_model_path, 
             'ddpg_critic_model_path': ddpg_critic_model_path
                                         }
-            return response_data
+            if isinstance(response_data, dict):
+                response = JsonResponse(response_data)  # Use JsonResponse for JSON data
+            else:
+                response = HttpResponse(response_data)
+            return response
+
         except Exception as e:
-             return JsonResponse({'error': str(e)})
+             return HttpResponse({'error': str(e)})
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'})
 
@@ -139,7 +144,7 @@ def train_ppo(request):
             action_transform = data.get('action_transform', 'linear')
 
             # Call the PPO training function
-            ppo_train_data_log, ppo_actor_model_path, ppo_critic_model_path = train_ppo_agent(
+            ppo_train_data_log_path, ppo_actor_model_path, ppo_critic_model_path = train_ppo_agent(
                 max_steps=max_steps, n_episodes=n_episodes, model_name=model_name, 
                 buffer_size=buffer_size, n_epochs=n_epochs, gamma=gamma, alpha=alpha, 
                 gae_lambda=gae_lambda, policy_clip=policy_clip, max_grad_norm=max_grad_norm, agent_budget_usd=agent_budget_usd,
