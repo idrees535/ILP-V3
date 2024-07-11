@@ -2,6 +2,9 @@ import sys
 import numpy as np
 from datetime import datetime, timedelta,timezone
 sys.path.append('/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2/model_notebooks')
+import tensorflow as tf
+import os
+import pandas as pd
 
 #from rl_ilp_script import train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, liquidity_strategy
 from .rl_ilp_script import env_setup,train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, perform_inference,ddpg_training_vis,ppo_training_vis,ddpg_eval_vis,ppo_eval_vis,predict_action
@@ -39,7 +42,7 @@ def initialize_script(request):
 @csrf_exempt
 def train_ddpg(request):
     if request.method == 'POST':
-        # try:
+        try:
             data = json.loads(request.body)
             
             # Extract arguments from data with default values
@@ -66,23 +69,19 @@ def train_ddpg(request):
             agent_budget_usd=agent_budget_usd, 
             use_running_statistics=use_running_statistics
         )
-            print(type(ddpg_train_data_log))
-        # Prepare and return the response
-            serialized_train_log = []
-            for item in ddpg_train_data_log:
-                if hasattr(item, 'numpy'):  # Check if item is a TensorFlow tensor
-                    serialized_train_log.append(item.numpy().tolist())
-                else:
-                    serialized_train_log.append(item)
+            
             response_data = {
-            'ddpg_train_data_log': serialized_train_log,
-            #'ddpg_train_data_log': ddpg_train_data_log if isinstance(ddpg_train_data_log, list) else ddpg_train_data_log.tolist(),  
             'ddpg_actor_model_path': ddpg_actor_model_path, 
             'ddpg_critic_model_path': ddpg_critic_model_path
                                         }
-            return response_data
-        # except Exception as e:
-        #     return JsonResponse({'error': str(e)})
+            if isinstance(response_data, dict):
+                response = JsonResponse(response_data)  # Use JsonResponse for JSON data
+            else:
+                response = HttpResponse(response_data)
+            return response
+
+        except Exception as e:
+             return HttpResponse({'error': str(e)})
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'})
 
@@ -114,9 +113,8 @@ def evaluate_ddpg(request):
 
             # Prepare and return the response
             return JsonResponse({
-                'ddpg_eval_data_log': ddpg_eval_data_log.tolist(),
-                #'ddpg_eval_data_log': ddpg_eval_data_log if isinstance(ddpg_eval_data_log, list) else ddpg_eval_data_log.tolist(), 
-
+                'message': f'Evaluation peformed'
+                
             })
         except Exception as e:
             return JsonResponse({'error': str(e)})
@@ -146,18 +144,17 @@ def train_ppo(request):
             action_transform = data.get('action_transform', 'linear')
 
             # Call the PPO training function
-            ppo_train_data_log, ppo_actor_model_path, ppo_critic_model_path = train_ppo_agent(
+            ppo_train_data_log_path, ppo_actor_model_path, ppo_critic_model_path = train_ppo_agent(
                 max_steps=max_steps, n_episodes=n_episodes, model_name=model_name, 
                 buffer_size=buffer_size, n_epochs=n_epochs, gamma=gamma, alpha=alpha, 
                 gae_lambda=gae_lambda, policy_clip=policy_clip, max_grad_norm=max_grad_norm, agent_budget_usd=agent_budget_usd,
                 use_running_statistics=use_running_statistics, action_transform=action_transform
                 )
+            
+            
             response_data = {
-            'ppo_train_data_log': ppo_train_data_log.tolist(),
-            #'ppo_train_data_log': ppo_train_data_log if isinstance(ppo_train_data_log, list) else ppo_train_data_log.tolist(), 
-
-            'ppo_actor_model_path': ppo_actor_model_path,
-            'ppo_critic_model_path': ppo_critic_model_path
+                'ppo_actor_model_path': ppo_actor_model_path,
+                'ppo_critic_model_path': ppo_critic_model_path
             }
             return JsonResponse(response_data)
         except Exception as e:
@@ -189,9 +186,8 @@ def evaluate_ppo(request):
 
             # Prepare and return the response
             return JsonResponse({
-                'ppo_eval_data_log': ppo_eval_data_log.tolist()
-                #'ppo_eval_data_log': ppo_eval_data_log if isinstance(ppo_eval_data_log, list) else ppo_eval_data_log.tolist() 
-
+                'message': f'Evaluation peformed'
+                
                 })
         except Exception as e:
             return JsonResponse({'error': str(e)})

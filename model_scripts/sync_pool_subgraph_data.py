@@ -102,7 +102,7 @@ def fetch_inference_pool_data(pool_id):
 
 from datetime import timezone
 def fetch_inference_pool_data_1(pool_id='0xcbcdf9626bc03e24f779434178a73a0b4bad62ed', date_str='2024-05-03'):
-    UNISWAP_V3_SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
+    UNISWAP_V3_SUBGRAPH_URL = "https://api.goldsky.com/api/public/project_clvon2puehf5a01zb9axv0oa8/subgraphs/uniswap-v3-mainnet/1.0.0/gn"
     
     # Convert date to timestamp
     date = datetime.strptime(date_str, '%Y-%m-%d')
@@ -113,8 +113,8 @@ def fetch_inference_pool_data_1(pool_id='0xcbcdf9626bc03e24f779434178a73a0b4bad6
     {
       poolDayDatas(where: {pool: \"%s\", date: %d}) {
         date
-        feeGrowthGlobal0X128
-        feeGrowthGlobal1X128
+        volumeToken0
+        volumeToken1
         liquidity
         token1Price
       }
@@ -130,8 +130,8 @@ def fetch_inference_pool_data_1(pool_id='0xcbcdf9626bc03e24f779434178a73a0b4bad6
         # Constructing the state representation with float data type
         state = {
             #'date': datetime.utcfromtimestamp(data['date']).strftime('%Y-%m-%d'),
-            'feeGrowthGlobal0X128': float(data['feeGrowthGlobal0X128']),
-            'feeGrowthGlobal1X128': float(data['feeGrowthGlobal1X128']),
+            'feeGrowthGlobal0X128': float(data['volumeToken0']),
+            'feeGrowthGlobal1X128': float(data['volumeToken1']),
             'liquidity': float(data['liquidity']),
             'token1Price': float(data['token1Price'])
         }

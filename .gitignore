@@ -24,13 +24,23 @@ tsp_venv/
 *.swp
 ilp_venv/
 ilp_venv2/
+
 djnago_app/ilp_venv_7/
 djnago_app/ilp_venv_7
 /django_app/ilp_venv_7/
+
 /backtesting_strategy/data/
 backtesting_strategy/data/
 /backtesting_strategy/data
 
 /backtesting_strategy_scratch/
 backtesting_strategy_scratch/
-/backtesting_strategy_scratchbacktesting_strategy_scratch/
+/backtesting_strategy_scratch
+
+/backtesting_strategy_scratch/data/
+backtesting_strategy_scratch/data/
+/backtesting_strategy_scratch/data
+
+backtesting_strategy_scratch/data/crawl/WBTC_WETH_500/swap_events.csv
+backtesting_strategy_scratch/data/crawl/WBTC_WETH_3000/swap_events.csv
+backtesting_strategy_scratch/data/crawl/WETH_USDT_3000/swap_events.csv
