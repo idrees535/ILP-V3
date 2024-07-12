@@ -82,3 +82,91 @@ curl -X POST http://127.0.0.1:8000/predict_action/ \
     "ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm",
     "date_str":"2024-07-07"
 }'
+http://182.227.40.157:46708
+
+# VastAi VM
+
+curl -X POST http://182.227.40.157:46708/initialize_script/ -H "Content-Type: application/json" -d '{
+    "base_path": "/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/Intelligent-Liquidity-Provisioning-Framework-V1",
+    "reset_env_var": true
+}'
+
+curl -X POST http://182.227.40.157:46708/train_ddpg/ \
+-H "Content-Type: application/json" \
+-d '{
+    "max_steps": 2,
+    "n_episodes": 2,
+    "model_name": "model_storage/ddpg/tempest_test_local",
+    "alpha": 0.001,
+    "beta": 0.001,
+    "tau": 0.8,
+    "batch_size": 50,
+    "training": true,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false
+}'
+
+curl -X POST http://182.227.40.157:46708/evaluate_ddpg/ -H "Content-Type: application/json" -d '{
+    "eval_steps": 2,
+    "eval_episodes": 2,
+    "model_name": "model_storage/ddpg/tempest_test_local",
+    "percentage_range": 0.6,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false
+}'
+
+curl -X POST http://182.227.40.157:46708/train_ppo/ -H "Content-Type: application/json" -d '{
+    "max_steps": 2,
+    "n_episodes": 2,
+    "model_name": "model_storage/ppo/tempest_test_local",
+    "buffer_size": 5,
+    "n_epochs": 20,
+    "gamma": 0.5,
+    "alpha": 0.001,
+    "gae_lambda": 0.75,
+    "policy_clip": 0.6,
+    "max_grad_norm": 0.6,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false,
+    "action_transform": "linear"
+}'
+
+curl -X POST http://182.227.40.157:46708/evaluate_ppo/ -H "Content-Type: application/json" -d '{
+    "eval_steps": 2,
+    "eval_episodes": 2,
+    "model_name": "model_storage/ppo/tempest_test_local",
+    "percentage_range": 0.5,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false,
+    "action_transform": "linear"
+}'
+
+
+curl -X POST http://182.227.40.157:46708/inference/ -H "Content-Type: application/json" -d '{
+    "pool_state": {
+        "current_profit": 500,
+        "price_out_of_range": false,
+        "time_since_last_adjustment": 40000,
+        "pool_volatility": 0.2
+    },
+    "user_preferences": {
+        "risk_tolerance": {"profit_taking": 50, "stop_loss": -500},
+        "investment_horizon": 7,
+        "liquidity_preference": {"adjust_on_price_out_of_range": true},
+        "risk_aversion_threshold": 0.1,
+        "user_status": "new_user"
+    },
+    "pool_id": "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36",
+    "ddpg_agent_path": "model_storage/ddpg/ddpg_1",
+    "ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm",
+    "date_str":"2024-07-07"
+}'
+
+curl -X POST http://182.227.40.157:46708/predict_action/ \
+-H "Content-Type: application/json" \
+-d '{
+    "pool_id": "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640",
+    "ddpg_agent_path": "model_storage/ddpg/ddpg_1",
+    "ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm",
+    "date_str":"2024-07-07"
+}'
