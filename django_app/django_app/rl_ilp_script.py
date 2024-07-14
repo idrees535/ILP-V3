@@ -785,7 +785,6 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
     ddpg_train_data_log=env.train_data_log
     output_file=ddpg_training_vis(ddpg_train_data_log,model_name)
 
-
     return ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path
 
 def ddpg_training_vis(ddpg_train_data_log,model_name):
