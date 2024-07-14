@@ -41,9 +41,8 @@ ENV RESET_ENV 1
 
 EXPOSE 8000
 
+RUN chmod +x ./scripts/docker_run.sh
 
-RUN chmod +x /scripts/docker_run.sh
-
-ENTRYPOINT /scripts/docker_run.sh
+ENTRYPOINT ./scripts/docker_run.sh
 
 # CMD ["/bin/bash", "-c", "./scripts/docker_run.sh"]
