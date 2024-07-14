@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from . import views
-from .views import train_ddpg,train_ppo, evaluate_ddpg,evaluate_ppo, inference,initialize_script,predict_action
+from .views import train_ddpg,train_ppo, evaluate_ddpg,evaluate_ppo, inference,initialize_script,predict_action,download_file
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,6 +14,7 @@ urlpatterns = [
     path('inference/', inference, name='inference'),
     path('predict_action/', inference, name='predict_action'),
     path('initialize_script/', initialize_script, name='initialize_script'), 
+    path('download_file/', download_file, name='download_file'), 
 ]
 
 

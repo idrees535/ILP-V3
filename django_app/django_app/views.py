@@ -11,9 +11,11 @@ from .rl_ilp_script import env_setup,train_ddpg_agent, train_ppo_agent, eval_ddp
 
 
 import json
+import pathlib
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseBadRequest
 from django.http import JsonResponse
+import mimetypes
 # Import your training, evaluation, and inference functions
 #from .ilp_script import train_ddpg_agent, train_ppo_agent,eval_ddpg_agent, eval_ppo_agent,liquidity_strategy
 from django.views.decorators.csrf import csrf_exempt
@@ -21,6 +23,21 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def home(request):
     return HttpResponse("Intelligent Liquidity Provisioning Framework")
+
+@csrf_exempt
+def download_file(request):
+    base_path = pathlib.Path().resolve().as_posix()
+    file_path = request.GET.get('file_path', '')
+    file_name = request.GET.get('file_name', '')
+    full_path = os.path.join(base_path, file_path, file_name)
+    if os.path.exists(full_path):
+        with open(full_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type='application/force-download')
+            response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+            return response
+    else:
+        return HttpResponseBadRequest("File does not exist")
 
 @csrf_exempt
 def initialize_script(request):

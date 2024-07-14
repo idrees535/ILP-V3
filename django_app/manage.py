@@ -20,14 +20,7 @@ def main():
     execute_from_command_line(sys.argv)
 
 def start_ganache():
-    # subprocess.run(["curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash"])
-    # subprocess.run(["source ~/.bashrc \
-    # && nvm install 16.3.0 \
-    # && nvm use 16.3.0"])
-    # subprocess.run(["source ~/.bashrc \
-    # && npm install -g ganache-cli \
-    # && npm install -g solc"])
-    subprocess.run(["ganache-cli", "--defaultBalanceEther", "10000000000000000000", "--gasLimit", "10000000000", "--gasPrice", "1", "--hardfork", "istanbul"])
+    subprocess.run(["ganache-cli", "--quiet", "true", "--defaultBalanceEther", "10000000000000000000", "--gasLimit", "10000000000", "--gasPrice", "1", "--hardfork", "istanbul"])
 
 if __name__ == "__main__":
     p1 = Process(target=start_ganache)
