@@ -1,0 +1,15 @@
+name: Default workflows
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+
+jobs:
+  call-workflow-development:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    uses: digi-money/workflows-templates/.github/workflows/docker.yml@main
+    with:
+      IMAGE_REPOSITORY: asia.gcr.io/digi-money-405211/tempest/ilp-framework
+    secrets:
+      GCR_CREDENTIALS: ${{ secrets.GCR_CREDENTIALS }}
