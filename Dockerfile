@@ -9,9 +9,9 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # update the repository sources list
 # and install dependencies
-RUN apt-get update \
-    && apt-get install -y curl \
-    && apt-get -y autoclean
+# RUN apt-get update \
+#     && apt-get install -y curl \
+#     && apt-get -y autoclean
 
 # # install nvm
 # # https://github.com/creationix/nvm#install-script
@@ -41,6 +41,9 @@ ENV RESET_ENV 1
 
 EXPOSE 8000
 
-CMD ["/bin/bash", "-c", "../scripts/docker_run.sh"]
 
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+RUN chmod +x /scripts/docker_run.sh
+
+ENTRYPOINT /scripts/docker_run.sh
+
+# CMD ["/bin/bash", "-c", "./scripts/docker_run.sh"]
