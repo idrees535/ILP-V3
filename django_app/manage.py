@@ -2,7 +2,9 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-
+import subprocess
+import time
+from multiprocessing import Process
 
 def main():
     """Run administrative tasks."""
@@ -17,6 +19,20 @@ def main():
         ) from exc
     execute_from_command_line(sys.argv)
 
+def start_ganache():
+    subprocess.run(["ganache-cli", "--quiet", "true", "--defaultBalanceEther", "10000000000000000000", "--gasLimit", "10000000000", "--gasPrice", "1", "--hardfork", "istanbul"])
 
 if __name__ == "__main__":
-    main()
+    p1 = Process(target=start_ganache)
+    p1.start()
+
+    # sleep to wait util ganache started
+    time.sleep(5) 
+    
+    subprocess.run(["rm", "-rf", "../model_storage/liq_positions.json", "../model_storage/token_pool_addresses.json"])
+    subprocess.run(["touch", "../model_storage/liq_positions.json", "../model_storage/token_pool_addresses.json"])
+    p2 = Process(target=main)
+    p2.start()
+    
+    p1.join()
+    p2.join()

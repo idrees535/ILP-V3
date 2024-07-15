@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  postgres_container:
+    image: postgres:15
+    container_name: ilp_framework_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: ilp_framework
+      PGDATA: /data/postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis_container:
+    image: redis:7.2
+    container_name: ilp_framework_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+  postgres_data:

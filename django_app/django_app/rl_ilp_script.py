@@ -6,9 +6,10 @@
 #base_path="/home/azureuser/Intelligent-Liquidity-Provisioning-Framework"
 import sys
 import os
-from datetime import datetime, timedelta,timezone
-base_path="/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2"
-reset_env_var=False
+import pathlib
+
+base_path = pathlib.Path().resolve().parent.as_posix()
+reset_env_var = False
 sys.path.append(base_path)
 os.chdir(base_path)
 os.environ["PATH"] += ":."
@@ -783,7 +784,6 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
 
     ddpg_train_data_log=env.train_data_log
     output_file=ddpg_training_vis(ddpg_train_data_log,model_name)
-
 
     return ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path
 

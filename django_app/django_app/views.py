@@ -1,26 +1,65 @@
 import sys
 import numpy as np
 from datetime import datetime, timedelta,timezone
-sys.path.append('/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2/model_notebooks')
+#sys.path.append('/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2/model_notebooks')
 import tensorflow as tf
 import os
 import pandas as pd
+# Determine the base directory of your project
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the path to the module
+module_path = os.path.join(base_dir, 'model_notebooks')
+
+# Add the path to sys.path
+if module_path not in sys.path:
+    sys.path.append(module_path)
 
 #from rl_ilp_script import train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, liquidity_strategy
 from .rl_ilp_script import env_setup,train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, perform_inference,ddpg_training_vis,ppo_training_vis,ddpg_eval_vis,ppo_eval_vis,predict_action
 
 
 import json
+import pathlib
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseBadRequest
 from django.http import JsonResponse
+import mimetypes
 # Import your training, evaluation, and inference functions
 #from .ilp_script import train_ddpg_agent, train_ppo_agent,eval_ddpg_agent, eval_ppo_agent,liquidity_strategy
 from django.views.decorators.csrf import csrf_exempt
 
+train_ddpg_result = {
+    'status': '',
+    'ddpg_actor_model_path': '', 
+    'ddpg_critic_model_path': ''
+}
+
+def finish_train_ddpg(ddpg_actor_model_path, ddpg_critic_model_path):
+    print("Finish train ddpg ----------------------------------------")
+    train_ddpg_result['status'] = 'done'
+    train_ddpg_result['ddpg_actor_model_path'] = ddpg_actor_model_path
+    train_ddpg_result['ddpg_critic_model_path'] = ddpg_critic_model_path
+    print(train_ddpg_result)
+
 @csrf_exempt
 def home(request):
     return HttpResponse("Intelligent Liquidity Provisioning Framework")
+
+@csrf_exempt
+def download_file(request):
+    base_path = pathlib.Path().resolve().as_posix()
+    file_path = request.GET.get('file_path', '')
+    file_name = request.GET.get('file_name', '')
+    full_path = os.path.join(base_path, file_path, file_name)
+    if os.path.exists(full_path):
+        with open(full_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type='application/force-download')
+            response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+            return response
+    else:
+        return HttpResponseBadRequest("File does not exist")
 
 @csrf_exempt
 def initialize_script(request):
@@ -40,9 +79,19 @@ def initialize_script(request):
         return JsonResponse({'error': 'Only POST requests are allowed'})
 
 @csrf_exempt
+def get_train_ddpg_result(request):
+    return JsonResponse(train_ddpg_result)
+
+@csrf_exempt
 def train_ddpg(request):
     if request.method == 'POST':
         try:
+            if (train_ddpg_result['status'] == 'running'):
+                return HttpResponseBadRequest('Another training is running')
+            
+            train_ddpg_result['status'] = 'running'
+            train_ddpg_result['ddpg_actor_model_path'] = ''
+            train_ddpg_result['ddpg_critic_model_path'] = ''
             data = json.loads(request.body)
             
             # Extract arguments from data with default values
@@ -57,30 +106,25 @@ def train_ddpg(request):
             agent_budget_usd = data.get('agent_budget_usd', 10000)
             use_running_statistics = data.get('use_running_statistics', False)
 
-            ddpg_train_data_log, ddpg_actor_model_path, ddpg_critic_model_path = train_ddpg_agent(
-            max_steps=max_steps, 
-            n_episodes=n_episodes, 
-            model_name=model_name, 
-            alpha=alpha, 
-            beta=beta, 
-            tau=tau, 
-            batch_size=batch_size, 
-            training=training, 
-            agent_budget_usd=agent_budget_usd, 
-            use_running_statistics=use_running_statistics
-        )
-            
-            response_data = {
-            'ddpg_actor_model_path': ddpg_actor_model_path, 
-            'ddpg_critic_model_path': ddpg_critic_model_path
-                                        }
-            if isinstance(response_data, dict):
-                response = JsonResponse(response_data)  # Use JsonResponse for JSON data
-            else:
-                response = HttpResponse(response_data)
-            return response
+            def train(max_steps, n_episodes, model_name, alpha, beta, tau, batch_size, training, agent_budget_usd, use_running_statistics):
+                ddpg_train_data_log, ddpg_actor_model_path, ddpg_critic_model_path = train_ddpg_agent(
+                    max_steps=max_steps, 
+                    n_episodes=n_episodes, 
+                    model_name=model_name, 
+                    alpha=alpha, 
+                    beta=beta, 
+                    tau=tau, 
+                    batch_size=batch_size, 
+                    training=training, 
+                    agent_budget_usd=agent_budget_usd, 
+                    use_running_statistics=use_running_statistics)
+                finish_train_ddpg(ddpg_actor_model_path, ddpg_critic_model_path)
+
+            threading.Thread(target=train, args=(max_steps, n_episodes, model_name, alpha, beta, tau, batch_size, training, agent_budget_usd, use_running_statistics)).start()
+            return JsonResponse(train_ddpg_result)
 
         except Exception as e:
+             print(e)
              return HttpResponse({'error': str(e)})
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'})
