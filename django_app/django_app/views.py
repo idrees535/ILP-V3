@@ -35,9 +35,9 @@ train_ddpg_result = {
     'ddpg_critic_model_path': ''
 }
 
-def finish_train_ddpg(ddpg_actor_model_path, ddpg_critic_model_path):
+def finish_train_ddpg(status, ddpg_actor_model_path, ddpg_critic_model_path):
     print("Finish train ddpg ----------------------------------------")
-    train_ddpg_result['status'] = 'done'
+    train_ddpg_result['status'] = status
     train_ddpg_result['ddpg_actor_model_path'] = ddpg_actor_model_path
     train_ddpg_result['ddpg_critic_model_path'] = ddpg_critic_model_path
     print(train_ddpg_result)
@@ -107,18 +107,23 @@ def train_ddpg(request):
             use_running_statistics = data.get('use_running_statistics', False)
 
             def train(max_steps, n_episodes, model_name, alpha, beta, tau, batch_size, training, agent_budget_usd, use_running_statistics):
-                ddpg_train_data_log, ddpg_actor_model_path, ddpg_critic_model_path = train_ddpg_agent(
-                    max_steps=max_steps, 
-                    n_episodes=n_episodes, 
-                    model_name=model_name, 
-                    alpha=alpha, 
-                    beta=beta, 
-                    tau=tau, 
-                    batch_size=batch_size, 
-                    training=training, 
-                    agent_budget_usd=agent_budget_usd, 
-                    use_running_statistics=use_running_statistics)
-                finish_train_ddpg(ddpg_actor_model_path, ddpg_critic_model_path)
+                try:
+                    ddpg_train_data_log, ddpg_actor_model_path, ddpg_critic_model_path = train_ddpg_agent(
+                        max_steps=max_steps, 
+                        n_episodes=n_episodes, 
+                        model_name=model_name, 
+                        alpha=alpha, 
+                        beta=beta, 
+                        tau=tau, 
+                        batch_size=batch_size, 
+                        training=training, 
+                        agent_budget_usd=agent_budget_usd, 
+                        use_running_statistics=use_running_statistics)
+                    finish_train_ddpg('done', ddpg_actor_model_path, ddpg_critic_model_path)
+                except Exception as e:
+                    print('Train ddpg error ---------------------------------')
+                    print(e)
+                    finish_train_ddpg('error', '', '')
 
             threading.Thread(target=train, args=(max_steps, n_episodes, model_name, alpha, beta, tau, batch_size, training, agent_budget_usd, use_running_statistics)).start()
             return JsonResponse(train_ddpg_result)
