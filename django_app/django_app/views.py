@@ -1,11 +1,19 @@
 import sys
 import numpy as np
 from datetime import datetime, timedelta,timezone
-sys.path.append('/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2/model_notebooks')
+#sys.path.append('/mnt/d/Code/tempest/Intelligent-Liquidity-Provisioning-Framework-V2/model_notebooks')
 import tensorflow as tf
 import os
 import pandas as pd
-import threading
+# Determine the base directory of your project
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the path to the module
+module_path = os.path.join(base_dir, 'model_notebooks')
+
+# Add the path to sys.path
+if module_path not in sys.path:
+    sys.path.append(module_path)
 
 #from rl_ilp_script import train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, liquidity_strategy
 from .rl_ilp_script import env_setup,train_ddpg_agent, train_ppo_agent, eval_ddpg_agent, eval_ppo_agent, perform_inference,ddpg_training_vis,ppo_training_vis,ddpg_eval_vis,ppo_eval_vis,predict_action
