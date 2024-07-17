@@ -6,6 +6,7 @@ import tensorflow as tf
 import os
 import pandas as pd
 import threading
+import time
 
 # Determine the base directory of your project
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +27,6 @@ import pathlib
 from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseBadRequest
 from django.http import JsonResponse
-import mimetypes
 # Import your training, evaluation, and inference functions
 #from .ilp_script import train_ddpg_agent, train_ppo_agent,eval_ddpg_agent, eval_ppo_agent,liquidity_strategy
 from django.views.decorators.csrf import csrf_exempt
@@ -34,14 +34,18 @@ from django.views.decorators.csrf import csrf_exempt
 train_ddpg_result = {
     'status': '',
     'ddpg_actor_model_path': '', 
-    'ddpg_critic_model_path': ''
+    'ddpg_critic_model_path': '',
+    'max_steps': 0,
+    'time_consumed': 0
 }
 
-def finish_train_ddpg(status, ddpg_actor_model_path, ddpg_critic_model_path):
+def finish_train_ddpg(status, ddpg_actor_model_path, ddpg_critic_model_path, max_steps, time_consumed):
     print("Finish train ddpg ----------------------------------------")
     train_ddpg_result['status'] = status
     train_ddpg_result['ddpg_actor_model_path'] = ddpg_actor_model_path
     train_ddpg_result['ddpg_critic_model_path'] = ddpg_critic_model_path
+    train_ddpg_result['max_steps'] = max_steps
+    train_ddpg_result['time_consumed'] = time_consumed
     print(train_ddpg_result)
 
 @csrf_exempt
@@ -94,6 +98,8 @@ def train_ddpg(request):
             train_ddpg_result['status'] = 'running'
             train_ddpg_result['ddpg_actor_model_path'] = ''
             train_ddpg_result['ddpg_critic_model_path'] = ''
+            train_ddpg_result['max_steps'] = 0
+            train_ddpg_result['time_consumed'] = 0
             data = json.loads(request.body)
             
             # Extract arguments from data with default values
@@ -110,6 +116,7 @@ def train_ddpg(request):
 
             def train(max_steps, n_episodes, model_name, alpha, beta, tau, batch_size, training, agent_budget_usd, use_running_statistics):
                 try:
+                    start = time.time()
                     ddpg_train_data_log, ddpg_actor_model_path, ddpg_critic_model_path = train_ddpg_agent(
                         max_steps=max_steps, 
                         n_episodes=n_episodes, 
@@ -121,7 +128,7 @@ def train_ddpg(request):
                         training=training, 
                         agent_budget_usd=agent_budget_usd, 
                         use_running_statistics=use_running_statistics)
-                    finish_train_ddpg('done', ddpg_actor_model_path, ddpg_critic_model_path)
+                    finish_train_ddpg('done', ddpg_actor_model_path, ddpg_critic_model_path, max_steps, time.time() - start)
                 except Exception as e:
                     print('Train ddpg error ---------------------------------')
                     print(e)
