@@ -6,7 +6,7 @@ import os
 
 import brownie
 from brownie._config import CONFIG  # pylint: disable=no-name-in-module
-from enforce_typing import enforce_types  # pylint: disable=unused-import
+#from enforce_typing import enforce_types  # pylint: disable=unused-import
 
 
 

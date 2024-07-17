@@ -1,7 +1,6 @@
 enforce_typing
 eth-brownie
 gymnasium
-mlflow
 tensorflow==2.14.0
 tensorflow_probability==0.22.1
 ipykernel

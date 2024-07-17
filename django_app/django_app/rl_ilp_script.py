@@ -56,7 +56,7 @@ if reset_env_var==True:
 # %%
 from netlists.uniswapV3.netlist import SimStrategy,SimState,netlist_createLogData
 from engine.SimEngine import SimEngine
-from util.globaltokens import weth_usdc_pool,eth_dai_pool,btc_usdt_pool
+from util.globaltokens import weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool
 import brownie
 from util.constants import GOD_ACCOUNT,RL_AGENT_ACCOUNT
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick
@@ -148,7 +148,7 @@ class DiscreteSimpleEnv(gym.Env):
         self.beta=beta
         
     def reset(self):
-        self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool])
+        self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
         
         print(f'Pool selcted for this episode: {self.pool.pool_id}')
         sim_strategy = SimStrategy()

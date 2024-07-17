@@ -21,6 +21,7 @@ def main():
 
 def start_ganache():
     subprocess.run(["ganache-cli", "--quiet", "true", "--defaultBalanceEther", "10000000000000000000", "--gasLimit", "10000000000", "--gasPrice", "1", "--hardfork", "istanbul"])
+    #print("Have you started ganache")
 
 if __name__ == "__main__":
     p1 = Process(target=start_ganache)
