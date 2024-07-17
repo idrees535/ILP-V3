@@ -147,11 +147,7 @@ curl -X POST https://ilp-framework.tin-zin.com/evaluate_ppo/ -H "Content-Type: a
 }'
 
 
-<<<<<<< HEAD
-curl -X POST http://182.227.40.157:46708/inference/ -H "Content-Type: application/json" -d '{
-=======
 curl -X POST https://ilp-framework.tin-zin.com/inference/ -H "Content-Type: application/json" -d '{
->>>>>>> master
     "pool_state": {
         "current_profit": 500,
         "price_out_of_range": false,
@@ -165,7 +161,7 @@ curl -X POST https://ilp-framework.tin-zin.com/inference/ -H "Content-Type: appl
         "risk_aversion_threshold": 0.1,
         "user_status": "new_user"
     },
-    "pool_id": "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36",
+    "pool_id": "0xcbcdf9626bc03e24f779434178a73a0b4bad62ed",
     "ddpg_agent_path": "model_storage/ddpg/ddpg_1",
     "ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm",
     "date_str":"2024-07-07"
