@@ -132,7 +132,7 @@ def train_ddpg(request):
                 except Exception as e:
                     print('Train ddpg error ---------------------------------')
                     print(e)
-                    finish_train_ddpg('error', '', '')
+                    finish_train_ddpg('error', '', '', 0, 0)
 
             threading.Thread(target=train, args=(max_steps, n_episodes, model_name, alpha, beta, tau, batch_size, training, agent_budget_usd, use_running_statistics)).start()
             return JsonResponse(train_ddpg_result)
