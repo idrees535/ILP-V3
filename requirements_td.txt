@@ -1,11 +1,10 @@
 enforce_typing
-eth-brownie
+eth-brownie --no-deps
 gymnasium
 tensorflow==2.14.0
 tensorflow_probability==0.22.1
 ipykernel
 pandas 
-seaborn
 celery
 django
 numpy
