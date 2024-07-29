@@ -85,7 +85,6 @@ def retail_lp_policy(state):
             #print("This LP doesn't have any positions.")
             return None
         
-
 def noise_trader_policy_1(state):
     # Define actions
     actions = ['swap_token0_for_token1', 'swap_token1_for_token0']
