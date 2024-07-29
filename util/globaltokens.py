@@ -49,7 +49,7 @@ fee_tier = 3000
 initial_pool_price = 60000
 deployer = GOD_ACCOUNT
 sync_pool=True
-initial_liquidity_amount_token1=10000000000
+initial_liquidity_amount_token1=1000000000
 
 btc_usdt_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount_token1)
 
@@ -64,7 +64,7 @@ fee_tier = 3000
 initial_pool_price = 20 # 20 WETH
 deployer = GOD_ACCOUNT
 sync_pool=True
-initial_liquidity_amount_token1=10000000000
+initial_liquidity_amount_token1=10000
 
 btc_weth_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_token0,supply_token1,fee_tier,initial_pool_price,deployer,sync_pool, initial_liquidity_amount_token1)
 #Instantiante pool class

@@ -52,12 +52,22 @@ def retail_lp_policy(state):
     # Choose a action (As price moves LP decides to add/ remove liquidty, more price movements more rebalancing)
     action = random.choice(actions)
     if action =='add_liquidity':
+        global_state = state.get_global_state()
+        liquidity = global_state['liquidity'] 
         current_price = sqrtp_to_price(state.pool.pool.slot0()[0])
-        tick_lower = price_to_valid_tick(current_price * random.uniform(0.5, 0.9))  
-        tick_upper = price_to_valid_tick(current_price * random.uniform(1.1, 1.5))  
-        amount_token1 = random.uniform(5000, 50000)
+        price_lower=current_price * random.uniform(0.5, 0.9)
+        tick_lower = price_to_valid_tick(price_lower)  
+        price_upper=current_price * random.uniform(1.1, 1.5)
+        tick_upper = price_to_valid_tick(price_upper)
 
-        return action, tick_lower,tick_upper,amount_token1 
+        liq_token0=calc_amount0(liquidity,price_lower,price_upper) 
+        liq_token1=calc_amount1(liquidity,price_lower,price_upper)
+        total_liq=liq_token0*current_price+liq_token1
+        liquidity_percentage = random.uniform(0.01, 0.05)  # Retail LPs may allocate 1% to 5% of total liquidity
+        liq_amount_token1 = liquidity_percentage * total_liq 
+        #amount_token1 = random.uniform(5000, 50000)
+
+        return action, tick_lower,tick_upper,liq_amount_token1 
     
     elif action =='remove_liquidity':
         lp_positions = state.pool.get_lp_all_positions(state._wallet.address)

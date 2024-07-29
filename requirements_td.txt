@@ -1,7 +1,7 @@
 enforce_typing
-#For macos only (Python version 3.9.19)
+#For macos only (Python version 3.9.19) run following command first and then install eth-brownie
 #pip install "cython<3.0.0" && pip install --no-build-isolation pyyaml==5.4.1
-eth-brownie==1.13.4
+#eth-brownie==1.13.4
 gymnasium
 tensorflow==2.14.0
 tensorflow_probability==0.22.1

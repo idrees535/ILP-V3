@@ -161,6 +161,18 @@ class UniV3Model():
             num_positions = 20
             price_increment = 0.05  # 5% price increment
 
+            # Standard deviation for normal distribution
+            sigma = num_positions / 6  # 99.7% data within +/- 3 sigma
+
+            # Calculate normal distribution values
+            positions = np.linspace(-num_positions//2, num_positions//2, num_positions)
+            normal_distribution = np.exp(-0.5 * (positions / sigma) ** 2)
+            normal_distribution /= normal_distribution.sum()  # Normalize to sum to 1
+
+            # Calculate liquidity amounts
+            liquidity_amounts = self.initial_liquidity_amount * normal_distribution
+
+
             # Loop through positions
             for position in range(1, num_positions + 1):
                 # Calculate price range
@@ -172,7 +184,7 @@ class UniV3Model():
                 if price_upper<=0:
                     price_upper=random.uniform(0.1,1.0)
 
-                liquidity_amount = self.initial_liquidity_amount * random.uniform(0.5,1.5)
+                liquidity_amount = self.initial_liquidity_amount/20 * random.uniform(0.5,1.5)#liquidity_amounts[position - 1]
 
                 # Convert prices to ticks
                 tick_lower = price_to_valid_tick(price_lower)
