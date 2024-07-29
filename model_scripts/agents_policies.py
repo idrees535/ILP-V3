@@ -87,17 +87,6 @@ def retail_lp_policy(state):
         
 
 
-def arb_trader_policy(state, params):
-    price_diff = state['price_pool1'] - state['price_pool2']
-    expected_slippage = state['expected_slippage']
-    execution_cost = state['execution_cost']
-    
-    net_profit = price_diff - expected_slippage - execution_cost
-    
-    if net_profit > params['profit_threshold']:
-        return 'buy_from_pool1_sell_in_pool2'
-    else:
-        return 'no_action'
     
 def update_slippage_tolerance(state, params):
     recent_slippages = state['recent_slippages']  # List or other data structure
