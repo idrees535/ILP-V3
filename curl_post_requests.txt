@@ -176,3 +176,27 @@ curl -X POST https://ilp-framework.tin-zin.com/predict_action/ \
     "ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm",
     "date_str":"2024-07-07"
 }'
+
+
+http://83.26.107.222:41269
+
+curl -X POST http://83.26.107.222:41269/train_ddpg/ \
+-H "Content-Type: application/json" \
+-d '{
+    "max_steps": 10000,
+    "n_episodes": 5,
+    "model_name": "model_storage/ddpg/prod_10000x5",
+    "alpha": 0.001,
+    "beta": 0.001,
+    "tau": 0.8,
+    "batch_size": 500,
+    "training": true,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false
+}'
+
+curl -X POST http://83.26.107.222:41269/get_train_ddpg_result/ \
+-H "Content-Type: application/json" \
+-d '{
+    
+}'

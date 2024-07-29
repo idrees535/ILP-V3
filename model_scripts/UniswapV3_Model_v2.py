@@ -214,13 +214,13 @@ class UniV3Model():
             print("No pool sync applied")
 
 
-    def add_liquidity(self, liquidity_provider, tick_lower, tick_upper, usd_budget, data):
+    def add_liquidity(self, liquidity_provider, tick_lower, tick_upper, token1_budget, data):
         tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
         tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
         tx_receipt=None
         try:
             pool_actions = self.pool
-            liquidity=self.budget_to_liquidity(tick_lower,tick_upper,usd_budget)
+            liquidity=self.budget_to_liquidity(tick_lower,tick_upper,token1_budget)
             #print(liquidity)
 
             tx_receipt = pool_actions.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
@@ -264,14 +264,14 @@ class UniV3Model():
     
         if existing_position:
             existing_position['liquidity'] += liquidity 
-            existing_position['amount_usd'] += usd_budget # Add new liquidity to existing position
+            existing_position['amount_token1'] += token1_budget # Add new liquidity to existing position
         else:
         # Add new position to list
             all_positions[self.pool_id][liquidity_provider_str].append({
                 'tick_lower': tick_lower,
                 'tick_upper': tick_upper,
                 'liquidity': liquidity,
-                'amount_usd':usd_budget
+                'amount_token1':token1_budget
             })
         
         # Store updated positions
@@ -329,14 +329,14 @@ class UniV3Model():
     
         if existing_position:
             existing_position['liquidity'] += liquidity 
-            existing_position['amount_usd'] += liquidity # Add new liquidity to existing position
+            existing_position['amount_token1'] += liquidity # Add new liquidity to existing position
         else:
         # Add new position to list
             all_positions[self.pool_id][liquidity_provider_str].append({
                 'tick_lower': tick_lower,
                 'tick_upper': tick_upper,
                 'liquidity': liquidity,
-                'amount_usd':liquidity
+                'amount_token1':liquidity
             })
         
         # Store updated positions
@@ -346,12 +346,12 @@ class UniV3Model():
         return tx_receipt
     
     
-    def remove_liquidity(self, liquidity_provider, tick_lower, tick_upper, amount_usd):
+    def remove_liquidity(self, liquidity_provider, tick_lower, tick_upper, amount_token1):
         liquidity_provider_str = str(liquidity_provider)
         tx_receipt = None
         
         # Convert budget to liquidity amount
-        liquidity = self.budget_to_liquidity(tick_lower, tick_upper, amount_usd)
+        liquidity = self.budget_to_liquidity(tick_lower, tick_upper, amount_token1)
 
         try:
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
@@ -387,7 +387,7 @@ class UniV3Model():
 
         if existing_position['liquidity'] > liquidity:
             existing_position['liquidity'] -= liquidity
-            existing_position['amount_usd'] -= amount_usd  # Deduct removed liquidity
+            existing_position['amount_token1'] -= amount_token1  # Deduct removed liquidity
         else:
             all_positions[self.pool_id][liquidity_provider_str].remove(existing_position)  # Remove position if liquidity becomes zero
         
@@ -436,7 +436,7 @@ class UniV3Model():
 
         if existing_position['liquidity'] > liquidity:
             existing_position['liquidity'] -= liquidity
-            existing_position['amount_usd'] -= liquidity  # Deduct removed liquidity
+            existing_position['amount_token1'] -= liquidity  # Deduct removed liquidity
         else:
             all_positions[self.pool_id][liquidity_provider_str].remove(existing_position)  # Remove position if liquidity becomes zero
         
@@ -743,7 +743,7 @@ class UniV3Model():
         tx_receipt=self.Token0().transfer(dst_address, amount_base, txdict(GOD_ACCOUNT))
         print(f'funded account with token0: {tx_receipt.events}')
         
-    def budget_to_liquidity(self,tick_lower,tick_upper,usd_budget):
+    def budget_to_liquidity(self,tick_lower,tick_upper,token1_budget):
             
         q96 = 2**96
         def get_liquidity_for_amounts(sqrt_ratio_x96, sqrt_ratio_a_x96, sqrt_ratio_b_x96, amount0, amount1):
@@ -772,10 +772,10 @@ class UniV3Model():
         
         slot0_data = self.pool.slot0()
         sqrtp_cur =slot0_data[0]
-        usdp_cur = sqrtp_to_price(sqrtp_cur)
+        token1p_cur = sqrtp_to_price(sqrtp_cur)
 
-        #amount_token0 =  ((0.5 * usd_budget)/usdp_cur) * eth
-        #amount_token1 = 0.5 * usd_budget * eth
+        #amount_token0 =  ((0.5 * token1_budget)/token1p_cur) * eth
+        #amount_token1 = 0.5 * token1_budget * eth
 
         sqrtp_low = tick_to_sqrtp(tick_lower)
         sqrtp_upp = tick_to_sqrtp(tick_upper)
@@ -784,12 +784,12 @@ class UniV3Model():
         # Allocate budget based on the current price
         if sqrtp_cur <= sqrtp_low:  # Current price is below the range
             # Allocate all budget to token0
-            amount_token0 = usd_budget / usdp_cur  
+            amount_token0 = token1_budget / token1p_cur  
             amount_token1 = 0
         elif sqrtp_cur >= sqrtp_upp:  # Current price is above the range
             # Allocate all budget to token1
             amount_token0 = 0
-            amount_token1 = usd_budget 
+            amount_token1 = token1_budget 
         else:  # Current price is within the range
             # Calculate amounts for token0 and token1 using Eqs. 11 and 12 of eltas paper
             #amount_token0 = L * (sqrtp_upp - sqrtp_cur) / (sqrtp_cur * sqrtp_upp)
@@ -805,12 +805,12 @@ class UniV3Model():
             x_to_y_ratio = calculate_x_to_y_ratio(P=sqrtp_to_price(sqrtp_cur), pa=tick_to_price(tick_lower), pb=tick_to_price(tick_upper))
             #print(f'ratio: {x_to_y_ratio}')
         
-            budget_token0 = (usd_budget * x_to_y_ratio) / (1 + x_to_y_ratio)
-            budget_token1 = usd_budget - budget_token0
+            budget_token0 = (token1_budget * x_to_y_ratio) / (1 + x_to_y_ratio)
+            budget_token1 = token1_budget - budget_token0
 
             # Calculate the amount of token0 and token1 to be purchased with the allocated budget
             # Assuming token0 is priced at cur_price and token1 is the stablecoin priced at $1
-            amount_token0 = budget_token0 / usdp_cur
+            amount_token0 = budget_token0 / token1p_cur
             amount_token1 = budget_token1 
 
         # Convert amounts to the smallest unit of the tokens based on their decimals

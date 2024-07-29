@@ -1,10 +1,14 @@
+# solcx_install.py
 import solcx
 
-# Install specific version of solc
-solcx.install_solc('0.7.6')
-
-# Set the installed version as the default compiler
-solcx.set_solc_version('0.7.6')
-
-# Check if the version is set correctly
-print(f"Installed and set solc version: {solcx.get_solc_version()}")
+try:
+    # Try to install the binary version first
+    solcx.install_solc('0.7.6')
+except solcx.exceptions.SolcInstallationError:
+    print("Binary installation failed. Attempting to compile from source...")
+    try:
+        # Attempt to compile from source
+        solcx.compile_solc('0.7.6')
+    except Exception as e:
+        print(f"Error compiling solc from source: {e}")
+        exit(1)
