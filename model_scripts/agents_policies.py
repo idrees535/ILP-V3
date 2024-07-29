@@ -27,15 +27,17 @@ def noise_trader_policy(state):
     
     global_state = state.get_global_state()
     pool_price = global_state['curr_price']
+    sqrt_price=price_to_sqrtp(pool_price)
     liquidity = global_state['liquidity'] 
     
     # Calculate the upper and lower price bounds based on slippage tolerance
     if action == 'swap_token0_for_token1':
-        price_impact_upper_bound = pool_price * (1 + slippage_tolerance)
-        token0_amount = calc_amount0(liquidity, pool_price, price_impact_upper_bound)
+        price_impact_upper_bound = price_to_sqrtp(pool_price * (1 + slippage_tolerance))
+
+        token0_amount = calc_amount0(liquidity, sqrt_price, price_impact_upper_bound)
         swap_amount = token0_amount
     else:
-        price_impact_lower_bound = pool_price * (1 - slippage_tolerance)
+        price_impact_lower_bound = price_to_sqrtp(pool_price * (1 - slippage_tolerance))
         token1_amount = calc_amount1(liquidity, price_impact_lower_bound, pool_price)
         swap_amount = token1_amount
     
@@ -60,8 +62,8 @@ def retail_lp_policy(state):
         price_upper=current_price * random.uniform(1.1, 1.5)
         tick_upper = price_to_valid_tick(price_upper)
 
-        liq_token0=calc_amount0(liquidity,price_lower,price_upper) 
-        liq_token1=calc_amount1(liquidity,price_lower,price_upper)
+        liq_token0=calc_amount0(liquidity,price_to_sqrtp(price_lower),price_to_sqrtp(price_upper)) 
+        liq_token1=calc_amount1(liquidity,price_to_sqrtp(price_lower),price_to_sqrtp(price_upper))
         total_liq=liq_token0*current_price+liq_token1
         liquidity_percentage = random.uniform(0.01, 0.05)  # Retail LPs may allocate 1% to 5% of total liquidity
         liq_amount_token1 = liquidity_percentage * total_liq 
