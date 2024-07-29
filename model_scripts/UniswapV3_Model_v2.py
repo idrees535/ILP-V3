@@ -184,7 +184,7 @@ class UniV3Model():
                 if price_upper<=0:
                     price_upper=random.uniform(0.1,1.0)
 
-                liquidity_amount = self.initial_liquidity_amount/20 * random.uniform(0.5,1.5)#liquidity_amounts[position - 1]
+                liquidity_amount = self.initial_liquidity_amount/20 #* random.uniform(0.5,1.5)#liquidity_amounts[position - 1]
 
                 # Convert prices to ticks
                 tick_lower = price_to_valid_tick(price_lower)
