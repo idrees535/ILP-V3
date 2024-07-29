@@ -22,7 +22,7 @@ class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
         transferETH(GOD_ACCOUNT,self._wallet.address,1)
 
     def takeStep(self, state):
-        action,amount = self.policy(self.pool)
+        action,amount = self.policy(self)
 
         if action == 'swap_token0_for_token1':
             tx_receipt=self.pool.swap_token0_for_token1(self._wallet.address, toBase18(amount), data=b'')

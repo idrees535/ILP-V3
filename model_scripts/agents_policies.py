@@ -25,7 +25,7 @@ def noise_trader_policy(state):
     # Determine slippage tolerance between 1% and 14%
     slippage_tolerance = random.uniform(0.01, 0.14)
     
-    global_state = state.get_global_state()
+    global_state = state.ppool.get_global_state()
     pool_price = global_state['curr_price']
     sqrt_price=price_to_sqrtp(pool_price)
     liquidity = global_state['liquidity_raw'] 
@@ -54,7 +54,7 @@ def retail_lp_policy(state):
     # Choose a action (As price moves LP decides to add/ remove liquidty, more price movements more rebalancing)
     action = random.choice(actions)
     if action =='add_liquidity':
-        global_state = state.get_global_state()
+        global_state = state.pool.get_global_state()
         liquidity = global_state['liquidity_raw'] 
         current_price = sqrtp_to_price(state.pool.pool.slot0()[0])
         price_lower=current_price * random.uniform(0.5, 0.9)
