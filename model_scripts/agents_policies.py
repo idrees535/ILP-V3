@@ -84,9 +84,6 @@ def retail_lp_policy(state):
         else:
             #print("This LP doesn't have any positions.")
             return None
-        
-
-
     
 def update_slippage_tolerance(state, params):
     recent_slippages = state['recent_slippages']  # List or other data structure
