@@ -1,8 +1,21 @@
-## V3 Improvements
-1. Integarte voyager simulator
-2. Improve policy functions
-3. Improve obs space, action space and reward function
 
+# Intelligent Liquidity Provisioning Framework V2
+
+The Intelligent Liquidity Provisioning (ILP) Framework V2 for Uniswap V3 pools is an advanced system that leverages agent-based modeling (ABM) and reinforcement learning (RL) to optimize liquidity provisioning strategies. Building on the success of V1, this version introduces a suite of enhancements aimed at providing more accurate simulations, improved decision-making capabilities, and an efficient inference process. Additionally, V2 features a Django app for easy interaction with the framework through API endpoints.
+
+## Key Improvements Over V1
+
+1. **Integration of PPO Agent**: Proximal Policy Optimization (PPO) agent has been added to our RL algorithms, offering better stability and performance in training over the DDPG agent.
+2. **Enhanced Uniswap V3 Model**: The Uniswap V3 model has been improved to better handle edge cases in swaps and liquidity provisioning.
+3. **Max Budget Utilization**: A new feature to ensure liquidity is provided within the user-defined maximum budget.
+4. **Enhanced Evaluation Strategy**: More robust evaluation metrics and strategies have been implemented to assess the performance of liquidity provisioning strategies more accurately.
+5. **Improved Training and Evaluation Visualizations**: Training and evaluation processes now feature more comprehensive metrics for a clearer understanding of model performance.
+6. **Custom Reward Functions**: Introduction of custom reward functions based on liquidity providers' (LPs) preferences, allowing for more personalized strategy optimization.
+7. **Improved Inference Process**: Enhanced inference process to better incorporate LPs' risk aversion and other preferences into decision-making.
+8. **Django Application for API Endpoints**: A new Django application has been developed to expose model functionalities via API endpoints for easier integration and automation.
+9. **Integration with MLflow for Experiment Tracking**: Incorporates MLflow for tracking experiments, ensuring a systematic way to log, visualize, and compare model training sessions.
+
+## Setup Instructions
 
 ### Prerequisites
 
