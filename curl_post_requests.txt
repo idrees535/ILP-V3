@@ -200,3 +200,37 @@ curl -X POST http://83.26.107.222:41269/get_train_ddpg_result/ \
 -d '{
     
 }'
+
+sh -p 41278 root@83.26.78.189 -L 8080:localhost:8080
+ssh -p 41278 root@83.26.78.189 -L 8080:localhost:8080
+
+curl -X POST http://83.26.78.189:41269/train_ddpg/ \
+-H "Content-Type: application/json" \
+-d '{
+    "max_steps": 10000,
+    "n_episodes": 5,
+    "model_name": "model_storage/ddpg/prod_10000x5",
+    "alpha": 0.001,
+    "beta": 0.001,
+    "tau": 0.8,
+    "batch_size": 500,
+    "training": true,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false
+}'
+
+curl -X POST http://83.26.78.189:41269/train_ppo/ -H "Content-Type: application/json" -d '{
+    "max_steps": 10000,
+    "n_episodes": 5,
+    "model_name": "model_storage/ppo/prod_10000x5",
+    "buffer_size": 5,
+    "n_epochs": 100,
+    "gamma": 0.5,
+    "alpha": 0.001,
+    "gae_lambda": 0.75,
+    "policy_clip": 0.6,
+    "max_grad_norm": 0.6,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false,
+    "action_transform": "linear"
+}'
