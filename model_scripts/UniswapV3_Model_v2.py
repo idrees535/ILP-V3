@@ -138,8 +138,7 @@ class UniV3Model():
             self.save_addresses(addresses)
             
             self.sync_pool_state()
-
-
+            
     def ensure_token_order(self):
         # Check if token0's address is greater than token1's address
         if int(self.token0.address, 16) > int(self.token1.address, 16):

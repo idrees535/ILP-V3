@@ -483,7 +483,6 @@ class DiscreteSimpleEnvEval(DiscreteSimpleEnv):
 
         return mint_tx_receipt,action_dict
     
-    
     def baseline_agent_policy(self):
         global_state = self.pool.get_global_state()
         raw_curr_price = global_state['curr_price']
@@ -500,7 +499,7 @@ class DiscreteSimpleEnvEval(DiscreteSimpleEnv):
         return action_baseline
 
 # %% [markdown]
-# # RL Agents
+## RL Agents
 
 # %% [markdown]
 # ## DDPG Agent
@@ -1524,158 +1523,3 @@ def perform_inference(user_preferences,pool_state,pool_id="0x99ac8ca7087fa4a2a1f
         return 'exit_position', None,None  # Exit the position to stop further losses
     else:
         return 'maintain_position', None,None  # Maintain the current position
-
-# %% [markdown]
-# # Interfaces
-
-# %% [markdown]
-# ## DDPG Interface
-
-# %%
-'''
-with mlflow.start_run(run_name="DDPG_Training") as run:
-    ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path=train_ddpg_agent(max_steps=2, n_episodes=2, model_name='model_storage/ddpg/ddpg_fazool',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False)
-    ddpg_training_vis(ddpg_train_data_log)
-
-    # Log models after loading them
-    actor_model = tf.keras.models.load_model(ddpg_actor_model_path)
-    critic_model = tf.keras.models.load_model(ddpg_critic_model_path)
-
-    mlflow.tensorflow.log_model(actor_model, "ddpg_actor_model")
-    mlflow.tensorflow.log_model(critic_model, "ddpg_critic_model")
-    
-with mlflow.start_run(run_name="DDPG_Evaluation"):
-    ddpg_eval_data_log=eval_ddpg_agent(eval_steps=2, eval_episodes=2, model_name='model_storage/ddpg/ddpg_fazool', percentage_range=0.6, agent_budget_usd=10000, use_running_statistics=False)
-    ddpg_eval_vis(ddpg_eval_data_log)
-
-#run_id = run.info.run_id
-#print(f"run_id: {run_id}")
-#!mlflow models serve -m "runs:/97ab3853db6642d6b3abd7f9284aa6cc/ddpg_actor_model" -p 123
-
-# %% [markdown]
-# ## PPO Interface
-
-# %%
-with mlflow.start_run(run_name="PPO_Training") as run:
-    ppo_train_data_log,ppo_actor_model_path,ppo_critic_model_path=train_ppo_agent(max_steps=2, n_episodes=2, model_name='model_storage/ppo/ppo2_fazool', buffer_size=5,n_epochs=20, gamma=0.5, alpha=0.001, gae_lambda=0.75, policy_clip=0.6, max_grad_norm=0.6,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear')
-    ppo_training_vis(ppo_train_data_log)
-
-    ppo_actor_model = tf.keras.models.load_model(ppo_actor_model_path)
-    ppo_critic_model = tf.keras.models.load_model(ppo_critic_model_path)
-
-    mlflow.tensorflow.log_model(ppo_actor_model, "ppo_actor_model")
-    mlflow.tensorflow.log_model(ppo_critic_model, "ppo_critic_model")
-    
-
-with mlflow.start_run(run_name="PPO_Evaluation"):
-    ppo_eval_data_log=eval_ppo_agent(eval_steps=2, eval_episodes=2, model_name='model_storage/ppo/ppo2_fazool', percentage_range=0.5, agent_budget_usd=10000, use_running_statistics=False, action_transform='linear')
-    ppo_eval_vis(ppo_eval_data_log)
-
-#run_id = run.info.run_id
-#print("run_id: {run_id}")
-#!mlflow models serve -m "runs:/run_id/ppo_actor_model" -p 1234
-
-# %% [markdown]
-# ## Strategy Interface
-
-# %%
-# Example pool state
-pool_state = {
-    'current_profit': 500,
-    'price_out_of_range': False,
-    'time_since_last_adjustment': 40000,
-    'pool_volatility': 0.2
-}
-
-# Example user preferences
-user_preferences = {
-    'risk_tolerance': {'profit_taking': 50, 'stop_loss': -500},
-    'investment_horizon': 7,  # days
-    'liquidity_preference': {'adjust_on_price_out_of_range': True},
-    'risk_aversion_threshold':0.1,
-    'user_status':'new_user'
-}
-#pool="0x3416cf6c708da44db2624d63ea0aaef7113527c6" #USDC/USDT
-#pool="0x6c6bc977e13df9b0de53b251522280bb72383700" #DAI/USDC
-pool="0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" #ETH/USDT
-#pool="0x99ac8ca7087fa4a2a1fb6357269965a2014abc35" #WBTC/USDC
-#pool="0xcbcdf9626bc03e24f779434178a73a0b4bad62ed" #WBTC/ETH
-strategy_action, ddpg_action,ppo_action = liquidity_strategy(user_preferences,pool_state,pool_id=pool,ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm')
-print(f"Startegy Action: {strategy_action}, DDPG Agent Action: {ddpg_action}, PPO Agent Action: {ppo_action}")
-
-# %% [markdown]
-# Liquidity Strategy Framework
-# 1. User Profile Assessment
-# Risk Tolerance Assessment: Gauge the user's appetite for risk (low, medium, high) and set profit-taking and stop-loss thresholds accordingly.
-# Investment Horizon: Determine the duration the user plans to engage in liquidity provisioning (short-term, mid-term, long-term).
-# Liquidity Preference: Assess the user's preference for types of pools (e.g., stablecoin pairs vs. high-volatility pairs).
-# 2. Market and Pool Analysis
-# Volatility Analysis: Use historical data to analyze the volatility of the pool. Higher volatility may require a more dynamic strategy.
-# Fee vs. Impermanent Loss Analysis: Assess the historical balance between fee income and impermanent loss in the pool.
-# Token Pair Correlation: Study the correlation between the assets in the pool and how it affects price movements and liquidity depth.
-# 3. Integration of RL Agent Predictions
-# Predictive Modeling: Regularly run the DDPG and PPO agents to predict optimal liquidity ranges based on the current pool state.
-# Adjustment Frequency: Decide the frequency of querying the RL agents for adjustments based on market conditions and user preferences.
-# 4. Strategy Implementation
-# Initiating Position: Enter the liquidity pool based on initial RL agent predictions and user preferences.
-# Continuous Monitoring: Set up a system to continuously monitor the pool's state and the performance of the liquidity position.
-# Adjustment Protocols:
-# Profit Taking: If the profit reaches the user's threshold, adjust or rebalance as per the RL agent's suggestions.
-# Price Range Exit: If the pool price moves out of the predicted range significantly, adjust the position.
-# Stop Loss: Exit the position if losses reach the user-defined stop-loss threshold.
-# Handling Volatility: In high volatility, reduce exposure or exit based on impermanent loss risk and market trends.
-# Regular Review and Rebalancing: Periodically review the position independent of the RL predictions and rebalance if necessary based on market shifts.
-
-# %% [markdown]
-# 1. Initial Setup and User Input
-# User Interface: Develop a user interface where the user can select a pool, allocate a budget (e.g., 10000 USD), choose a time horizon, and specify risk preferences (risk aversion and tolerance).
-# Pool Selection: Allow the user to select a Uniswap V3 pool for liquidity provisioning.
-# User Preferences: Capture the user's risk tolerance, investment horizon, and other relevant preferences.
-# 2. Initial Liquidity Provisioning
-# Predict Action: When a new user decides to add liquidity, the strategy uses both DDPG and PPO agents to predict the optimal liquidity range (price_lower and price_upper) based on the current state of the selected pool.
-# Action Selection: The strategy selects one of the predicted actions (from DDPG or PPO) to initiate the liquidity provisioning in the pool.
-# Execute Liquidity Provision: Add liquidity to the selected pool within the predicted range using the user's allocated budget.
-# 3. Continuous Strategy Management
-# Data Fetching: Regularly (e.g., hourly) fetch data from the pool to monitor the state of the liquidity position and the pool's market conditions.
-# State Assessment: Assess the current state of the liquidity position in terms of profit/loss, whether the price is within the range, and other relevant metrics.
-# Decision Criteria: Define criteria for adjusting, maintaining, or exiting the position based on user preferences and real-time market data.
-# 4. Ongoing Position Management
-# Rebalance Position: If the strategy determines that rebalancing is needed (e.g., price out of the current range or based on time interval), it again uses DDPG and PPO agents to predict a new optimal range and adjusts the position accordingly.
-# Maintain Position: If the current position is deemed optimal, the strategy will continue to hold the position without changes.
-# Exit Position: If the strategy identifies adverse market conditions or meets the user's risk parameters (like stop loss), it exits the position to protect the user's capital.
-# 5. Strategy Execution Loop
-# Loop Implementation: Implement a loop that continuously monitors the pool state, re-evaluates the position, and executes the strategy's decisions (adjust, maintain, or exit) based on real-time data and user preferences.
-# 6. User Feedback and Adjustment
-# Feedback Mechanism: Allow users to review their position performance and adjust their preferences if needed.
-# Adaptive Strategy: Ensure the strategy adapts to changes in user preferences and ongoing market developments.
-# 
-
-# %% [markdown]
-# # Query Served Model
-
-# %%
-pool_id="0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" #ETH/USDT
-
-pool_data = fetch_inference_pool_data(pool_id)
-print(f"State Space: {pool_data}")
-
-global_state = pool_data
-curr_price = global_state['token1Price']
-liquidity = global_state['liquidity']
-fee_growth_0 = global_state['feeGrowthGlobal0X128']
-fee_growth_1 = global_state['feeGrowthGlobal1X128']
-
-data = {'scaled_curr_price': curr_price/5000, 'scaled_liquidity': liquidity/1e20, 
-        'scaled_feeGrowthGlobal0x128': fee_growth_0/1e34, 'scaled_feeGrowthGlobal1x128': fee_growth_1/1e34}
-
-# URL for the predict endpoint
-url = 'http://127.0.0.1:123/invocations'
-
-# Send POST request
-response = requests.post(url, json=data)
-
-# Print the response
-print("Response Code:", response.status_code)
-print("Predicted Response:", response.json())
-
-'''
