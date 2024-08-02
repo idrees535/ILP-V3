@@ -1,5 +1,5 @@
-# ILP Agent Framework
-ILP agent framewrok let's liquidty providers/liquidty managers  to build/devlop, train and deploy their liquidity managememnt agents with their custom insticts. An ILP Agent consists if three differnt type of agents working together to efficiently manage liquidty On Uniswap V3. Following are three differnt components of this framewrok:
+# ILP Agent Framework V3
+ILP agent framewrok let's liquidty providers/liquidty managers  to build/devlop, train and deploy their liquidity managememnt agents with their custom insticts and prefernces. An ILP Agent consists if three differnt type of agents working together to efficiently manage liquidty On Uniswap V3. Following are three differnt components of this framewrok:
 
 1. **Strategy Agent**
 This agent mamnges the budget of vault/portofolio. Basically it allocates budget across differnt lqiuidty pools, and manges the distribution of budget based on historical performmance data of the lqiuidty pools, while incorporating the prefernces of user (Retail LP/ LM). User prefernce include total budget, investment horizon, risk factor, stop loss etc. Based on this stratgy agent allocates the total budget in differnt pools and speciifices the amount of budget allocated to each pool, and in case of multiple position based stratgy it alos speciifies the amount of budget allocated to each position in pool. The output of strategy agent for some input i.e {10000USD,30 Dasys, 0.6 Risk factor} willl be position 1: ETH/USD Pool, 3000USD, position 2 ETH/USD Pool, 1000USD, position 3: BTC/WETH Pool, 5000USD
