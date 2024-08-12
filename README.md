@@ -30,4 +30,3 @@ This executor agent executes the actions of stratgy agent and predictor agent. T
 3. Authrize transaction execution in an autonoumous using permissions assigend in smart account
 
 
-

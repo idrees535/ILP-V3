@@ -84,9 +84,6 @@ curl -X POST http://127.0.0.1:8000/predict_action/ \
 }'
 
 
-curl 
-
-
 curl -X POST https://ilp-framework.tin-zin.com/train_ddpg/ \
 -H "Content-Type: application/json" \
 -d '{
@@ -233,4 +230,31 @@ curl -X POST http://83.26.78.189:41269/train_ppo/ -H "Content-Type: application/
     "agent_budget_usd": 10000,
     "use_running_statistics": false,
     "action_transform": "linear"
+}'
+
+
+curl --location 'https://ilp.tempestfinance.xyz/api/v1/inference/' \
+--header 'Content-Type: application/json' \
+--data '{
+    "pool_state": {
+        "current_profit": 500,
+        "price_out_of_range": false,
+        "time_since_last_adjustment": 40000,
+        "pool_volatility": 0.2
+    },
+    "user_preferences": {
+        "risk_tolerance": {
+            "profit_taking": 50,
+            "stop_loss": -500
+        },
+        "investment_horizon": 7,
+        "liquidity_preference": {
+            "adjust_on_price_out_of_range": true
+        },
+        "risk_aversion_threshold": 0.1,
+        "user_status": "new_user"
+    },
+    "pool_id": "0x109830a1aaad605bbf02a9dfa7b0b92ec2fb7daa",
+    "ddpg_agent_path": "model_storage/ddpg/ddpg_1",
+    "ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm"
 }'
