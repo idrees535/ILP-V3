@@ -35,20 +35,19 @@
          "message": "Base path and reset env var configured successfully"
        }
        ```
-    - **`GET /api/v1/file/download/`**
-        - **Description:** Downloads a specified file from the server.
-        - **Parameters:**
-        - `file_path`: The relative path to the directory where the file is stored (e.g., `model_outdir_csv/ddpg/ppo_prod1`).
-        - `file_name`: The name of the file to download (e.g., `train_logs.csv`).
-        - **Example Request:**
-        ```bash
-        curl -X GET "https://ilp.tempestfinance.xyz/api/v1/file/download/?file_path=model_outdir_csv/ddpg/ppo_prod1&file_name=train_logs.csv" -O
-        ```
-        - **Example Response:**
-        - The file is downloaded to the user's machine.
-        - **Error Handling:**
-        - If the file does not exist, the server responds with a `400 Bad Request` error.
-
+   - **`GET /api/v1/file/download/`**
+     - **Description:** Downloads a specified file from the server.
+     - **Parameters:**
+     - `file_path`: The relative path to the directory where the file is stored (e.g., `model_outdir_csv/ddpg/ppo_prod1`).
+     - `file_name`: The name of the file to download (e.g., `train_logs.csv`).
+     - **Example Request:**
+      ```bash
+      curl -X GET "https://ilp.tempestfinance.xyz/api/v1/file/download/?file_path=model_outdir_csv/ddpg/ppo_prod1&file_name=train_logs.csv" -O
+      ```
+     - **Example Response:**
+     - The file is downloaded to the user's machine.
+     - **Error Handling:**
+     - If the file does not exist, the server responds with a `400 Bad Request` error.
 
    #### DDPG Endpoints
    - **`POST /api/v1/ddpg/train/`**
