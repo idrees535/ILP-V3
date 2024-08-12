@@ -1,10 +1,9 @@
-Great! Here's how I can start building the API documentation based on the information you've provided:
 
 ### **API Overview**
    - **Purpose:** The Intelligent Liquidity Provisioning (ILP) Framework V2 is designed to optimize liquidity provisioning strategies for Uniswap V3 pools using reinforcement learning (RL) techniques.
    - **Key Features:**
      - PPO and DDPG agents for RL.
-     - Uniswap V3 smart Contract Interface
+     - Uniswap V3 smart Contract Interface for v3-core contracts deployed locally on Ganache
      - Agent Based Model to Train Agents
      - Django application for API interaction
 
@@ -339,8 +338,6 @@ curl -X GET "https://ilp.tempestfinance.xyz/api/v1/file/download/?file_path=mode
 # Download evaluation logs for a PPO model
 curl -X GET "https://ilp.tempestfinance.xyz/api/v1/file/download/?file_path=model_outdir_csv/ppo/ppo_prod1&file_name=eval_logs.csv" -O
 ```
-
-
 
 ## **Parameters Explanation**
 
