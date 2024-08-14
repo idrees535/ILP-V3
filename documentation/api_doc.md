@@ -653,21 +653,21 @@ curl -X GET "https://ilp.tempestfinance.xyz/api/v1/file/download/?file_path=mode
 - **`ddpg_agent_path`**
   - **Description:** The file path to the trained DDPG agent.
   - **Data Type:** `string`
-  - **Required:** Yes
+  - **Required:** No
   - **Default Value:** `"model_storage/ddpg/ddpg_1"`
   - **Example:** `"model_storage/ddpg/ddpg_agent_2024"`
 
 - **`ppo_agent_path`**
   - **Description:** The file path to the trained PPO agent.
   - **Data Type:** `string`
-  - **Required:** Yes
+  - **Required:** No
   - **Default Value:** `"model_storage/ppo/lstm_actor_critic_batch_norm"`
   - **Example:** `"model_storage/ppo/ppo_agent_2024"`
 
 - **`date_str`**
   - **Description:** The date string used to reference specific data or state information for the inference.
   - **Data Type:** `string`
-  - **Required:** No
+  - **Required:** Yes
   - **Default Value:** `"2024-05-05"`
   - **Example:** `"2024-08-01"`
 
@@ -683,21 +683,21 @@ curl -X GET "https://ilp.tempestfinance.xyz/api/v1/file/download/?file_path=mode
 - **`ddpg_agent_path`**
   - **Description:** The file path to the trained DDPG agent.
   - **Data Type:** `string`
-  - **Required:** Yes
+  - **Required:** No
   - **Default Value:** `"model_storage/ddpg/ddpg_1"`
   - **Example:** `"model_storage/ddpg/ddpg_agent_2024"`
 
 - **`ppo_agent_path`**
   - **Description:** The file path to the trained PPO agent.
   - **Data Type:** `string`
-  - **Required:** Yes
+  - **Required:** No
   - **Default Value:** `"model_storage/ppo/lstm_actor_critic_batch_norm"`
   - **Example:** `"model_storage/ppo/ppo_agent_2024"`
 
 - **`date_str`**
   - **Description:** The date string used to reference specific data or state information for predicting actions.
   - **Data Type:** `string`
-  - **Required:** No
+  - **Required:** Yes
   - **Default Value:** `"2024-05-05"`
   - **Example:** `"2024-08-01"`
 
