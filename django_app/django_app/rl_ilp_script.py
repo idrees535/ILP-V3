@@ -54,11 +54,7 @@ if reset_env_var==True:
 # # Env Setup
 
 # %%
-from netlists.uniswapV3.netlist import SimStrategy,SimState,netlist_createLogData
-from engine.SimEngine import SimEngine
-from util.globaltokens import weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool
-import brownie
-from util.constants import GOD_ACCOUNT,RL_AGENT_ACCOUNT
+
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick
 from model_scripts.plot import train_rewards_plot,eval_rewards_plot,train_raw_actions_plot,train_scaled_actions_plot,train_combined_metrics_plot,train_separate_episode_action_plot
 from model_scripts.sync_pool_subgraph_data import fetch_inference_pool_data,fetch_inference_pool_data_1
@@ -68,17 +64,11 @@ import numpy as np
 import pandas as pd
 import random
 import matplotlib.pyplot as plt
-import gymnasium as gym
-import tensorflow as tf
-from tensorflow.keras.callbacks import TensorBoard
-import tensorflow_probability as tfp
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.optimizers import Adam
 
-import mlflow
-import mlflow.tensorflow
-mlflow.tensorflow.autolog()
-
+from environments.train_env import DiscreteSimpleEnv
+from environments.eval_env import DiscreteSimpleEnvEval
+from rl_agents.ddpg_agent import DDPG, DDGPEval
+from rl_agents.ppo_agent import PPO, PPOEval
 # %% [markdown]
 # # Training env
 
