@@ -6,6 +6,8 @@ import random
 import random
 
 q96 = 2**96
+MAX_SAFE_INTEGER = (1 << 53) - 1 
+
 
 def calc_amount0(liq, pa, pb):
     if pa > pb:
@@ -40,6 +42,8 @@ def noise_trader_policy(state):
         price_impact_lower_bound = price_to_sqrtp(pool_price * (1 - slippage_tolerance))
         token1_amount = calc_amount1(liquidity, price_impact_lower_bound, pool_price)
         swap_amount = fromBase18(token1_amount)
+    # Cap the swap amount to the maximum safe integer limit
+    swap_amount = min(swap_amount, MAX_SAFE_INTEGER)
     swap_amount=swap_amount*random.uniform(0.0001,0.0005)
     return action, swap_amount
 
@@ -65,6 +69,10 @@ def retail_lp_policy(state):
         liq_token0=calc_amount0(liquidity,price_to_sqrtp(price_lower),price_to_sqrtp(price_upper)) 
         liq_token1=calc_amount1(liquidity,price_to_sqrtp(price_lower),price_to_sqrtp(price_upper))
         total_liq=liq_token0*current_price+liq_token1
+
+        # Cap the total liquidity to the maximum safe integer limit
+        total_liq = min(total_liq, MAX_SAFE_INTEGER)
+        
         liquidity_percentage = random.uniform(0.0001, 0.0005)  # Retail LPs may allocate 1% to 5% of total liquidity
         liq_amount_token1 = fromBase18(liquidity_percentage * total_liq) 
         #amount_token1 = random.uniform(5000, 50000)
