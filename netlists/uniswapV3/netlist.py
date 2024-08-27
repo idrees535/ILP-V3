@@ -34,12 +34,12 @@ class SimState(SimStateBase):
         self.pool = pool # Give pool as an arguemnet to simstate class
 
         # Liquidity provider agents
-        self.retail_lp = UniswapV3LiquidityProviderAgent("retail_lp", 1000000000000.0,110000000000000.0,retail_lp_policy,self.pool)
+        self.retail_lp = UniswapV3LiquidityProviderAgent("retail_lp", 1e18,1e18,retail_lp_policy,self.pool)
         #self.inst_lp = UniswapV3LiquidityProviderAgent("inst_lp", 1000000000000.0,110000000000000.0,inst_LP_policy)
         #self.rl_lp = UniswapV3LiquidityProviderAgent("rl_lp", 1000000000000.0,110000000000000.0,rl_LP_policy)
         
         # Trader agents
-        self.noise_trader = UniswapV3SwapperAgent("noise_trader",5000000000000000.0,5500000000000000.0, noise_trader_policy,self.pool)
+        self.noise_trader = UniswapV3SwapperAgent("noise_trader",1e18,1e18, noise_trader_policy,self.pool)
         #self.whale_trader = UniswapV3SwapperAgent("whale_trader",5000000000000000.0,5500000000000000.0, whale_trader_policy)
       
 
