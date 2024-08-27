@@ -24,16 +24,16 @@ def start_ganache():
     #print("Have you started ganache")
 
 if __name__ == "__main__":
-    p1 = Process(target=start_ganache)
-    p1.start()
+    # p1 = Process(target=start_ganache)
+    # p1.start()
 
     # sleep to wait util ganache started
-    time.sleep(5) 
+    # time.sleep(5) 
     
     subprocess.run(["rm", "-rf", "../model_storage/liq_positions.json", "../model_storage/token_pool_addresses.json"])
     subprocess.run(["touch", "../model_storage/liq_positions.json", "../model_storage/token_pool_addresses.json"])
     p2 = Process(target=main)
     p2.start()
     
-    p1.join()
+    # p1.join()
     p2.join()
