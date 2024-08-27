@@ -258,3 +258,30 @@ curl --location 'https://ilp.tempestfinance.xyz/api/v1/inference/' \
     "ddpg_agent_path": "model_storage/ddpg/ddpg_1",
     "ppo_agent_path": "model_storage/ppo/lstm_actor_critic_batch_norm"
 }'
+
+
+curl --location 'http://72.19.57.247:42003/train_ddpg/' \
+--header 'Content-Type: application/json' \
+--data '{
+    "max_steps": 1000,
+    "n_episodes": 10,
+    "model_name": "model_storage/ddpg/tempest_prod_1000x10",
+    "alpha": 0.001,
+    "beta": 0.001,
+    "tau": 0.8,
+    "batch_size": 50,
+    "training": true,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false
+}'
+
+curl --location 'http://72.19.57.247:42003/evaluate_ddpg/' \
+--header 'Content-Type: application/json' \
+--data '{
+    "eval_steps": 100,
+    "eval_episodes": 5,
+    "model_name": "model_storage/ddpg/tempest_prod_2000x5",
+    "percentage_range": 0.6,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false
+}'
