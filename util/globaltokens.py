@@ -14,8 +14,8 @@ _TOKEN0 = None
 
 token0 = "WETH"
 token1 = "USDC"
-supply_token0 = 1e18
-supply_token1 = 1e18
+supply_token0 = 1e40
+supply_token1 = 1e40
 decimals_token0 = 18
 decimals_token1 = 18
 fee_tier = 3000
@@ -28,8 +28,8 @@ weth_usdc_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,suppl
 
 token0 = "ETH"
 token1 = "DAI"
-supply_token0 = 1e18
-supply_token1 = 1e18
+supply_token0 = 1e40
+supply_token1 = 1e40
 decimals_token0 = 18
 decimals_token1 = 18
 fee_tier = 3000
@@ -41,8 +41,8 @@ eth_dai_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply_
 
 token0 = "BTC"
 token1 = "USDT"
-supply_token0 = 1e18
-supply_token1 = 1e18
+supply_token0 = 1e40
+supply_token1 = 1e40
 decimals_token0 = 18
 decimals_token1 = 18
 fee_tier = 3000
@@ -56,8 +56,8 @@ btc_usdt_pool = UniV3Model(token0, token1,decimals_token0,decimals_token1,supply
 
 token0 = "BTC"
 token1 = "WETH"
-supply_token0 = 1e18
-supply_token1 = 1e18
+supply_token0 = 1e40
+supply_token1 = 1e40
 decimals_token0 = 18
 decimals_token1 = 18
 fee_tier = 3000
