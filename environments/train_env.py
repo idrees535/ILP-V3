@@ -257,6 +257,11 @@ class DiscreteSimpleEnv(gym.Env):
             price_upper = self.action_lower_bound + norm_exp_a_1 * range_bound
 
         
+        if np.isnan(price_lower) or np.isnan(price_upper):
+            price_lower = np.random.uniform(0, 1)
+            price_upper = np.random.uniform(0, 1)
+            print("Warning: price_lower or price_upper was NaN. Assigned random values.")
+            
         # Ensure price_lower is less than price_upper - Add penalty
         
         if price_lower>price_upper:
