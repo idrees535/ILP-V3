@@ -65,8 +65,8 @@ import pandas as pd
 import random
 import matplotlib.pyplot as plt
 
-from environments.train_env import DiscreteSimpleEnv
-from environments.eval_env import DiscreteSimpleEnvEval
+from environments.DiscreteSimpleEnv import DiscreteSimpleEnv
+from environments.DiscreteSimpleEnvEval import DiscreteSimpleEnvEval
 from rl_agents.ddpg_agent import DDPG, DDGPEval
 from rl_agents.ppo_agent import PPO, PPOEval
 # %% [markdown]

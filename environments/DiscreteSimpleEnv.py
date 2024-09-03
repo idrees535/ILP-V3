@@ -229,6 +229,8 @@ class DiscreteSimpleEnv(gym.Env):
         # Add exploration noise
         a_0 = raw_a + np.random.normal(0, self.exploration_std_dev)
         a_1 = raw_b + np.random.normal(0, self.exploration_std_dev)
+        a_0 = np.clip(a_0, 0, 1)
+        a_1 = np.clip(a_1, 0, 1)
         
         if self.action_transform=='linear':
             a_0 = np.clip(a_0, 0, 1)

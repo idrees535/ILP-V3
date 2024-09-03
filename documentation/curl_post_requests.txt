@@ -260,12 +260,12 @@ curl --location 'https://ilp.tempestfinance.xyz/api/v1/inference/' \
 }'
 
 
-curl --location 'http://172.81.127.6:15753/train_ddpg/' \
+curl --location 'http://106.246.35.133:46665/train_ddpg/' \
 --header 'Content-Type: application/json' \
 --data '{
     "max_steps": 1000,
-    "n_episodes": 10,
-    "model_name": "model_storage/ddpg/tempest_prod_500x20",
+    "n_episodes": 20,
+    "model_name": "model_storage/ddpg/tempest_prod_1000x20",
     "alpha": 0.001,
     "beta": 0.001,
     "tau": 0.8,
@@ -288,3 +288,22 @@ curl --location 'http://72.19.57.247:42003/evaluate_ddpg/' \
 
 curl --location 'http://172.81.127.6:15753/train_ddpg_result/' \
 --header 'Content-Type: application/json'
+
+
+curl --location 'http://106.246.35.133:46665/train_ppo/' \
+--header 'Content-Type: application/json' \
+-data '{
+    "max_steps": 10000,
+    "n_episodes": 10,
+    "model_name": "model_storage/ppo/prod_10000x10",
+    "buffer_size": 50,
+    "n_epochs": 100,
+    "gamma": 0.5,
+    "alpha": 0.001,
+    "gae_lambda": 0.75,
+    "policy_clip": 0.6,
+    "max_grad_norm": 0.6,
+    "agent_budget_usd": 10000,
+    "use_running_statistics": false,
+    "action_transform": "linear"
+}'

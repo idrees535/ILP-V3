@@ -29,7 +29,7 @@ sys.path.append(base_path)
 os.chdir(base_path)
 os.environ["PATH"] += ":."
 
-from environments.train_env import DiscreteSimpleEnv
+from environments.DiscreteSimpleEnv import DiscreteSimpleEnv
 
 
 class DiscreteSimpleEnvEval(DiscreteSimpleEnv):
