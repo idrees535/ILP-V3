@@ -2,7 +2,7 @@ enforce_typing
 eth-brownie
 gymnasium
 mlflow
-#ßtensorflow[and-cuda]==2.14.0
+tensorflow[and-cuda]==2.14.0
 tensorflow_probability==0.22.1
 ipykernel
 pandas 
