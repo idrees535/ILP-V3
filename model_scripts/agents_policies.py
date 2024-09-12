@@ -28,7 +28,7 @@ def noise_trader_policy(state):
     action = random.choice(actions)
     
     # Determine slippage tolerance between 1% and 14%
-    slippage_tolerance = random.uniform(0.01, 0.14)
+    slippage_tolerance = random.uniform(0.01, 0.05)
     
     global_state = state.pool.get_global_state()
     pool_price = global_state['curr_price']
