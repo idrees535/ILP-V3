@@ -234,12 +234,15 @@ class UniV3Model():
             pool_actions = self.pool
             liquidity=self.budget_to_liquidity(tick_lower,tick_upper,token1_budget)
             #print(liquidity)
+            liquidity = int(liquidity)
 
             tx_receipt = pool_actions.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
 
             # Implement callback
-            amount0 = tx_receipt.events['Mint']['amount0']
-            amount1 = tx_receipt.events['Mint']['amount1']
+            #amount0 = tx_receipt.events['Mint']['amount0']
+            #amount1 = tx_receipt.events['Mint']['amount1']
+            amount0 = int(tx_receipt.events['Mint']['amount0'])
+            amount1 = int(tx_receipt.events['Mint']['amount1'])
             #print(tx_receipt.events['Mint']['amount'])
             print(tx_receipt.events)
             if amount0 > 0:
@@ -469,10 +472,11 @@ class UniV3Model():
         tx_receipt=None
         
         try:
+            amount_specified = int(amount_specified)
             tx_receipt= pool_actions.swap(recipient, zero_for_one, amount_specified,sqrt_price_limit_x96, data,tx_params)
             
             print(tx_receipt.events)
-            amount0 = tx_receipt.events['Swap']['amount0']
+            amount0 = int(tx_receipt.events['Swap']['amount0'])
 
             # Transfer token0 to pool (callback)
             tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
@@ -495,10 +499,11 @@ class UniV3Model():
         tx_receipt=None 
 
         try:
+            amount_specified = int(amount_specified)
             tx_receipt = pool_actions.swap(recipient, zero_for_one, amount_specified, sqrt_price_limit_x96, data,tx_params)
             print(tx_receipt.events)
         
-            amount1 = tx_receipt.events['Swap']['amount1']
+            amount1 = int(tx_receipt.events['Swap']['amount1'])
 
             # Trasfer token1 to pool (callabck)
             tx_receipt_token1_transfer = self.token1.transfer(self.pool.address, amount1, tx_params)

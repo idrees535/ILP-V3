@@ -15,7 +15,7 @@ from util.configutil import CONF_FILE_PATH
 config = configparser.ConfigParser()
 config.read(os.path.expanduser(CONF_FILE_PATH))
 
-BROWNIE_PROJECTUniV3 = brownie.project.load("./v3_core/", name="UniV3Project1234")
+BROWNIE_PROJECTUniV3 = brownie.project.load("./v3_core/", name="UniV3Project")
 #print(BROWNIE_PROJECTUniV3.available_contracts)
 
 #if brownie.network.show_active() != "ganache":
