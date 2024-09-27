@@ -43,7 +43,7 @@ nvm use 16.3.0
 
 Install Ganache CLI using npm:
 ```bash
-npm install -g ganache-cli@7.9.1
+npm install --save-dev hardhat
 ```
 
 Install solc-js via npm: 
@@ -81,7 +81,7 @@ pip install -r requirements_td.txt
 
 6. Open a new terminal and start ganache cli in this, please ensure that latest version of ganache is installed in your systems
 ```bash
-ganache-cli --gasLimit 10000000000 --gasPrice 1 --hardfork istanbul
+npx hardhat node --port 8545
 ```
 
 ### Django App Deployment

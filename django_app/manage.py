@@ -19,12 +19,19 @@ def main():
         ) from exc
     execute_from_command_line(sys.argv)
 
-def start_ganache():
-    subprocess.run(["ganache-cli", "--quiet", "true", "--defaultBalanceEther", "10000000000000000000", "--gasLimit", "10000000000", "--gasPrice", "1", "--hardfork", "istanbul"])
-    #print("Have you started ganache")
+# def start_ganache():
+#     subprocess.run(["ganache-cli", "--quiet", "true", "--defaultBalanceEther", "10000000000000000000", "--gasLimit", "10000000000", "--gasPrice", "1", "--hardfork", "istanbul"])
+#     #print("Have you started ganache")
+
+def start_hardhat():
+    subprocess.run(["npx", "hardhat", "node", "--port", "8545"])
+    #print("Have you started hardhat")
 
 if __name__ == "__main__":
     # p1 = Process(target=start_ganache)
+    # p1.start()
+
+    # p1 = Process(target=start_hardhat)
     # p1.start()
 
     # sleep to wait util ganache started

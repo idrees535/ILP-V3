@@ -24,6 +24,7 @@ tsp_venv/
 *.swp
 ilp_venv/
 ilp_venv2/
+ilpvenv/
 
 djnago_app/ilp_venv_7/
 djnago_app/ilp_venv_7
