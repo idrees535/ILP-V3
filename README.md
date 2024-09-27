@@ -82,6 +82,8 @@ pip install -r requirements_td.txt
 
 6. Open a new terminal and start hardhat in this, please ensure that latest version of ganache is installed in your systems
 ```bash
+cd hardhat-project
+npm init -y
 npx hardhat node --port 8545
 ```
 

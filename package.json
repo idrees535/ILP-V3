@@ -1,5 +1,18 @@
 {
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.3"
-  }
+  },
+  "devDependencies": {
+    "hardhat": "^2.22.12"
+  },
+  "name": "ilp-framework",
+  "version": "1.0.0",
+  "description": "The Intelligent Liquidity Provisioning (ILP) Framework V2 for Uniswap V3 pools is an advanced system that leverages agent-based modeling (ABM) and reinforcement learning (RL) to optimize liquidity provisioning strategies. Building on the success of V1, this version introduces a suite of enhancements aimed at providing more accurate simulations, improved decision-making capabilities, and an efficient inference process. Additionally, V2 features a Django app for easy interaction with the framework through API endpoints.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
