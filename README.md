@@ -37,8 +37,9 @@ source ~/.bashrc
 ```
 Install Node.js using nvm:
 ```bash
-nvm install 16.3.0
-nvm use 16.3.0
+export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node/
+nvm install 18.20.4
+nvm use 18.20.4
 ```
 
 Install hardhat using npm:
