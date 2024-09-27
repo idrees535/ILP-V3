@@ -41,7 +41,7 @@ nvm install 16.3.0
 nvm use 16.3.0
 ```
 
-Install Ganache CLI using npm:
+Install hardhat using npm:
 ```bash
 npm install --save-dev hardhat
 ```
@@ -77,9 +77,9 @@ source ilp_venv/bin/activate
 pip install -r requirements_td.txt
 ```
 
-5. Ensure you have the `solc`, `ganache`, and `nvm` installed and upto date
+5. Ensure you have the `solc`, `hardhat`, and `nvm` installed and upto date
 
-6. Open a new terminal and start ganache cli in this, please ensure that latest version of ganache is installed in your systems
+6. Open a new terminal and start hardhat in this, please ensure that latest version of ganache is installed in your systems
 ```bash
 npx hardhat node --port 8545
 ```
