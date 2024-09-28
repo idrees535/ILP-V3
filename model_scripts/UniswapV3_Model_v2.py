@@ -514,7 +514,7 @@ class UniV3Model():
         return tx_receipt
 
     def collect_fee(self,recipient,tick_lower,tick_upper,poke=False):
-        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 500000000, 'allow_revert': True}
+        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
         
         # Poke to update variables
         if poke==True:

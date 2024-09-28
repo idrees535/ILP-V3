@@ -39,49 +39,11 @@ class SimEngine:
 
         while True:
             self.takeStep()
-
-            # Stop condition
             if self.doStop():
                 break
-
-            # Increment the state tick
             self.state.tick += 1
-
-            # Ensure the time step is valid and a float
-            try:
-                time_step = float(self.state.ss.time_step)
-            except (ValueError, TypeError) as e:
-                log.warning(f"Invalid time step {self.state.ss.time_step}: {e}. Defaulting to 1 second.")
-                time_step = 1  # Default to 1 second if the time_step is invalid
-
-            if time_step <= 0:
-                log.warning(f"Invalid time step {time_step}. Setting to 1 second.")
-                time_step = 1  # Ensure time_step is positive
-
-            # Get the latest block timestamp and ensure it's a float
-            try:
-                previous_block_timestamp = float(chain[-1].timestamp)
-            except (ValueError, TypeError) as e:
-                log.error(f"Error retrieving previous block timestamp: {e}. Defaulting to 0.")
-                previous_block_timestamp = 0  # Handle any unexpected issue with chain[-1].timestamp
-
-            # Ensure the new timestamp is greater than the previous block timestamp
-            new_timestamp = previous_block_timestamp + time_step
-            if new_timestamp <= previous_block_timestamp:
-                log.warning(f"New timestamp {new_timestamp} is less than or equal to previous {previous_block_timestamp}. Adjusting to 1 second increment.")
-                new_timestamp = previous_block_timestamp + 1  # Ensure at least 1 second increment
-
-            # Calculate timedelta as a positive float
-            timedelta = new_timestamp - previous_block_timestamp
-            if timedelta <= 0:
-                log.warning(f"Timdelta {timedelta} is non-positive. Adjusting to 1 second.")
-                timedelta = 1  # Ensure a minimum of 1 second increment
-
-            # Mine the block with the adjusted timedelta
-            chain.mine(blocks=1, timedelta=timedelta)
-
+            chain.mine(blocks=1, timedelta=self.state.ss.time_step)
         log.info("Done")
-
 
     def takeStep(self) -> None:
         """Run one tick, updates self.state"""
