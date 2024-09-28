@@ -47,28 +47,41 @@ class SimEngine:
             # Increment the state tick
             self.state.tick += 1
 
-            # Ensure the time step is valid
-            time_step = float(self.state.ss.time_step)
+            # Ensure the time step is valid and a float
+            try:
+                time_step = float(self.state.ss.time_step)
+            except (ValueError, TypeError) as e:
+                log.warning(f"Invalid time step {self.state.ss.time_step}: {e}. Defaulting to 1 second.")
+                time_step = 1  # Default to 1 second if the time_step is invalid
+
             if time_step <= 0:
                 log.warning(f"Invalid time step {time_step}. Setting to 1 second.")
-                time_step = 1  # Set to 1 second if time_step is non-positive
+                time_step = 1  # Ensure time_step is positive
 
-            # Get the latest block timestamp
-            previous_block_timestamp = float(chain[-1].timestamp)
+            # Get the latest block timestamp and ensure it's a float
+            try:
+                previous_block_timestamp = float(chain[-1].timestamp)
+            except (ValueError, TypeError) as e:
+                log.error(f"Error retrieving previous block timestamp: {e}. Defaulting to 0.")
+                previous_block_timestamp = 0  # Handle any unexpected issue with chain[-1].timestamp
 
             # Ensure the new timestamp is greater than the previous block timestamp
             new_timestamp = previous_block_timestamp + time_step
             if new_timestamp <= previous_block_timestamp:
-                log.warning(f"New timestamp {new_timestamp} is less than or equal to previous {previous_block_timestamp}. Adjusting to 1 second.")
-                new_timestamp = previous_block_timestamp + 1  # Minimum of 1 second increment
+                log.warning(f"New timestamp {new_timestamp} is less than or equal to previous {previous_block_timestamp}. Adjusting to 1 second increment.")
+                new_timestamp = previous_block_timestamp + 1  # Ensure at least 1 second increment
 
-            # Ensure timedelta is a float
-            timedelta = float(new_timestamp - previous_block_timestamp)
+            # Calculate timedelta as a positive float
+            timedelta = new_timestamp - previous_block_timestamp
+            if timedelta <= 0:
+                log.warning(f"Timdelta {timedelta} is non-positive. Adjusting to 1 second.")
+                timedelta = 1  # Ensure a minimum of 1 second increment
 
-            # Mine the block with the adjusted time step
+            # Mine the block with the adjusted timedelta
             chain.mine(blocks=1, timedelta=timedelta)
 
         log.info("Done")
+
 
     def takeStep(self) -> None:
         """Run one tick, updates self.state"""
