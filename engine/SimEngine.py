@@ -39,10 +39,32 @@ class SimEngine:
 
         while True:
             self.takeStep()
+            
+            # Stop condition
             if self.doStop():
                 break
+            
+            # Increment the state tick
             self.state.tick += 1
-            chain.mine(blocks=1, timedelta=self.state.ss.time_step)
+
+            # Ensure the time step is valid
+            time_step = float(self.state.ss.time_step)
+            if time_step <= 0:
+                log.warning(f"Invalid time step {time_step}. Setting to 1 second.")
+                time_step = 1  # Set to 1 second if time_step is non-positive
+
+            # Get the latest block timestamp
+            previous_block_timestamp = chain[-1].timestamp
+
+            # Ensure the new timestamp is greater than the previous block timestamp
+            new_timestamp = previous_block_timestamp + time_step
+            if new_timestamp <= previous_block_timestamp:
+                log.warning(f"New timestamp {new_timestamp} is less than or equal to previous {previous_block_timestamp}. Adjusting to 1 second.")
+                new_timestamp = previous_block_timestamp + 1  # Minimum of 1 second increment
+
+            # Mine the block with the adjusted time step
+            chain.mine(blocks=1, timedelta=new_timestamp - previous_block_timestamp)
+
         log.info("Done")
 
     def takeStep(self) -> None:
