@@ -237,10 +237,3 @@ curl -X POST http://127.0.0.1:8000/inference/ \
 ```
 
 These commands serve as a starting point for interacting with the framework. Customize the JSON payload as needed to fit your specific requirements for training, evaluation, and inference.
-
-
---Go to python virtual environment --> lib --> pythonx.x --> site-packages --> brownie --> network -- >state.py
-replace 
-                return int(time.time() + self._time_offset)
-                                with 
-                return int(time.time() + float(self._time_offset)) 
