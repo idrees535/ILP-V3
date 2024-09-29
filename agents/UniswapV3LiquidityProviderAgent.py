@@ -10,7 +10,7 @@ from util.tx import _fees, transferETH
 
 
 @enforce_types
-class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
+class UniswapV3LiquidityProviderAgent():
     def __init__(self, name: str,token0,token1,policy_func,pool):
         super().__init__(name,token0,token1)
 
@@ -23,7 +23,7 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
         self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
         transferETH(GOD_ACCOUNT,self._wallet.address,1)
         
-    def takeStep(self, state):
+    def takeStep(self):
         try:
             liquidity_action, tick_lower, tick_upper, amount = self.policy(self)
         except TypeError:

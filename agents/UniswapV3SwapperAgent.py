@@ -9,7 +9,7 @@ from util.globaltokens import weth_usdc_pool
 from util.tx import _fees, transferETH
 
 @enforce_types
-class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
+class UniswapV3SwapperAgent():
     def __init__(self, name, token0, token1 ,policy_func,pool):
         super().__init__(name, token0, token1)
         
@@ -21,7 +21,7 @@ class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
         self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
         transferETH(GOD_ACCOUNT,self._wallet.address,1)
 
-    def takeStep(self, state):
+    def takeStep(self):
         action,amount = self.policy(self)
 
         if action == 'swap_token0_for_token1':
