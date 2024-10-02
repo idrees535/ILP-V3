@@ -17,9 +17,10 @@ class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
         self.policy=policy_func
         self._token0=token0
         self._token1=token1
+        #self._wallet =brownie.network.accounts[0]
         self.pool.fundToken0FromAbove(self._wallet.address, toBase18(token0))
         self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
-        transferETH(GOD_ACCOUNT,self._wallet.address,1)
+        transferETH(GOD_ACCOUNT,self._wallet.address,100* 10**18)
 
     def takeStep(self, state):
         action,amount = self.policy(self)
@@ -35,4 +36,4 @@ class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
 
-    
+ 

@@ -1,12 +1,14 @@
 import sys
 sys.path.append('/Users/idrees/Idrees/Code/Intelligent-Liquidity-Provisioning-Framework-V2')
 import os
+import pprint
 os.environ["PATH"] += ":."
 
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick,price_to_raw_tick,price_to_sqrtp,sqrtp_to_price,tick_to_sqrtp,liquidity0,liquidity1,eth,tick_to_price
 import brownie
+from brownie import accounts, network
 from web3 import Web3
 import json
 import math
@@ -42,15 +44,15 @@ class UniV3Model():
         self.synced_uniswap_pool_state=state
         
 
-        w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
+        self.w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
         #self.base_fee = w3.eth.get_block('latest')['baseFeePerGas']
 
         #latest_block = w3.eth.get_block('latest')
-        self.base_fee = 875000000#latest_block.get('baseFeePerGas', 0)  # Provide a default if not present
-        
+        self.base_fee = 875000000 #latest_block.get('baseFeePerGas', 0)  # Provide a default if not present
+    
         self.ensure_valid_json_file("model_storage/token_pool_addresses.json")
         self.ensure_valid_json_file("model_storage/liq_positions.json")
-        
+
         self.deploy_load_tokens()
         self.deploy_load_pool()
 
@@ -244,7 +246,9 @@ class UniV3Model():
             amount0 = int(tx_receipt.events['Mint']['amount0'])
             amount1 = int(tx_receipt.events['Mint']['amount1'])
             #print(tx_receipt.events['Mint']['amount'])
-            print(tx_receipt.events)
+            pprint.pprint(tx_receipt.events)
+            print(str(tx_receipt.events))
+
             if amount0 > 0:
                 tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
             if amount1 > 0:
@@ -308,7 +312,7 @@ class UniV3Model():
             # Implement callback
             amount0 = tx_receipt.events['Mint']['amount0']
             amount1 = tx_receipt.events['Mint']['amount1']
-            print(tx_receipt.events)
+            pprint.pprint(tx_receipt.events)
             if amount0 > 0:
                 tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
             if amount1 > 0:
@@ -421,7 +425,7 @@ class UniV3Model():
         try:
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
             tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
-            print(tx_receipt.events)
+            pprint.pprint(tx_receipt.events)
            #if collect_tokens==True:
            #     self.collect_fee(liquidity_provider_str,tick_lower,tick_upper,poke=False)
         except VirtualMachineError as e:
@@ -536,7 +540,6 @@ class UniV3Model():
         fee_collected_usd=0
         try:
             tx_receipt=self.pool.collect(recipient,tick_lower,tick_upper,amount0Owed, amount1Owed,tx_params)
-            print(tx_receipt.events)
 
             amount0Collected=tx_receipt.events['Collect']['amount0']
             amount1Collected=tx_receipt.events['Collect']['amount1']
@@ -841,14 +844,30 @@ class UniV3Model():
         liquidity=get_liquidity_for_amounts(sqrt_ratio_x96=sqrtp_cur, sqrt_ratio_a_x96=sqrtp_low, sqrt_ratio_b_x96=sqrtp_upp, amount0=amount_token0, amount1=amount_token1)
         
         return liquidity
-
+    
     def get_wallet_balances(self, recipient):
-            recipient_address = recipient  # Assuming recipient is a brownie account object
-            balances = {
-            recipient_address: {
-                'ETH': fromBase18(recipient.balance()),
-                'token0': fromBase18(self.token0.balanceOf(recipient_address)),
-                'token1': fromBase18(self.token1.balanceOf(recipient_address))
-            }
+        if isinstance(recipient, str):
+            recipient_account = accounts.at(recipient, force=True)  # Use recipient, not recipient_address
+            recipient_address = recipient  # Store the address for further use
+        else:
+            recipient_account = recipient  # Already an account object
+            recipient_address = recipient_account.address  # Extract the address
+            
+        balances = {
+        recipient_address: {
+            'ETH': fromBase18(recipient_account.balance()),
+            'token0': fromBase18(self.token0.balanceOf(recipient_account)),
+            'token1': fromBase18(self.token1.balanceOf(recipient_account))
         }
-            return balances  
+        }
+        return balances  
+    
+    def get_eth_balance(self,recipient):
+        if isinstance(recipient, str):
+            recipient_account = accounts.at(recipient, force=True)  # Use recipient, not recipient_address
+            recipient_address = recipient  # Store the address for further use
+        else:
+            recipient_account = recipient  # Already an account object
+            recipient_address = recipient_account.address  # Extract the address
+    
+        return recipient_account.balance()/10**18 
