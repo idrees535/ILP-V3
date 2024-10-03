@@ -1,7 +1,6 @@
 import sys
 sys.path.append('/Users/idrees/Idrees/Code/Intelligent-Liquidity-Provisioning-Framework-V2')
 import os
-import pprint
 os.environ["PATH"] += ":."
 
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
@@ -128,12 +127,12 @@ class UniV3Model():
             self.factory = UniswapV3Factory.deploy( {'from': self.deployer, 'gas_price': self.base_fee + 1})
             pool_creation_txn = self.factory.createPool(self.token0.address, self.token1.address, self.fee_tier,  {'from': self.deployer, 'gas_price': self.base_fee + 1})
             self.pool_address = pool_creation_txn.events['PoolCreated']['pool']
-            print(pool_creation_txn.events)
+            print(self.format_transaction(pool_creation_txn.events))
             self.pool = UniswapV3Pool.at(self.pool_address)
 
             sqrtPriceX96 = price_to_sqrtp(self.initial_pool_price)
             tx_receipt=self.pool.initialize(sqrtPriceX96,  {'from': self.deployer, 'gas_price': self.base_fee + 100000})
-            print(tx_receipt.events)
+            print(self.format_transaction(tx_receipt.events))
 
             pool_addresses["pool_address"] = self.pool_address
             addresses[self.pool_id] = pool_addresses
@@ -246,8 +245,8 @@ class UniV3Model():
             amount0 = int(tx_receipt.events['Mint']['amount0'])
             amount1 = int(tx_receipt.events['Mint']['amount1'])
             #print(tx_receipt.events['Mint']['amount'])
-            pprint.pprint(tx_receipt.events)
-            print(str(tx_receipt.events))
+            print(self.format_transaction(tx_receipt.events))
+            #print(str(tx_receipt.events))
 
             if amount0 > 0:
                 tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
@@ -312,7 +311,7 @@ class UniV3Model():
             # Implement callback
             amount0 = tx_receipt.events['Mint']['amount0']
             amount1 = tx_receipt.events['Mint']['amount1']
-            pprint.pprint(tx_receipt.events)
+            print(self.format_transaction(tx_receipt.events))
             if amount0 > 0:
                 tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
             if amount1 > 0:
@@ -375,7 +374,7 @@ class UniV3Model():
         try:
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
             tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
-            print(tx_receipt.events)
+            print(self.format_transaction(tx_receipt.events))
             #if collect_tokens==True:
            #     self.collect_fee(liquidity_provider_str,tick_lower,tick_upper,poke=False)
 
@@ -425,7 +424,7 @@ class UniV3Model():
         try:
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
             tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
-            pprint.pprint(tx_receipt.events)
+            print(self.format_transaction(tx_receipt.events))
            #if collect_tokens==True:
            #     self.collect_fee(liquidity_provider_str,tick_lower,tick_upper,poke=False)
         except VirtualMachineError as e:
@@ -479,7 +478,7 @@ class UniV3Model():
             amount_specified = int(amount_specified)
             tx_receipt= pool_actions.swap(recipient, zero_for_one, amount_specified,sqrt_price_limit_x96, data,tx_params)
             
-            print(tx_receipt.events)
+            print(self.format_transaction(tx_receipt.events))
             amount0 = int(tx_receipt.events['Swap']['amount0'])
 
             # Transfer token0 to pool (callback)
@@ -505,7 +504,7 @@ class UniV3Model():
         try:
             amount_specified = int(amount_specified)
             tx_receipt = pool_actions.swap(recipient, zero_for_one, amount_specified, sqrt_price_limit_x96, data,tx_params)
-            print(tx_receipt.events)
+            print(self.format_transaction(tx_receipt.events))
         
             amount1 = int(tx_receipt.events['Swap']['amount1'])
 
@@ -871,3 +870,13 @@ class UniV3Model():
             recipient_address = recipient_account.address  # Extract the address
     
         return recipient_account.balance()/10**18 
+    
+    def format_transaction(self,data):
+        result = ""
+        for key, events in data.items():
+            result += f"{key}:\n"
+            for event in events:
+                for field, value in event.items():
+                    result += f"  {field}: {value}\n"
+            result += "\n"
+        return result

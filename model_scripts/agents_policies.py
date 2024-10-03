@@ -2,7 +2,6 @@ import numpy as np
 #from util.globaltokens import weth_usdc_pool
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick,price_to_raw_tick,price_to_sqrtp,sqrtp_to_price,tick_to_sqrtp,liquidity0,liquidity1,eth
 import random
-import pprint
 
 
 q96 = 2**96
@@ -103,7 +102,7 @@ def retail_lp_policy(state):
             
             return action, tick_lower, tick_upper, amount
         else:
-            # No positions to remove
+            print(" No positions to remove ")
             return None
 
 def update_slippage_tolerance(state, params):

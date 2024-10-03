@@ -1,13 +1,13 @@
 import logging
 import os
-
+import datetime
 from brownie.network import chain  # pylint: disable=no-name-in-module
 from enforce_typing import enforce_types
 
 from util.constants import S_PER_MIN, S_PER_HOUR, S_PER_DAY, S_PER_MONTH, S_PER_YEAR
 
 log = logging.getLogger("master")
-
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 @enforce_types
 class SimEngine:
@@ -23,7 +23,7 @@ class SimEngine:
     def __init__(self, state, output_dir: str, netlist_log_func=None):
         self.state = state
         self.output_dir = output_dir
-        self.output_csv = "abm_data.csv"  # magic number
+        self.output_csv = f"abm_data_{timestamp}.csv"  # magic number
         self.netlist_log_func = netlist_log_func
 
     def run(self):

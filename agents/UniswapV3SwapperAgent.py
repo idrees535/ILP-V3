@@ -30,13 +30,13 @@ class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
             tx_receipt=self.pool.swap_token0_for_token1(self._wallet.address, toBase18(amount), data=b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"____SWAPPER {UniV3Model().get_wallet_balances(self._wallet.address)} ")
+            print(f"____SWAPPER WALLET {UniV3Model().get_wallet_balances(self._wallet.address)} ")
             
         
         elif action == 'swap_token1_for_token0':
             tx_receipt=self.pool.swap_token1_for_token0(self._wallet.address, toBase18(amount), data=b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"____SWAPPER {UniV3Model().get_wallet_balances(self._wallet.address)} ")
+            print(f"____SWAPPER WALLET {UniV3Model().get_wallet_balances(self._wallet.address)} ")
 
  

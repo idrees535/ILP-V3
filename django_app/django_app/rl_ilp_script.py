@@ -5,8 +5,10 @@ import os
 import pathlib
 from tqdm import tqdm
 import shutil
+import datetime
 
 base_path = pathlib.Path().resolve().as_posix()  #pathlib.Path().resolve().parent.as_posix()
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # Environment setup function
 def env_setup(base_path,reset_env_var=False):
@@ -727,7 +729,7 @@ class DDGPEval(DDPG):
         return action
     
 # Training Loop
-def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddpg/ddpg_2',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
+def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ddpg/ddpg_{timestamp}',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
     env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics,action_transform=action_transform)
     n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
     input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())

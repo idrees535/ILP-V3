@@ -36,7 +36,7 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
             tx_receipt= self.pool.add_liquidity(self._wallet.address, tick_lower, tick_upper, amount, b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"____LIQUIDITY_PROVIDER {UniV3Model().get_wallet_balances(self._wallet.address)} ")
+            print(f"\n____LIQUIDITY_PROVIDER WALLET {UniV3Model().get_wallet_balances(self._wallet.address)} ")
 
         elif liquidity_action == "remove_liquidity":
             # collect_tx_receipt,_ = self.pool.collect_fee(self._wallet.address, tick_lower, tick_upper)
@@ -44,7 +44,7 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
             burn_tx_receipt = self.pool.remove_liquidity_with_liquidty(self._wallet.address, tick_lower, tick_upper, amount)
             #print(burn_tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"____LIQUIDITY_PROVIDER {UniV3Model().get_wallet_balances(self._wallet.address)} ")
+            print(f"\n____LIQUIDITY_PROVIDER WALLET {UniV3Model().get_wallet_balances(self._wallet.address)} ")
             
 
         elif liquidity_action == "hold":
