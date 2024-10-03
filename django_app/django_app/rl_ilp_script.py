@@ -1,60 +1,41 @@
-# %% [markdown]
-# # Set Paths
-
-# %%
 #export PATH=$PATH:.
 #base_path="/home/azureuser/Intelligent-Liquidity-Provisioning-Framework"
 import sys
 import os
 import pathlib
 from tqdm import tqdm
+import shutil
 
-base_path = pathlib.Path().resolve().parent.as_posix()
-reset_env_var = False
-sys.path.append(base_path)
-os.chdir(base_path)
-os.environ["PATH"] += ":."
+base_path = pathlib.Path().resolve().as_posix()  #pathlib.Path().resolve().parent.as_posix()
 
-def env_setup(base_path, reset_env_var):
-    base_path=base_path
-    sys.path.append(base_path)
+# Environment setup function
+def env_setup(base_path,reset_env_var=False):
+    if base_path not in sys.path:
+        sys.path.append(base_path)
     os.chdir(base_path)
-    os.environ["PATH"] += ":."
-    reset_env_var=reset_env_var
+    if "." not in os.environ["PATH"]:
+        os.environ["PATH"] += ":."
+    if reset_env_var==True:
+        reset_env()
 
-# %% [markdown]
-# # Reset Env
-
-# %%
 def reset_env():
-    import shutil
-    import os
-    import json
-
-    # Define the paths
+    print(base_path)
     folder_path = os.path.join(base_path, "v3_core/build/deployments")
     json_file1_path = os.path.join(base_path, "model_storage/token_pool_addresses.json")
     json_file2_path = os.path.join(base_path, "model_storage/liq_positions.json")
-
     # 1. Delete the folder and its contents
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
-
-    # 2. Delete contents of the first JSON file
+    # 2. Delete contents of the first JSON files
     with open(json_file1_path, 'w') as file:
         file.write("{}")
-
-    # 3. Delete contents of the second JSON file and add {}
     with open(json_file2_path, 'w') as file:
         file.write("{}")
+    print("Environment reset done.")
         
-if reset_env_var==True:
-    reset_env()
+env_setup(base_path)
 
-# %% [markdown]
-# # Env Setup
 
-# %%
 from netlists.uniswapV3.netlist import SimStrategy,SimState,netlist_createLogData
 from engine.SimEngine import SimEngine
 from util.globaltokens import weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool
@@ -756,7 +737,7 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
         state = env.reset()
         episode_reward = 0
         
-        for _ in tqdm(range(max_steps), desc= f'EPISODE {i+1} of {len(range(n_episodes))} Progress'):
+        for _ in tqdm(range(max_steps), desc= f'EPISODE {i+1}/{len(range(n_episodes))} Progress'):
             #print(f"\n__________________GOD_ACCOUNT balance: {GOD_ACCOUNT.balance()/10**18} Eth __________________\n")
             action = ddpg_agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
@@ -777,7 +758,7 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
     ddpg_agent.actor(dummy_state)
     ddpg_agent.critic(dummy_state, dummy_action)
 
-    
+    print(f"Base path for output : {base_path}")
     model_base_path = os.path.join(base_path,model_name)
     ddpg_actor_model_path = os.path.join(model_base_path, 'actor')
     ddpg_critic_model_path = os.path.join(model_base_path, 'critic')
@@ -791,7 +772,7 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
     ddpg_agent.critic.save(ddpg_critic_model_path)
 
     ddpg_train_data_log=env.train_data_log
-    output_file=ddpg_training_vis(ddpg_train_data_log,model_name)
+    #output_file=ddpg_training_vis(ddpg_train_data_log,model_name)
 
     return ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path
 
@@ -1251,7 +1232,7 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name='model_storage/ppo/
     ppo_agent.critic.save(ppo_critic_model_path)
 
     ppo_train_data_log=env.train_data_log
-    ppo_training_vis(ppo_train_data_log,model_name)
+    #ppo_training_vis(ppo_train_data_log,model_name)
 
     return ppo_train_data_log,ppo_actor_model_path,ppo_critic_model_path
 
