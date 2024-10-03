@@ -7,7 +7,8 @@ from tqdm import tqdm
 import shutil
 import datetime
 
-base_path = pathlib.Path().resolve().as_posix()  #pathlib.Path().resolve().parent.as_posix()
+#base_path = pathlib.Path().resolve().as_posix()  
+base_path = pathlib.Path().resolve().parent.as_posix()
 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # Environment setup function
