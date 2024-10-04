@@ -7,7 +7,6 @@ import brownie
 from util.base18 import toBase18,log_event_to_csv
 from util.globaltokens import weth_usdc_pool
 from util.tx import _fees, transferETH
-from model_scripts.UniswapV3_Model_v2 import UniV3Model
 
 @enforce_types
 class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
@@ -30,13 +29,13 @@ class UniswapV3SwapperAgent(AgentBase.AgentBaseEvmBoth):
             tx_receipt=self.pool.swap_token0_for_token1(self._wallet.address, toBase18(amount), data=b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"____SWAPPER WALLET {UniV3Model().get_wallet_balances(self._wallet.address)} ")
+            print(f"____SWAPPER WALLET {self.pool.get_wallet_balances(self._wallet.address)} \n")
             
         
         elif action == 'swap_token1_for_token0':
             tx_receipt=self.pool.swap_token1_for_token0(self._wallet.address, toBase18(amount), data=b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"____SWAPPER WALLET {UniV3Model().get_wallet_balances(self._wallet.address)} ")
+            print(f"____SWAPPER WALLET {self.pool.get_wallet_balances(self._wallet.address)} \n")
 
  

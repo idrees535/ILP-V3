@@ -7,7 +7,6 @@ import pandas as pd
 from util.base18 import log_event_to_csv
 from util.base18 import toBase18, fromBase18
 from util.tx import _fees, transferETH
-from model_scripts.UniswapV3_Model_v2 import UniV3Model
 
 
 @enforce_types
@@ -36,7 +35,7 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
             tx_receipt= self.pool.add_liquidity(self._wallet.address, tick_lower, tick_upper, amount, b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"\n____LIQUIDITY_PROVIDER WALLET {UniV3Model().get_wallet_balances(self._wallet.address)} ")
+            print(f"____LIQUIDITY_PROVIDER WALLET {self.pool.get_wallet_balances(self._wallet.address)} \n")
 
         elif liquidity_action == "remove_liquidity":
             # collect_tx_receipt,_ = self.pool.collect_fee(self._wallet.address, tick_lower, tick_upper)
@@ -44,7 +43,7 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
             burn_tx_receipt = self.pool.remove_liquidity_with_liquidty(self._wallet.address, tick_lower, tick_upper, amount)
             #print(burn_tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"\n____LIQUIDITY_PROVIDER WALLET {UniV3Model().get_wallet_balances(self._wallet.address)} ")
+            print(f"____LIQUIDITY_PROVIDER WALLET {self.pool.get_wallet_balances(self._wallet.address)} \n")
             
 
         elif liquidity_action == "hold":
