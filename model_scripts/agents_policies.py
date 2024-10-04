@@ -52,7 +52,7 @@ def noise_trader_policy(state):
     
     # Cap the final swap amount and add randomness to simulate trader behavior
     swap_amount = min(swap_amount, MAX_SAFE_INTEGER)
-    swap_amount =  swap_amount * random.uniform(1, 5)  #random.uniform(0,1)*pool_price
+    swap_amount =  swap_amount * random.uniform(0.1, 0.5)  #random.uniform(0,1)*pool_price
     return action, swap_amount
 
 
@@ -82,7 +82,7 @@ def retail_lp_policy(state):
         total_liq = liq_token0 * current_price + liq_token1
         total_liq = min(total_liq, MAX_SAFE_INTEGER)
         
-        liquidity_percentage = random.uniform(1, 5)  # Retail LPs allocate a small percentage of liquidity
+        liquidity_percentage = random.uniform(0.1, 0.5)  # Retail LPs allocate a small percentage of liquidity
         liq_amount_token1 = fromBase18(liquidity_percentage * total_liq) #random.uniform(0, 1)*current_price 
 
         return action, tick_lower, tick_upper, liq_amount_token1
