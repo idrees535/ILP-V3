@@ -194,7 +194,7 @@ class DiscreteSimpleEnv(gym.Env):
         
         # run uniswap abm env of n_steps
         print()
-        print('Environment Step')
+        print('_______________________________Environment Step________________________________')
         self.engine.reset()
         self.engine.run()
         print()
