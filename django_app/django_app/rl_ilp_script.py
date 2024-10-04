@@ -748,7 +748,6 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
             ddpg_agent.learn()
             state = next_state
             episode_reward += reward
-            print(f"\n {'=' *120} \n")
             if done:
                 break
         print(f"Episode {i+1}: Reward = {episode_reward}")
