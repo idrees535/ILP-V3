@@ -53,13 +53,11 @@ def noise_trader_policy(state):
     # Cap the final swap amount and add randomness to simulate trader behavior
     swap_amount = min(swap_amount, MAX_SAFE_INTEGER)
     swap_amount =  swap_amount * random.uniform(0.0001, 0.0005)  #random.uniform(0,1)*pool_price
- 
     return action, swap_amount
 
 
 def retail_lp_policy(state):
     actions = ['add_liquidity', 'remove_liquidity']
-    
     # Choose an action (retail LPs add/remove liquidity with price movements)
     action = random.choice(actions)
     

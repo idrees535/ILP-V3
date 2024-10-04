@@ -12,7 +12,7 @@ base_path = pathlib.Path().resolve().parent.as_posix()
 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # Environment setup function
-def env_setup(base_path,reset_env_var=False):
+def env_setup(base_path,reset_env_var):
     if base_path not in sys.path:
         sys.path.append(base_path)
     os.chdir(base_path)
@@ -36,7 +36,7 @@ def reset_env():
         file.write("{}")
     print("Environment reset done.")
         
-env_setup(base_path)
+env_setup(base_path,reset_env_var=False)
 
 
 from netlists.uniswapV3.netlist import SimStrategy,SimState,netlist_createLogData

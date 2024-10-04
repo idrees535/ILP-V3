@@ -30,21 +30,20 @@ class UniswapV3LiquidityProviderAgent(AgentBase.AgentBaseEvmBoth):
         except TypeError:
             print(f"Policy returned None, no action will be taken by {self.agent_name}")
             return None
+        
+        print(f"____LIQUIDITY_PROVIDER WALLET {self.pool.get_wallet_balances(self._wallet.address)} ")
+        print (f"Liquidity amount: {amount} \n")
 
         if liquidity_action == "add_liquidity":
             tx_receipt= self.pool.add_liquidity(self._wallet.address, tick_lower, tick_upper, amount, b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"____LIQUIDITY_PROVIDER WALLET {self.pool.get_wallet_balances(self._wallet.address)} \n")
-
         elif liquidity_action == "remove_liquidity":
             # collect_tx_receipt,_ = self.pool.collect_fee(self._wallet.address, tick_lower, tick_upper)
             #log_event_to_csv(tx_receipt)
             burn_tx_receipt = self.pool.remove_liquidity_with_liquidty(self._wallet.address, tick_lower, tick_upper, amount)
             #print(burn_tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            print(f"____LIQUIDITY_PROVIDER WALLET {self.pool.get_wallet_balances(self._wallet.address)} \n")
-            
-
         elif liquidity_action == "hold":
             print("Do Nothing (HODOOR)")
+        
