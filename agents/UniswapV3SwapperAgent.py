@@ -17,22 +17,25 @@ class UniswapV3SwapperAgent():
         self.policy=policy_func
         self._token0=token0
         self._token1=token1
+        #self._wallet =brownie.network.accounts[0]
         self.pool.fundToken0FromAbove(self._wallet.address, toBase18(token0))
         self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
-        transferETH(GOD_ACCOUNT,self._wallet.address,1)
+        transferETH(GOD_ACCOUNT,self._wallet.address,10000* 10**18)
 
     def takeStep(self):
         action,amount = self.policy(self)
+
+        print(f"____SWAPPER WALLET {self.pool.get_wallet_balances(self._wallet.address)} ")
+        print(f"____Swap amount:   {amount} in Base18 {toBase18(amount)} \n")
 
         if action == 'swap_token0_for_token1':
             tx_receipt=self.pool.swap_token0_for_token1(self._wallet.address, toBase18(amount), data=b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            
-        
         elif action == 'swap_token1_for_token0':
             tx_receipt=self.pool.swap_token1_for_token0(self._wallet.address, toBase18(amount), data=b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
 
-    
+
+ 

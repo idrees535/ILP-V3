@@ -1,59 +1,44 @@
-# %% [markdown]
-# # Set Paths
-
-# %%
 #export PATH=$PATH:.
 #base_path="/home/azureuser/Intelligent-Liquidity-Provisioning-Framework"
 import sys
 import os
 import pathlib
+from tqdm import tqdm
+import shutil
+import datetime
 
+#base_path = pathlib.Path().resolve().as_posix()  
 base_path = pathlib.Path().resolve().parent.as_posix()
-reset_env_var = False
-sys.path.append(base_path)
-os.chdir(base_path)
-os.environ["PATH"] += ":."
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-def env_setup(base_path, reset_env_var):
-    base_path=base_path
-    sys.path.append(base_path)
+# Environment setup function
+def env_setup(base_path,reset_env_var):
+    if base_path not in sys.path:
+        sys.path.append(base_path)
     os.chdir(base_path)
-    os.environ["PATH"] += ":."
-    reset_env_var=reset_env_var
+    if "." not in os.environ["PATH"]:
+        os.environ["PATH"] += ":."
+    if reset_env_var==True:
+        reset_env()
 
-# %% [markdown]
-# # Reset Env
-
-# %%
 def reset_env():
-    import shutil
-    import os
-    import json
-
-    # Define the paths
+    print(base_path)
     folder_path = os.path.join(base_path, "v3_core/build/deployments")
     json_file1_path = os.path.join(base_path, "model_storage/token_pool_addresses.json")
     json_file2_path = os.path.join(base_path, "model_storage/liq_positions.json")
-
     # 1. Delete the folder and its contents
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
-
-    # 2. Delete contents of the first JSON file
+    # 2. Delete contents of the first JSON files
     with open(json_file1_path, 'w') as file:
         file.write("{}")
-
-    # 3. Delete contents of the second JSON file and add {}
     with open(json_file2_path, 'w') as file:
         file.write("{}")
+    print("Environment reset done.")
         
-if reset_env_var==True:
-    reset_env()
+env_setup(base_path,reset_env_var=False)
 
-# %% [markdown]
-# # Env Setup
 
-# %%
 from netlists.uniswapV3.netlist import SimStrategy,SimState,netlist_createLogData
 from engine.SimEngine import SimEngine
 from util.globaltokens import weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool
@@ -149,6 +134,7 @@ class DiscreteSimpleEnv(gym.Env):
         
     def reset(self):
         self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
+        #self.pool = btc_weth_pool
         
         print(f'Pool selcted for this episode: {self.pool.pool_id}')
         sim_strategy = SimStrategy()
@@ -208,7 +194,7 @@ class DiscreteSimpleEnv(gym.Env):
         
         # run uniswap abm env of n_steps
         print()
-        print('Environment Step')
+        print('_______________________________Environment Step________________________________')
         self.engine.reset()
         self.engine.run()
         print()
@@ -221,9 +207,9 @@ class DiscreteSimpleEnv(gym.Env):
 
         self.step_count+=1
         
-        print(f"episode: {self.episode}, step_count: {self.step_count}, scaled_reward: {self.reward}, raw_reward: {raw_reward} cumulative_reward: {self.cumulative_reward}")
-        print(f"raw_pool_state: {self.pool.get_global_state()}")
-        print(f"sclaed_pool_state: {self.state}")
+        print(f"\nepisode: {self.episode}, step_count: {self.step_count}, scaled_reward: {self.reward}, raw_reward: {raw_reward} cumulative_reward: {self.cumulative_reward}")
+        print(f"\nraw_pool_state: {self.pool.get_global_state()}")
+        print(f"\nscaled_pool_state: {self.state}")
         print()
 
         self.train_data_log.append((self.episode, self.step_count, action, self.pool.get_global_state(), raw_action, self.state, raw_reward, self.reward, self.cumulative_reward, fee_income, impermanent_loss))
@@ -337,6 +323,7 @@ class DiscreteSimpleEnv(gym.Env):
         tick_lower=price_to_valid_tick(action_dict['price_lower'])
         tick_upper=price_to_valid_tick(action_dict['price_upper'])
         amount=self.agent_budget_usd
+        #print(f"\nAmount for liquidity: {amount}")
         mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount, b'')
 
         return mint_tx_receipt,action_dict
@@ -351,7 +338,7 @@ class DiscreteSimpleEnv(gym.Env):
         print('Collect fee')
         collect_tx_receipt,fee_income = self.pool.collect_fee(GOD_ACCOUNT, tick_lower, tick_upper,poke=True)
     
-        print("Burn Position and Collect Tokens")
+        print("\nBurn Position and Collect Tokens")
         # Remove position and collect tokens
         burn_tx_receipt=self.pool.remove_liquidity_with_liquidty(GOD_ACCOUNT, tick_lower, tick_upper, liquidity)
         collect_tx_receipt,curr_budget_usd = self.pool.collect_fee(GOD_ACCOUNT, tick_lower, tick_upper,poke=False)
@@ -413,7 +400,7 @@ class DiscreteSimpleEnv(gym.Env):
             return True
         else:
             return False
-
+        
 #env=DiscreteSimpleEnv(agent_budget_usd=10000,use_running_statistics=False)
 #n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
 #input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
@@ -743,7 +730,7 @@ class DDGPEval(DDPG):
         return action
     
 # Training Loop
-def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddpg/ddpg_2',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
+def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ddpg/ddpg_{timestamp}',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
     env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics,action_transform=action_transform)
     n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
     input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
@@ -753,7 +740,8 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
         state = env.reset()
         episode_reward = 0
         
-        for _ in range(max_steps):
+        for _ in tqdm(range(max_steps), desc= f'EPISODE {i+1}/{len(range(n_episodes))} Progress'):
+            #print(f"\n__________________GOD_ACCOUNT balance: {GOD_ACCOUNT.balance()/10**18} Eth __________________\n")
             action = ddpg_agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
             ddpg_agent.remember(state, action, reward, next_state, done)
@@ -773,7 +761,7 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
     ddpg_agent.actor(dummy_state)
     ddpg_agent.critic(dummy_state, dummy_action)
 
-    
+    print(f"Base path for output : {base_path}")
     model_base_path = os.path.join(base_path,model_name)
     ddpg_actor_model_path = os.path.join(model_base_path, 'actor')
     ddpg_critic_model_path = os.path.join(model_base_path, 'critic')
@@ -787,7 +775,7 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name='model_storage/ddp
     ddpg_agent.critic.save(ddpg_critic_model_path)
 
     ddpg_train_data_log=env.train_data_log
-    output_file=ddpg_training_vis(ddpg_train_data_log,model_name)
+    #output_file=ddpg_training_vis(ddpg_train_data_log,model_name)
 
     return ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path
 
@@ -1247,7 +1235,7 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name='model_storage/ppo/
     ppo_agent.critic.save(ppo_critic_model_path)
 
     ppo_train_data_log=env.train_data_log
-    ppo_training_vis(ppo_train_data_log,model_name)
+    #ppo_training_vis(ppo_train_data_log,model_name)
 
     return ppo_train_data_log,ppo_actor_model_path,ppo_critic_model_path
 

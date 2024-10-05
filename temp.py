@@ -1,25 +1,29 @@
+import brownie
+from brownie import accounts
+from model_scripts.UniswapV3_Model_v2 import UniV3Model
 
-base_path = '/mnt/c/Users/MuhammadSaqib/Documents/ILP-Agent-Framework/'
-def reset_env():
-    import shutil
-    import os
-    import json
 
-    # Define the paths
-    folder_path = os.path.join(base_path, "v3_core/build/deployments")
-    json_file1_path = os.path.join(base_path, "model_storage/token_pool_addresses.json")
-    json_file2_path = os.path.join(base_path, "model_storage/liq_positions.json")
+# Ensure you're connected to a network (optional)
+# brownie.network.connect('development')  # or your desired network, e.g., 'ganache'
 
-    # 1. Delete the folder and its contents
-    if os.path.exists(folder_path):
-        shutil.rmtree(folder_path)
+# # # Print the list of available accounts and their addresses
+# accounts = brownie.network.accounts
 
-    # 2. Delete contents of the first JSON file
-    with open(json_file1_path, 'w') as file:
-        file.write("{}")
+_wallet = accounts.at("0xa31014fDF60494ad2AD4Dba69D525D09E27f87C6", force=True)
 
-    # 3. Delete contents of the second JSON file and add {}
-    with open(json_file2_path, 'w') as file:
-        file.write("{}")
+# Loop through and print each account address
+for i, account in enumerate(accounts):
+    # print(f"Account {i}: {account} : {accounts[i].balance()/10**18}")
+    print (f"Account {i}: {UniV3Model().get_wallet_balances(accounts[i])}")
 
-reset_env()
+# # Accessing the GOD_ACCOUNT and RL_AGENT_ACCOUNT if available
+# if len(accounts) > 9:
+GOD_ACCOUNT = accounts[9]
+
+
+#print(f"GOD_ACCOUNT {GOD_ACCOUNT}: {type(GOD_ACCOUNT)} :   {GOD_ACCOUNT.balance()/10**18} Ether")
+
+#print(f"_wallet : {_wallet} : {type(_wallet)}  :  {_wallet.balance()/10**18}")
+
+#print (f"{UniV3Model().get_wallet_balances(_wallet)}")
+

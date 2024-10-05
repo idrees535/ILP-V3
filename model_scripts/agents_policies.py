@@ -3,7 +3,6 @@ import numpy as np
 from util.base18 import toBase18, fromBase18,fromBase128,price_to_valid_tick,price_to_raw_tick,price_to_sqrtp,sqrtp_to_price,tick_to_sqrtp,liquidity0,liquidity1,eth
 import random
 
-import random
 
 q96 = 2**96
 MAX_SAFE_INTEGER = (1 << 53) - 1
@@ -53,18 +52,17 @@ def noise_trader_policy(state):
     
     # Cap the final swap amount and add randomness to simulate trader behavior
     swap_amount = min(swap_amount, MAX_SAFE_INTEGER)
-    swap_amount = swap_amount * random.uniform(0.0001, 0.0005)
-
+    swap_amount =  swap_amount * random.uniform(0.1, 0.5)  #random.uniform(0,1)*pool_price
     return action, swap_amount
 
 
 def retail_lp_policy(state):
     actions = ['add_liquidity', 'remove_liquidity']
-    
     # Choose an action (retail LPs add/remove liquidity with price movements)
     action = random.choice(actions)
     
     if action == 'add_liquidity':
+        print("\nADD LIQUIDITY\n")
         global_state = state.pool.get_global_state()
         liquidity = global_state['liquidity_raw']
         current_price = sqrtp_to_price(state.pool.pool.slot0()[0])
@@ -84,23 +82,25 @@ def retail_lp_policy(state):
         total_liq = liq_token0 * current_price + liq_token1
         total_liq = min(total_liq, MAX_SAFE_INTEGER)
         
-        liquidity_percentage = random.uniform(0.0001, 0.0005)  # Retail LPs allocate a small percentage of liquidity
-        liq_amount_token1 = fromBase18(liquidity_percentage * total_liq)
+        liquidity_percentage = random.uniform(0.1, 0.5)  # Retail LPs allocate a small percentage of liquidity
+        liq_amount_token1 = fromBase18(liquidity_percentage * total_liq) #random.uniform(0, 1)*current_price 
 
         return action, tick_lower, tick_upper, liq_amount_token1
     
     elif action == 'remove_liquidity':
+        print("\nREMOVE LIQUIDITY\n")
         lp_positions = state.pool.get_lp_all_positions(state._wallet.address)
-        
+
         if lp_positions:
             position_to_remove = random.choice(lp_positions)
+            print(f"Position going to remove : {position_to_remove}")
             tick_lower = position_to_remove['tick_lower']
             tick_upper = position_to_remove['tick_upper']
             amount = position_to_remove['liquidity']
             
             return action, tick_lower, tick_upper, amount
         else:
-            # No positions to remove
+            print(" No positions to remove ")
             return None
 
 def update_slippage_tolerance(state, params):

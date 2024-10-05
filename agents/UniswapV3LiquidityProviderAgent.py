@@ -19,9 +19,10 @@ class UniswapV3LiquidityProviderAgent():
         self._token0=token0
         self._token1=token1
         self.agent_name=name
+        #self._wallet =brownie.network.accounts[0]
         self.pool.fundToken0FromAbove(self._wallet.address, toBase18(token0))
         self.pool.fundToken1FromAbove(self._wallet.address, toBase18(token1))
-        transferETH(GOD_ACCOUNT,self._wallet.address,1)
+        transferETH(GOD_ACCOUNT,self._wallet.address,10000* 10**18)
         
     def takeStep(self):
         try:
@@ -29,19 +30,20 @@ class UniswapV3LiquidityProviderAgent():
         except TypeError:
             print(f"Policy returned None, no action will be taken by {self.agent_name}")
             return None
+        
+        print(f"____LIQUIDITY_PROVIDER WALLET {self.pool.get_wallet_balances(self._wallet.address)} ")
+        print(f"____Liquidity amount: {amount} in Base18 {toBase18(amount)} \n")
 
         if liquidity_action == "add_liquidity":
             tx_receipt= self.pool.add_liquidity(self._wallet.address, tick_lower, tick_upper, amount, b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-
         elif liquidity_action == "remove_liquidity":
             # collect_tx_receipt,_ = self.pool.collect_fee(self._wallet.address, tick_lower, tick_upper)
             #log_event_to_csv(tx_receipt)
             burn_tx_receipt = self.pool.remove_liquidity_with_liquidty(self._wallet.address, tick_lower, tick_upper, amount)
             #print(burn_tx_receipt.events)
             #log_event_to_csv(tx_receipt)
-            
-
         elif liquidity_action == "hold":
             print("Do Nothing (HODOOR)")
+        

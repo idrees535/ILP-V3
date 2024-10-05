@@ -12,3 +12,4 @@ django
 numpy
 requests
 keras==2.14.0
+tqdm

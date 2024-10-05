@@ -1,13 +1,13 @@
 import logging
 import os
-
+import datetime
 from brownie.network import chain  # pylint: disable=no-name-in-module
 from enforce_typing import enforce_types
 
 from util.constants import S_PER_MIN, S_PER_HOUR, S_PER_DAY, S_PER_MONTH, S_PER_YEAR
 
 log = logging.getLogger("master")
-
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 @enforce_types
 class SimEngine:
@@ -23,7 +23,7 @@ class SimEngine:
     def __init__(self, state, output_dir: str, netlist_log_func=None):
         self.state = state
         self.output_dir = output_dir
-        self.output_csv = "abm_data.csv"  # magic number
+        self.output_csv = f"abm_data_{timestamp}.csv"  # magic number
         self.netlist_log_func = netlist_log_func
 
     def run(self):
@@ -39,35 +39,10 @@ class SimEngine:
 
         while True:
             self.takeStep()
-
-            # Stop condition
             if self.doStop():
                 break
-
-            # Increment the state tick
             self.state.tick += 1
-
-            # Ensure the time step is valid
-            time_step = float(self.state.ss.time_step)
-            if time_step <= 0:
-                log.warning(f"Invalid time step {time_step}. Setting to 1 second.")
-                time_step = 1  # Set to 1 second if time_step is non-positive
-
-            # Get the latest block timestamp
-            previous_block_timestamp = float(chain[-1].timestamp)
-
-            # Ensure the new timestamp is greater than the previous block timestamp
-            new_timestamp = previous_block_timestamp + time_step
-            if new_timestamp <= previous_block_timestamp:
-                log.warning(f"New timestamp {new_timestamp} is less than or equal to previous {previous_block_timestamp}. Adjusting to 1 second.")
-                new_timestamp = previous_block_timestamp + 1  # Minimum of 1 second increment
-
-            # Ensure timedelta is a float
-            timedelta = float(new_timestamp - previous_block_timestamp)
-
-            # Mine the block with the adjusted time step
-            chain.mine(blocks=1, timedelta=timedelta)
-
+            #chain.mine(blocks=1, timedelta=self.state.ss.time_step)
         log.info("Done")
 
     def takeStep(self) -> None:
