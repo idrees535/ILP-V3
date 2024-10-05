@@ -62,7 +62,7 @@ git clone https://github.com/yourgithubusername/Intelligent-Liquidity-Provisioni
 2. Navigate into the cloned directory:
 
 ```bash
-cd Intelligent-Liquidity-Provisioning-Framework-V2
+cd Intelligent-Liquidity-Provisioning-Framework
 ```
 
 3. Create and activate a virtual environment:
@@ -80,7 +80,7 @@ pip install -r requirements_td.txt
 
 5. Ensure you have the `solc`, `hardhat`, and `nvm` installed and upto date
 
-6. Open a new terminal and start hardhat in this, please ensure that latest version of ganache is installed in your systems
+6. Open a new terminal and start hardhat doing this, go to cloned repo and start hardhat by doing below steps 
 ```bash
 cd hardhat-project
 npm init -y
@@ -136,11 +136,11 @@ To train the DDPG agent with custom parameters:
 curl -X POST http://127.0.0.1:8000/train_ddpg/ \
 -H "Content-Type: application/json" \
 -d '{
-    "max_steps": 2,
-    "n_episodes": 2,
+    "max_steps": 3000,
+    "n_episodes": 50,
     "model_name": "model_storage/ddpg/ddpg_fazool",
-    "alpha": 0.001,
-    "beta": 0.001,
+    "alpha": 0.0001,
+    "beta": 0.0001,
     "tau": 0.8,
     "batch_size": 50,
     "training": true,
