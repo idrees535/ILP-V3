@@ -48,9 +48,8 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
     ddpg_agent.critic(dummy_state, dummy_action)
 
     print(f"Base path for output : {BASE_PATH}")
-    model_base_path = os.path.join(BASE_PATH,model_name)
-    ddpg_actor_model_path = os.path.join(model_base_path, 'actor')
-    ddpg_critic_model_path = os.path.join(model_base_path, 'critic')
+    ddpg_actor_model_path = os.path.join(BASE_PATH,model_name, 'actor')
+    ddpg_critic_model_path = os.path.join(BASE_PATH,model_name, 'critic')
 
     # Saved Trained weights
     ddpg_agent.actor.save_weights(ddpg_actor_model_path)
@@ -61,7 +60,7 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
     ddpg_agent.critic.save(ddpg_critic_model_path)
 
     ddpg_train_data_log=env.train_data_log
-    #output_file=ddpg_training_vis(ddpg_train_data_log,model_name)
+    ddpg_training_vis(ddpg_train_data_log,model_name)
 
     return ddpg_train_data_log,ddpg_actor_model_path,ddpg_critic_model_path
 
@@ -102,7 +101,8 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
 
     ddpg_train_data_df = pd.DataFrame(df_data)
     base_model_name = os.path.basename(model_name)
-    output_dir = os.path.join('model_outdir_csv', 'ddpg', base_model_name)
+    output_dir = os.path.join(BASE_PATH,'model_outdir_csv', 'ddpg', base_model_name)
+    print(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     output_file = os.path.join(output_dir, f'train_logs.csv')
             
@@ -114,11 +114,11 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
     #train_combined_metrics_plot(ddpg_train_data_df)
     #train_separate_episode_action_plot(ddpg_train_data_df)
     
-    train_rewards_plot(ddpg_train_data_df, output_dir)
-    train_raw_actions_plot(ddpg_train_data_df, output_dir)
-    train_scaled_actions_plot(ddpg_train_data_df, output_dir)
-    train_combined_metrics_plot(ddpg_train_data_df, output_dir)
-    train_separate_episode_action_plot(ddpg_train_data_df, output_dir)
+    # train_rewards_plot(ddpg_train_data_df, output_dir)
+    # train_raw_actions_plot(ddpg_train_data_df, output_dir)
+    # train_scaled_actions_plot(ddpg_train_data_df, output_dir)
+    # train_combined_metrics_plot(ddpg_train_data_df, output_dir)
+    # train_separate_episode_action_plot(ddpg_train_data_df, output_dir)
 
     return output_file
 
@@ -128,10 +128,9 @@ def eval_ddpg_agent(eval_steps=100,eval_episodes=2,model_name='model_storage/ddp
     n_actions = sum(action_space.shape[0] for action_space in eval_env.action_space.values())
     input_dims = sum(np.prod(eval_env.observation_space.spaces[key].shape) for key in eval_env.observation_space.spaces.keys())
     ddpg_eval_agent = DDGPEval(env=eval_env, n_actions=n_actions, input_dims=input_dims, training=False)
-    model_base_path = os.path.join(BASE_PATH, model_name)
 
-    ddpg_actor_model_path = os.path.join(model_base_path, 'actor')
-    ddpg_critic_model_path = os.path.join(model_base_path, 'critic')
+    ddpg_actor_model_path = os.path.join(BASE_PATH,model_name, 'actor')
+    ddpg_critic_model_path = os.path.join(BASE_PATH,model_name, 'critic')
 
     ddpg_eval_agent.actor.load_weights(ddpg_actor_model_path)
     ddpg_eval_agent.critic.load_weights(ddpg_critic_model_path)
