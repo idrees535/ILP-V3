@@ -46,7 +46,7 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
     ddpg_agent.actor(dummy_state)
     ddpg_agent.critic(dummy_state, dummy_action)
 
-    print(f"Base path for output : {BASE_PATH}")
+    print(f"Base path: {BASE_PATH}")
     ddpg_actor_model_path = os.path.join(BASE_PATH,model_name, 'actor')
     ddpg_critic_model_path = os.path.join(BASE_PATH,model_name, 'critic')
 
@@ -100,25 +100,20 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
 
     ddpg_train_data_df = pd.DataFrame(df_data)
     base_model_name = os.path.basename(model_name)
-    output_dir = os.path.join(BASE_PATH,'model_outdir_csv', 'ddpg', base_model_name)
-    print(output_dir)
+    output_dir = os.path.join(BASE_PATH,'model_output', 'ddpg', base_model_name)
+    print(f"Output Directory: {output_dir}")
     os.makedirs(output_dir, exist_ok=True)
     output_file = os.path.join(output_dir, f'train_logs.csv')
-            
+         
     ddpg_train_data_df.to_csv(output_file, index=False)
-
-    #train_rewards_plot(ddpg_train_data_df)
-    #train_raw_actions_plot(ddpg_train_data_df)
-    #train_scaled_actions_plot(ddpg_train_data_df)
-    #train_combined_metrics_plot(ddpg_train_data_df)
-    #train_separate_episode_action_plot(ddpg_train_data_df)
+    print(ddpg_train_data_df)
     
-    # train_rewards_plot(ddpg_train_data_df, output_dir)
-    # train_raw_actions_plot(ddpg_train_data_df, output_dir)
-    # train_scaled_actions_plot(ddpg_train_data_df, output_dir)
-    # train_combined_metrics_plot(ddpg_train_data_df, output_dir)
-    # train_separate_episode_action_plot(ddpg_train_data_df, output_dir)
+    train_rewards_plot(ddpg_train_data_df, output_dir)
+    train_raw_actions_plot(ddpg_train_data_df, output_dir)
+    train_scaled_actions_plot(ddpg_train_data_df, output_dir)
+    train_combined_metrics_plot(ddpg_train_data_df, output_dir)
+    train_separate_episode_action_plot(ddpg_train_data_df, output_dir)
 
     return output_file
 
-train_ddpg_agent(max_steps=10, n_episodes=1)
+train_ddpg_agent(max_steps=3, n_episodes=1)

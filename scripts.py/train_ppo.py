@@ -96,7 +96,7 @@ def ppo_training_vis(ppo_train_data_log,model_name):
 
     ppo_train_data_df = pd.DataFrame(df_data)
     base_model_name = os.path.basename(model_name)
-    output_dir = os.path.join(BASE_PATH,'model_outdir_csv', 'ppo', base_model_name)
+    output_dir = os.path.join(BASE_PATH,'model_output', 'ppo', base_model_name)
     os.makedirs(output_dir, exist_ok=True)
     output_file = os.path.join(output_dir, f'train_logs.csv')
             

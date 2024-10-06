@@ -68,7 +68,7 @@ def log_event_to_csv(tx_receipt):
     max_fields = ['sender', 'owner', 'tickLower', 'tickUpper', 'amount', 'amount0', 'amount1', 
                   'from', 'to', 'value', 'sqrtPriceX96', 'liquidity', 'tick', 'recipient']
     
-    csv_file_path = "model_outdir_csv/events_log.csv"
+    csv_file_path = "model_output/events_log.csv"
     
     # Check if file exists to write headers
     try:

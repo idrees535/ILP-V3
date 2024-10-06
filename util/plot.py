@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import numpy as np
 import sys
 #print(sys.path)
 #sys.path.append('/mnt/c/Users/hijaz tr/Desktop/cadCADProject1/tokenspice')
@@ -296,6 +297,8 @@ def train_rewards_plot(data, output_dir):
     num_episodes = len(unique_episodes)
 
     fig, axes = plt.subplots(nrows=5, ncols=num_episodes, figsize=(5 * num_episodes, 25), sharey='row')
+    if num_episodes == 1:
+        axes = np.expand_dims(axes, axis=1)
 
     for i, episode in enumerate(unique_episodes):
         episode_data = data[data['episode'] == episode]
@@ -330,7 +333,8 @@ def train_raw_actions_plot(data, output_dir):
     num_episodes = len(unique_episodes)
 
     fig, axes = plt.subplots(nrows=1, ncols=num_episodes, figsize=(5 * num_episodes, 5), sharey=True)
-
+    if num_episodes == 1:
+        axes = [axes]
     for i, episode in enumerate(unique_episodes):
         episode_data = data[data['episode'] == episode]
 
@@ -350,7 +354,8 @@ def train_scaled_actions_plot(data, output_dir):
     num_episodes = len(unique_episodes)
 
     fig, axes = plt.subplots(nrows=1, ncols=num_episodes, figsize=(5 * num_episodes, 5), sharey=True)
-
+    if num_episodes == 1:
+        axes = [axes]
     for i, episode in enumerate(unique_episodes):
         episode_data = data[data['episode'] == episode]
 
@@ -376,6 +381,9 @@ def eval_rewards_plot(data, output_dir):
     num_episodes = len(unique_episodes)
 
     fig, axes = plt.subplots(nrows=8, ncols=num_episodes, figsize=(5 * num_episodes, 25))
+
+    if num_episodes == 1:
+        axes = np.expand_dims(axes, axis=1)
 
     for i, episode in enumerate(unique_episodes):
         episode_data = data[data['episode'] == episode]
@@ -495,6 +503,8 @@ def train_separate_episode_action_plot(data_df, output_dir):
     episodes = data_df['episode'].unique()
 
     fig, axes = plt.subplots(nrows=len(episodes), ncols=1, figsize=(15, 5 * len(episodes)))
+    if len(episodes) == 1:
+        axes = [axes]
 
     for i, episode in enumerate(episodes):
         episode_df = data_df[data_df['episode'] == episode]

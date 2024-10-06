@@ -89,7 +89,7 @@ class DiscreteSimpleEnv(gym.Env):
         # sim_strategy = SimStrategy()
         # sim_state = SimState(ss=sim_strategy,pool=self.pool)
 
-        output_dir = "model_outdir_csv"
+        output_dir = "model_output"
         # netlist_log_func = netlist_createLogData
 
         #from engine.SimEngine import SimEngine
