@@ -18,7 +18,7 @@ compiler:
 #     network_id: 1337
 
 networks:
-  default: hardhat 
+  default: development
   hardhat:
     host: http://127.0.0.1  
     port: 8545            

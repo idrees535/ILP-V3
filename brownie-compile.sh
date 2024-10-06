@@ -1,4 +1,6 @@
 #!/bin/bash
+sed -i 's/\r$//' brownie-compile.sh
+
 set -e  # Stop script on any error
 
 echo "compile.sh: Compile v3_core/..."
