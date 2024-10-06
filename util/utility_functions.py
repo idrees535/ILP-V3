@@ -136,29 +136,3 @@ def _fees() -> tuple:
     max_fee = 1000000000
 
     return (priority_fee, max_fee)
-
-def env_setup(base_path,reset_env_var):
-    if base_path not in sys.path:
-        sys.path.append(base_path)
-    os.chdir(base_path)
-    if "." not in os.environ["PATH"]:
-        os.environ["PATH"] += ":."
-    if reset_env_var==True:
-        reset_env()
-
-def reset_env():
-    print(BASE_PATH)
-    folder_path = os.path.join(BASE_PATH, "v3_core/build/deployments")
-    json_file1_path = os.path.join(BASE_PATH, "model_storage/token_pool_addresses.json")
-    json_file2_path = os.path.join(BASE_PATH, "model_storage/liq_positions.json")
-    # 1. Delete the folder and its contents
-    if os.path.exists(folder_path):
-        shutil.rmtree(folder_path)
-    # 2. Delete contents of the first JSON files
-    with open(json_file1_path, 'w') as file:
-        file.write("{}")
-    with open(json_file2_path, 'w') as file:
-        file.write("{}")
-    print("Environment reset done.") 
-
-env_setup(BASE_PATH,reset_env_var=False)

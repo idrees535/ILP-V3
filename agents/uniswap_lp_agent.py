@@ -20,7 +20,7 @@ class UniswapV3LiquidityProviderAgent():
         self._token1=token1
         self.pool.fundToken0FromAbove(WALLET_LP.address, toBase18(token0))
         self.pool.fundToken1FromAbove(WALLET_LP.address, toBase18(token1))
-        transferETH(GOD_ACCOUNT,WALLET_LP.address,10000* 10**18)
+        #transferETH(GOD_ACCOUNT,WALLET_LP.address,toBase18(10000))
         
     def takeStep(self):
         try:

@@ -50,9 +50,21 @@ class UniV3Model():
         self.ensure_valid_json_file("model_storage/token_pool_addresses.json")
         self.ensure_valid_json_file("model_storage/liq_positions.json")
 
-        self.deploy_load_tokens()
-        self.deploy_load_pool()
-
+        try:
+            self.deploy_load_tokens()
+        except Exception as e:
+            # If any error occurs during pool loading or deployment, reset the environment
+            print(f"Error encountered: {e}. Resetting environment...")
+            self.reset_env()
+            self.deploy_load_tokens()
+        
+        try:
+            self.deploy_load_pool()
+        except Exception as e:
+            # If any error occurs during pool loading or deployment, reset the environment
+            print(f"Error encountered: {e}. Resetting environment...")
+            self.reset_env()
+            self.deploy_load_tokens()
 
     def ensure_valid_json_file(self, filepath, default_content="{}"):
         """
@@ -100,12 +112,14 @@ class UniV3Model():
         if "token1_address" in pool_addresses:
             self.token1 = SimpleToken.at(pool_addresses["token1_address"])
         else:
+            print("Token1 contract not deployed, deploying a new token1")
             self.token1 = deploy_and_save_token(self.token1_name, self.token1_symbol, self.token1_decimals, self.supply_token1, "token1_address")
 
         # Load or deploy token0
         if "token0_address" in pool_addresses:
             self.token0 = SimpleToken.at(pool_addresses["token0_address"])
         else:
+            print("Token0 contract not deployed, deploying a new token0")
             self.token0 = deploy_and_save_token(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, "token0_address")
             # Ensure token0 address is less than token1 address
             while int(self.token0.address, 16) >= int(self.token1.address, 16):
@@ -117,7 +131,7 @@ class UniV3Model():
         UniswapV3Pool = BROWNIE_PROJECTUniV3.UniswapV3Pool
         addresses = self.load_addresses()
         pool_addresses = addresses.get(self.pool_id, {})
-
+ 
         if "pool_address" in pool_addresses:
             self.pool = UniswapV3Pool.at(pool_addresses["pool_address"])
             print(f"Existing pool:{self.pool_id} having pool address: {self.pool} loaded")
@@ -135,9 +149,7 @@ class UniV3Model():
             pool_addresses["pool_address"] = self.pool_address
             addresses[self.pool_id] = pool_addresses
             self.save_addresses(addresses)
-            
             self.sync_pool_state()
-
 
     def ensure_token_order(self):
         # Check if token0's address is greater than token1's address
@@ -879,3 +891,18 @@ class UniV3Model():
                     result += f"  {field}: {value}\n"
             result += "\n"
         return result
+    
+    def reset_env(self):
+        print(BASE_PATH)
+        folder_path = os.path.join(BASE_PATH, "v3_core/build/deployments")
+        json_file1_path = os.path.join(BASE_PATH, "model_storage/token_pool_addresses.json")
+        json_file2_path = os.path.join(BASE_PATH, "model_storage/liq_positions.json")
+        # 1. Delete the folder and its contents
+        if os.path.exists(folder_path):
+            shutil.rmtree(folder_path)
+        # 2. Delete contents of the first JSON files
+        with open(json_file1_path, 'w') as file:
+            file.write("{}")
+        with open(json_file2_path, 'w') as file:
+            file.write("{}")
+        print("Environment reset done.") 

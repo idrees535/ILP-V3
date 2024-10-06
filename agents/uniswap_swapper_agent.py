@@ -20,7 +20,7 @@ class UniswapV3SwapperAgent():
         #wallet_swapper =brownie.network.accounts[0]
         self.pool.fundToken0FromAbove(WALLET_SWAPPER.address, toBase18(token0))
         self.pool.fundToken1FromAbove(WALLET_SWAPPER.address, toBase18(token1))
-        transferETH(GOD_ACCOUNT,WALLET_SWAPPER.address,10000* 10**18)
+        # transferETH(GOD_ACCOUNT,WALLET_SWAPPER.address,toBase18(10000))
 
     def takeStep(self):
         action,amount = self.policy(self)

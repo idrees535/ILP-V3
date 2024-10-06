@@ -1,3 +1,5 @@
+import os 
+import sys
 import pathlib
 import datetime
 import brownie
@@ -5,6 +7,12 @@ import brownie
 
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+if BASE_PATH not in sys.path:
+    sys.path.append(BASE_PATH)
+os.chdir(BASE_PATH)
+if "." not in os.environ["PATH"]:
+    os.environ["PATH"] += ":."
 
 BROWNIE_PROJECTUniV3 = brownie.project.load("../v3_core/", name="UniV3Project")
 #print(BROWNIE_PROJECTUniV3.available_contracts)

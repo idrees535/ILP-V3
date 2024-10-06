@@ -9,11 +9,21 @@ compiler:
 #       host: http://127.0.0.1
 #       port: 8545
 #       network_id: 5777
+
+# networks:
+#   development:
+#     host: http://127.0.0.1
+#     port: 8545
+#     gas_price: auto
+#     network_id: 1337
+
 networks:
-  development:
-    host: http://127.0.0.1
-    port: 8545
-    gas_price: auto
-    network_id: 1337
+  default: hardhat 
+  hardhat:
+    host: http://127.0.0.1  
+    port: 8545            
+    gas_price: auto       
+    network_id: 1337      
+
 
 

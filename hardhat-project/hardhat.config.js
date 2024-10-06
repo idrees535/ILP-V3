@@ -4,10 +4,10 @@ module.exports = {
   solidity: "0.7.6",
   networks: {
     hardhat: {
-      chainId: 1337, // Default chain ID for local Hardhat
-      port: 8545,    // Specify the port
-      gas: 2100000,  // Optional: You can set a gas limit (optional)
-      gasPrice: 1000000000, // 1 gwei in wei
+      chainId: 1337, 
+      port: 8545,    
+      gas: 2100000, 
+      gasPrice: 1000000000,
       accounts: [
         {
           privateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
