@@ -25,6 +25,7 @@ tsp_venv/
 ilp_venv/
 ilp_venv2/
 ilpvenv/
+__pycache__
 
 djnago_app/ilp_venv_7/
 djnago_app/ilp_venv_7
