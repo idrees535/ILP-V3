@@ -70,7 +70,6 @@ def sync_pool_data(pool_id= "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36", UNISWA
 
     return state
 
-import requests
 def fetch_inference_pool_data(pool_id):
     UNISWAP_V3_SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
     
@@ -100,7 +99,7 @@ def fetch_inference_pool_data(pool_id):
     }
     return state
 
-from datetime import timezone
+
 def fetch_inference_pool_data_1(pool_id='0xcbcdf9626bc03e24f779434178a73a0b4bad62ed', date_str='2024-05-03'):
     UNISWAP_V3_SUBGRAPH_URL = "https://api.goldsky.com/api/public/project_clvon2puehf5a01zb9axv0oa8/subgraphs/uniswap-v3-mainnet/1.0.0/gn"
     

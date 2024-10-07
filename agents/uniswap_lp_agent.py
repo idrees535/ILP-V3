@@ -30,7 +30,7 @@ class UniswapV3LiquidityProviderAgent():
             return None
         
         print(f"____LIQUIDITY_PROVIDER WALLET {self.pool.get_wallet_balances(WALLET_LP.address)} ")
-        print(f"____Liquidity amount: {amount} in Base18 {toBase18(amount)} \n")
+        print(f"____Liquidity amount: {amount} toBase18: {toBase18(amount)} \n")
 
         if liquidity_action == "add_liquidity":
             tx_receipt= self.pool.add_liquidity(WALLET_LP.address, tick_lower, tick_upper, amount, b'')

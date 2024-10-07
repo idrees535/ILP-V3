@@ -501,11 +501,10 @@ def train_combined_metrics_plot(data_df, output_dir):
 
 def train_separate_episode_action_plot(data_df, output_dir):
     episodes = data_df['episode'].unique()
-
-    fig, axes = plt.subplots(nrows=len(episodes), ncols=1, figsize=(15, 5 * len(episodes)))
     if len(episodes) == 1:
-        axes = [axes]
-
+        return 
+    fig, axes = plt.subplots(nrows=len(episodes), ncols=1, figsize=(15, 5 * len(episodes)))
+    
     for i, episode in enumerate(episodes):
         episode_df = data_df[data_df['episode'] == episode]
 
@@ -528,6 +527,7 @@ def train_separate_episode_action_plot(data_df, output_dir):
     plt.close()
 
     fig, axes = plt.subplots(nrows=len(episodes), ncols=2, figsize=(14, 5 * len(episodes)))
+
     for i, episode in enumerate(episodes):
         episode_data = data_df[data_df['episode'] == episode]
         axes[i, 0].hist(episode_data['raw_reward'], bins=50, color='blue', alpha=0.7)
@@ -540,6 +540,7 @@ def train_separate_episode_action_plot(data_df, output_dir):
     plt.close()
 
     fig, axes = plt.subplots(nrows=len(episodes), ncols=1, figsize=(15, 6 * len(episodes)))
+
     for i, episode in enumerate(episodes):
         episode_data = data_df[data_df['episode'] == episode]
         axes[i].plot(episode_data['fee_earned'], label='Fee Income', color='orange')

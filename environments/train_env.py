@@ -265,13 +265,15 @@ class DiscreteSimpleEnv(gym.Env):
             'price_lower': price_lower,
             'price_upper': price_upper
         }
-        
-        print('\nRL Agent Action')
-        print(f"raw_action: {action}, scaled_action: {action_dict}")
-
         tick_lower=price_to_valid_tick(action_dict['price_lower'])
         tick_upper=price_to_valid_tick(action_dict['price_upper'])
         amount=self.agent_budget_usd
+        
+        print('\nRL Agent Action')
+        print(f"____RL Agent WALLET {self.pool.get_wallet_balances(GOD_ACCOUNT.address)} ")
+        print(f"____Liquidity amount: {amount} toBase18: {toBase18(amount)} \n")
+        print(f"raw_action: {action}, scaled_action: {action_dict}")
+
         #print(f"\nAmount for liquidity: {amount}")
         mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount, b'')
 

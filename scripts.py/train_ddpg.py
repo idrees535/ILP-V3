@@ -26,7 +26,6 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
         episode_reward = 0
         
         for _ in tqdm(range(max_steps), desc= f'EPISODE {i+1}/{len(range(n_episodes))} Progress'):
-            #print(f"\n__________________GOD_ACCOUNT balance: {GOD_ACCOUNT.balance()/10**18} Eth __________________\n")
             action = ddpg_agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
             ddpg_agent.remember(state, action, reward, next_state, done)
@@ -116,4 +115,4 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
 
     return output_file
 
-train_ddpg_agent(max_steps=3, n_episodes=1)
+train_ddpg_agent(max_steps=5, n_episodes=1)

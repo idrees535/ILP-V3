@@ -26,7 +26,7 @@ class UniswapV3SwapperAgent():
         action,amount = self.policy(self)
 
         print(f"____SWAPPER WALLET {self.pool.get_wallet_balances(WALLET_SWAPPER.address)} ")
-        print(f"____Swap amount:   {amount} in Base18 {toBase18(amount)} \n")
+        print(f"____Swap amount:   {amount} toBase18: {toBase18(amount)} \n")
 
         if action == 'swap_token0_for_token1':
             tx_receipt=self.pool.swap_token0_for_token1(WALLET_SWAPPER.address, toBase18(amount), data=b'')
