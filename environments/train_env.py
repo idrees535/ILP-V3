@@ -271,8 +271,8 @@ class DiscreteSimpleEnv(gym.Env):
         
         print('\nRL Agent Action')
         print(f"____RL Agent WALLET {self.pool.get_wallet_balances(GOD_ACCOUNT.address)} ")
-        print(f"____Liquidity amount: {amount} toBase18: {toBase18(amount)} \n")
-        print(f"raw_action: {action}, scaled_action: {action_dict}")
+        print(f"____Liquidity amount: {amount} toBase18: {toBase18(amount)} ")
+        print(f"raw_action: {action}, scaled_action: {action_dict} \ns")
 
         #print(f"\nAmount for liquidity: {amount}")
         mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount, b'')
