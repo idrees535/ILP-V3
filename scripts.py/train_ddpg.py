@@ -105,7 +105,7 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
     output_file = os.path.join(output_dir, f'train_logs.csv')
          
     ddpg_train_data_df.to_csv(output_file, index=False)
-    print(ddpg_train_data_df)
+    #print(ddpg_train_data_df)
     
     train_rewards_plot(ddpg_train_data_df, output_dir)
     train_raw_actions_plot(ddpg_train_data_df, output_dir)
