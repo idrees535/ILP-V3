@@ -10,16 +10,16 @@ from util.utility_functions import *
 
 @enforce_types
 class UniswapV3SwapperAgent():
-    def __init__(self, token0, token1 ,policy_func,pool):
+    def __init__(self, initial_token0, intitail_token1 ,policy_func,pool):
         #super().__init__( token0, token1)
         
         self.pool=pool
         self.policy=policy_func
-        self._token0=token0
-        self._token1=token1
+        # self._token0=initial_token0
+        # self._token1=intitail_token1
         #wallet_swapper =brownie.network.accounts[0]
-        self.pool.fundToken0FromAbove(WALLET_SWAPPER.address, toBase18(token0))
-        self.pool.fundToken1FromAbove(WALLET_SWAPPER.address, toBase18(token1))
+        self.pool.fundToken0FromAbove(WALLET_SWAPPER.address, toBase18(initial_token0))
+        self.pool.fundToken1FromAbove(WALLET_SWAPPER.address, toBase18(intitail_token1))
         # transferETH(GOD_ACCOUNT,WALLET_SWAPPER.address,toBase18(10000))
 
     def takeStep(self):

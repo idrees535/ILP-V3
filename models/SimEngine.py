@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import pandas as pd
 
 # Add parent directory to sys.path to handle imports
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
