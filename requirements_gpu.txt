@@ -5,11 +5,11 @@ mlflow
 tensorflow[and-cuda]==2.14.0
 tensorflow_probability==0.22.1
 ipykernel
-pandas 
+pandas==2.2.3
 seaborn
 celery
 django
-numpy
+numpy==1.24.4
 requests
 keras==2.14.0
 tqdm
