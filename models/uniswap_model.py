@@ -64,7 +64,7 @@ class UniV3Model():
             # If any error occurs during pool loading or deployment, reset the environment
             print(f"Error encountered: {e}. Resetting environment...")
             self.reset_env()
-            self.deploy_load_tokens()
+            self.deploy_load_pool()
 
     def ensure_valid_json_file(self, filepath, default_content="{}"):
         """
