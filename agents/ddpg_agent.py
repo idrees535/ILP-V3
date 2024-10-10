@@ -204,47 +204,54 @@ class DDPG:
         raw_actions_tensor = self.actor(state_tensor,training=False)
         
         return raw_actions_tensor
+
+    @tf.function
+    def train_step(self, states, actions, rewards, next_states, dones):
+        with tf.GradientTape() as tape:
+            target_actions = self.target_actor(next_states, training=False)
+            critic_value_ = tf.squeeze(self.target_critic(next_states, target_actions, training=False), 1)
+            critic_value = tf.squeeze(self.critic(states, actions, training=True), 1)
+            target = rewards + self.gamma * critic_value_ * (1 - tf.cast(dones, tf.float32))
+            critic_loss = tf.keras.losses.MSE(target, critic_value)
+
+        critic_grads = tape.gradient(critic_loss, self.critic.trainable_variables)
+        critic_grads, _ = tf.clip_by_global_norm(critic_grads, self.max_grad_norm)
+        self.critic.optimizer.apply_gradients(zip(critic_grads, self.critic.trainable_variables))
+
+        with tf.GradientTape() as tape:
+            new_policy_actions = self.actor(states, training=True)
+            actor_loss = -tf.reduce_mean(self.critic(states, new_policy_actions, training=True))
+
+        actor_grads = tape.gradient(actor_loss, self.actor.trainable_variables)
+        actor_grads, _ = tf.clip_by_global_norm(actor_grads, self.max_grad_norm)
+        self.actor.optimizer.apply_gradients(zip(actor_grads, self.actor.trainable_variables))
+
+        return actor_loss, critic_loss
         
     def learn(self):
         if self.memory.mem_cntr < self.batch_size:
             return
-        # Wrap the learning operations inside the GPU block
-        with tf.device('/GPU:0'):
-            state, action, reward, new_state, done = self.memory.sample_buffer(self.batch_size)
-            #print(f"{state},{action},{reward},{new_state}")
-            states = tf.convert_to_tensor(state, dtype=tf.float32)
-            states_ = tf.convert_to_tensor(new_state, dtype=tf.float32)
-            rewards = tf.convert_to_tensor(reward, dtype=tf.float32)
-            actions = tf.convert_to_tensor(action, dtype=tf.float32)
+        # # Wrap the learning operations inside the GPU block
+        # with tf.device('/GPU:0'):
+        state, action, reward, new_state, done = self.memory.sample_buffer(self.batch_size)
+        #print(f"{state},{action},{reward},{new_state}")
+        states = tf.convert_to_tensor(state, dtype=tf.float32)
+        states_ = tf.convert_to_tensor(new_state, dtype=tf.float32)
+        rewards = tf.convert_to_tensor(reward, dtype=tf.float32)
+        actions = tf.convert_to_tensor(action, dtype=tf.float32)
 
-            with tf.GradientTape() as tape:
-                target_actions = self.target_actor(states_,training=False)
-                critic_value_ = tf.squeeze(self.target_critic(states_, target_actions,training=False), 1)
-                critic_value = tf.squeeze(self.critic(states, actions,training=True), 1)
-                target = rewards + self.gamma*critic_value_*(1-done)
-                critic_loss = tf.keras.losses.MSE(target, critic_value)
 
-            critic_network_gradient = tape.gradient(critic_loss, self.critic.trainable_variables)
-            critic_network_gradient, _ = tf.clip_by_global_norm(critic_network_gradient, self.max_grad_norm)
-            self.critic.optimizer.apply_gradients(zip(critic_network_gradient, self.critic.trainable_variables))
-
-            with tf.GradientTape() as tape:
-                new_policy_actions = self.actor(states,training=True)
-                actor_loss = -self.critic(states, new_policy_actions,training=True)
-                actor_loss = tf.math.reduce_mean(actor_loss)
-
-            actor_network_gradient = tape.gradient(actor_loss, self.actor.trainable_variables)
-            actor_network_gradient, _ = tf.clip_by_global_norm(actor_network_gradient, self.max_grad_norm)
-            self.actor.optimizer.apply_gradients(zip(actor_network_gradient, self.actor.trainable_variables))
-            
-            print(f"Actor_Loss: {actor_loss.numpy()}, Critic_Loss: {critic_loss.numpy()}")
+        # Perform a training step
+        actor_loss, critic_loss = self.train_step(states, actions, rewards, next_states, dones)
         
-            with self.train_summary_writer.as_default():
-                tf.summary.scalar('critic_loss', critic_loss.numpy(), step=self.memory.mem_cntr)
-                tf.summary.scalar('actor_loss', actor_loss.numpy(), step=self.memory.mem_cntr)
+        print(f"Actor_Loss: {actor_loss.numpy()}, Critic_Loss: {critic_loss.numpy()}")
+    
+        with self.train_summary_writer.as_default():
+            tf.summary.scalar('critic_loss', critic_loss.numpy(), step=self.memory.mem_cntr)
+            tf.summary.scalar('actor_loss', actor_loss.numpy(), step=self.memory.mem_cntr)
 
-            self.update_network_parameters()
-            self.memory.clear()
+        self.update_network_parameters()
+        self.memory.clear()
 
 class DDGPEval(DDPG):
     def choose_action(self, state):
