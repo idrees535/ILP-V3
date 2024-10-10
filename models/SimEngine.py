@@ -2,6 +2,8 @@ import logging
 import os
 import sys
 import pandas as pd
+from util.constants import BASE_PATH
+from util.utility_functions import fromBase18
 
 # Add parent directory to sys.path to handle imports
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -15,16 +17,47 @@ class SimEngine:
 
     def __init__(self, pool):
         self.pool = pool
-        self.retail_lp = UniswapV3LiquidityProviderAgent(1e10,1e10,retail_lp_policy,self.pool)
-        #self.inst_lp = UniswapV3LiquidityProviderAgent("inst_lp", 1000000000000.0,110000000000000.0,inst_LP_policy)
-        #self.rl_lp = UniswapV3LiquidityProviderAgent("rl_lp", 1000000000000.0,110000000000000.0,rl_LP_policy)
-        
-        # Trader agents
-        self.noise_trader = UniswapV3SwapperAgent(1e10,1e10, noise_trader_policy,self.pool)
-        #self.whale_trader = UniswapV3SwapperAgent("whale_trader",5000000000000000.0,5500000000000000.0, whale_trader_policy)
+        self.lp_agent = UniswapV3LiquidityProviderAgent(initial_token0=1e10, initial_token1=1e10, pool=self.pool)
+        self.swapper_agent = UniswapV3SwapperAgent(initial_token0=1e10, initial_token1=1e10, pool=self.pool)
+        self.df = pd.read_csv(f"{BASE_PATH}/events_data/WBTC-ETH_all_events.csv")
+        self.df = self.df.iloc[:30]
+        print(f"token0: {token0}    token1:  {token1}")
     def run(self):
 
-        self.retail_lp.takeStep()
-        self.noise_trader.takeStep()
+        for index, row in self.df.iterrows():
+            if row['type'] == 'mint':
+                tick_lower = pd.to_numeric(row['tickLower'], errors='coerce')  # Access value in the current row
+                tick_upper = pd.to_numeric(row['tickUpper'], errors='coerce')
+                liquidity_amount = pd.to_numeric(row['amount'], errors='coerce')
+                token0_amount = pd.to_numeric(row['amount0'], errors='coerce')*10**10
+                token1_amount = pd.to_numeric(row['amount1'], errors='coerce')
+                block_time = row['evt_block_time']
+                action = 'add_liquidity'
+                self.lp_agent.takeStep(action, tick_lower, tick_upper, token1_amount, block_time)
+
+            if row['type'] == 'burn':
+                tick_lower = pd.to_numeric(row['tickLower'], errors='coerce')  # Access value in the current row
+                tick_upper = pd.to_numeric(row['tickUpper'], errors='coerce')
+                liquidity_amount = pd.to_numeric(row['amount'], errors='coerce')
+                token0_amount = pd.to_numeric(row['amount0'], errors='coerce')*10**10
+                token1_amount = pd.to_numeric(row['amount1'], errors='coerce')
+                block_time = row['evt_block_time']
+                action = 'remove_liquidity'
+                self.lp_agent.takeStep(action, tick_lower, tick_upper, liquidity_amount, block_time)
+
+            if row['type'] == 'swap' and pd.to_numeric(row['amount0'], errors='coerce', downcast='float') < 0 :
+                token0_amount = pd.to_numeric(row['amount0'], errors='coerce')*10**10
+                token1_amount = pd.to_numeric(row['amount1'], errors='coerce')
+                block_time = row['evt_block_time']
+                swap_action = 'swap_token1_for_token0'
+                self.swapper_agent.takeStep(swap_action,token0_amount,block_time)
+            
+            if row['type'] == 'swap' and pd.to_numeric(row['amount1'], errors='coerce', downcast='float') < 0 :
+                token0_amount = pd.to_numeric(row['amount0'], errors='coerce')*10**10
+                token1_amount = pd.to_numeric(row['amount1'], errors='coerce')
+                block_time = row['evt_block_time']
+                swap_action = 'swap_token0_for_token1'
+                self.swapper_agent.takeStep(swap_action,token1_amount,block_time)
+
 
 

@@ -82,8 +82,8 @@ class DiscreteSimpleEnv(gym.Env):
         self.beta=beta
         
     def reset(self):
-        self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
-        #self.pool = btc_weth_pool
+        #self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
+        self.pool = wbtc_eth_pool
         
         print(f'Pool selcted for this episode: {self.pool.pool_id}')
         # sim_strategy = SimStrategy()

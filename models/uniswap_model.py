@@ -64,7 +64,7 @@ class UniV3Model():
             # If any error occurs during pool loading or deployment, reset the environment
             print(f"Error encountered: {e}. Resetting environment...")
             self.reset_env()
-            self.deploy_load_tokens()
+            self.deploy_load_pool()
 
     def ensure_valid_json_file(self, filepath, default_content="{}"):
         """
@@ -239,7 +239,7 @@ class UniV3Model():
 
     def add_liquidity(self, liquidity_provider, tick_lower, tick_upper, token1_budget, data):
         tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
-        tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        # tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
         tx_receipt=None
         try:
             pool_actions = self.pool
@@ -310,11 +310,11 @@ class UniV3Model():
     
     def add_liquidity_with_liquidity(self, liquidity_provider, tick_lower, tick_upper, liquidity, data):
         tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
-        tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        #tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
         tx_receipt=None
         try:
             pool_actions = self.pool
-            liquidity=liquidity
+            liquidity= int(liquidity)
 
             tx_receipt = pool_actions.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
 
@@ -322,6 +322,7 @@ class UniV3Model():
             amount0 = tx_receipt.events['Mint']['amount0']
             amount1 = tx_receipt.events['Mint']['amount1']
             print(self.format_transaction(tx_receipt.events))
+            print(f"\namount0:   {amount0}     amount1:     {amount1} \n")
             if amount0 > 0:
                 tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
             if amount1 > 0:
@@ -427,6 +428,7 @@ class UniV3Model():
     
     def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity,collect_tokens=True):
         liquidity_provider_str = str(liquidity_provider)
+        liquidity = int(liquidity)
         tx_receipt = None
         
         # Convert budget to liquidity amount
@@ -504,7 +506,7 @@ class UniV3Model():
      
     def swap_token1_for_token0(self, recipient, amount_specified, data):
         tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
-        tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        # tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
         sqrt_price_limit_x96=1461446703485210103287273052203988822378723970342-1
 
         pool_actions = self.pool   
