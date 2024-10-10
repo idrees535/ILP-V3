@@ -20,10 +20,10 @@ class SimEngine:
         self.lp_agent = UniswapV3LiquidityProviderAgent(initial_token0=1e10, initial_token1=1e10, pool=self.pool)
         self.swapper_agent = UniswapV3SwapperAgent(initial_token0=1e10, initial_token1=1e10, pool=self.pool)
         self.df = pd.read_csv(f"{BASE_PATH}/events_data/WBTC-ETH_all_events.csv")
-        self.df = self.df.iloc[:30]
-        print(f"token0: {token0}    token1:  {token1}")
+        self.df = self.df.iloc[:10]
+        #print(f"token0: {token0}    token1:  {token1}")
     def run(self):
-
+        i=1
         for index, row in self.df.iterrows():
             if row['type'] == 'mint':
                 tick_lower = pd.to_numeric(row['tickLower'], errors='coerce')  # Access value in the current row
@@ -33,7 +33,7 @@ class SimEngine:
                 token1_amount = pd.to_numeric(row['amount1'], errors='coerce')
                 block_time = row['evt_block_time']
                 action = 'add_liquidity'
-                self.lp_agent.takeStep(action, tick_lower, tick_upper, token1_amount, block_time)
+                self.lp_agent.takeStep(action, tick_lower, tick_upper, liquidity_amount, block_time)
 
             if row['type'] == 'burn':
                 tick_lower = pd.to_numeric(row['tickLower'], errors='coerce')  # Access value in the current row
@@ -58,6 +58,9 @@ class SimEngine:
                 block_time = row['evt_block_time']
                 swap_action = 'swap_token0_for_token1'
                 self.swapper_agent.takeStep(swap_action,token1_amount,block_time)
+            print(f"---------------------------------CSV ROW :{i}")
+            i +=1 
+        
 
 
 

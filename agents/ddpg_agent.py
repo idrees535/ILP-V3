@@ -16,7 +16,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.constants import *
 import mlflow
 import mlflow.tensorflow
-mlflow.tensorflow.autolog()
+#mlflow.tensorflow.autolog()
 
 class ReplayBuffer:
     def __init__(self, max_size, input_dims, n_actions):
