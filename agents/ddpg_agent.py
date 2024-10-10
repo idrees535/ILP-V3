@@ -145,8 +145,8 @@ class DDPG:
         self.max_grad_norm=max_grad_norm
 
         # For tensorboard logging
-        # self.log_dir = os.path.join(BASE_PATH,'model_storage/tensorboard_ddpg_logs')
-        # self.train_summary_writer = tf.summary.create_file_writer(self.log_dir)
+        self.log_dir = os.path.join(BASE_PATH,'model_storage/tensorboard_ddpg_logs')
+        self.train_summary_writer = tf.summary.create_file_writer(self.log_dir)
 
     def update_network_parameters(self, tau=None):
         if tau is None:
