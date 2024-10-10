@@ -216,26 +216,26 @@ class DDPG:
         rewards = tf.convert_to_tensor(reward, dtype=tf.float32)
         actions = tf.convert_to_tensor(action, dtype=tf.float32)
         # Wrap the learning operations inside the GPU block
-        with tf.device('/GPU:0'):
-            with tf.GradientTape() as tape:
-                target_actions = self.target_actor(states_,training=False)
-                critic_value_ = tf.squeeze(self.target_critic(states_, target_actions,training=False), 1)
-                critic_value = tf.squeeze(self.critic(states, actions,training=True), 1)
-                target = rewards + self.gamma*critic_value_*(1-done)
-                critic_loss = tf.keras.losses.MSE(target, critic_value)
+        #with tf.device('/GPU:0'):
+        with tf.GradientTape() as tape:
+            target_actions = self.target_actor(states_,training=False)
+            critic_value_ = tf.squeeze(self.target_critic(states_, target_actions,training=False), 1)
+            critic_value = tf.squeeze(self.critic(states, actions,training=True), 1)
+            target = rewards + self.gamma*critic_value_*(1-done)
+            critic_loss = tf.keras.losses.MSE(target, critic_value)
 
-            critic_network_gradient = tape.gradient(critic_loss, self.critic.trainable_variables)
-            critic_network_gradient, _ = tf.clip_by_global_norm(critic_network_gradient, self.max_grad_norm)
-            self.critic.optimizer.apply_gradients(zip(critic_network_gradient, self.critic.trainable_variables))
+        critic_network_gradient = tape.gradient(critic_loss, self.critic.trainable_variables)
+        critic_network_gradient, _ = tf.clip_by_global_norm(critic_network_gradient, self.max_grad_norm)
+        self.critic.optimizer.apply_gradients(zip(critic_network_gradient, self.critic.trainable_variables))
 
-            with tf.GradientTape() as tape:
-                new_policy_actions = self.actor(states,training=True)
-                actor_loss = -self.critic(states, new_policy_actions,training=True)
-                actor_loss = tf.math.reduce_mean(actor_loss)
+        with tf.GradientTape() as tape:
+            new_policy_actions = self.actor(states,training=True)
+            actor_loss = -self.critic(states, new_policy_actions,training=True)
+            actor_loss = tf.math.reduce_mean(actor_loss)
 
-            actor_network_gradient = tape.gradient(actor_loss, self.actor.trainable_variables)
-            actor_network_gradient, _ = tf.clip_by_global_norm(actor_network_gradient, self.max_grad_norm)
-            self.actor.optimizer.apply_gradients(zip(actor_network_gradient, self.actor.trainable_variables))
+        actor_network_gradient = tape.gradient(actor_loss, self.actor.trainable_variables)
+        actor_network_gradient, _ = tf.clip_by_global_norm(actor_network_gradient, self.max_grad_norm)
+        self.actor.optimizer.apply_gradients(zip(actor_network_gradient, self.actor.trainable_variables))
         
         print(f"Actor_Loss: {actor_loss.numpy()}, Critic_Loss: {critic_loss.numpy()}")
        
