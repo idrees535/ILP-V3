@@ -26,12 +26,16 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
         episode_reward = 0
         
         for _ in tqdm(range(max_steps), desc= f'EPISODE {i+1}/{len(range(n_episodes))} Progress'):
+            # Redirect standard output to null (suppress output)
+            sys.stdout = open(os.devnull, 'w')
             action = ddpg_agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
             ddpg_agent.remember(state, action, reward, next_state, done)
             ddpg_agent.learn()
             state = next_state
             episode_reward += reward
+            # Restore normal standard output
+            sys.stdout = sys.__stdout__
             if done:
                 break
         print(f"Episode {i+1}: Reward = {episode_reward}")
