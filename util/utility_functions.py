@@ -4,7 +4,7 @@ import os
 import subprocess
 import time
 import signal
-from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP,HARDHAT_PROJECT_PATH
+#from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP,HARDHAT_PROJECT_PATH
 # from collections import OrderedDict
 import brownie
 # from brownie.network import chain
@@ -138,9 +138,9 @@ def _fees() -> tuple:
     return (priority_fee, max_fee)
 
 # Function to start the Hardhat node
-def start_hardhat_node():
+def start_hardhat_node(BASE_PATH):
     print("Starting Hardhat node...")
-    subprocess.run(["sudo", "-E", "npx", "hardhat", "node"], cwd=f"{BASE_PATH}/hardhat-project")  # Start Hardhat node in the background
+    subprocess.run(["npx", "hardhat", "node"], cwd=f"{BASE_PATH}/hardhat-project")  # Start Hardhat node in the background
     time.sleep(60)  # Give some time for the node to start
 
 

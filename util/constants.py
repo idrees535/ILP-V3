@@ -3,11 +3,14 @@ import sys
 import pathlib
 import datetime
 import brownie
-
+from .utility_functions import start_hardhat_node
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 HARDHAT_PROJECT_PATH = f"{BASE_PATH}/hardhat-project"   # Path to your Hardhat project
+
+print(BASE_PATH)
+start_hardhat_node(BASE_PATH)
 
 if BASE_PATH not in sys.path:
     sys.path.append(BASE_PATH)
