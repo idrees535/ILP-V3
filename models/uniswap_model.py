@@ -9,6 +9,7 @@ import math
 import shutil
 import logging
 logging.getLogger("brownie").setLevel(logging.ERROR)
+logging.getLogger('web3').setLevel(logging.WARNING)
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
