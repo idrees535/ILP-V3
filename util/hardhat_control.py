@@ -41,3 +41,4 @@ def brownie_connect():
 
     if brownie.network.show_active() != "development":
         brownie.network.connect("development")
+    return BROWNIE_PROJECTUniV3

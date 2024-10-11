@@ -9,7 +9,7 @@ import importlib
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.hardhat_control import start_hardhat_node,stop_hardhat_node,brownie_connect
 start_hardhat_node()
-brownie_connect()
+BROWNIE_PROJECTUniV3 = brownie_connect()
 from environments.train_env import DiscreteSimpleEnv
 from agents.ddpg_agent import DDPG,DDGPEval
 from util.plot import *

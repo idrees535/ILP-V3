@@ -10,7 +10,7 @@ import shutil
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
+from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 from util.utility_functions import *
 # import brownie
 from brownie import accounts, network
