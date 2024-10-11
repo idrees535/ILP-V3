@@ -3,7 +3,7 @@ from enforce_typing import enforce_types
 import os
 import sys
 from util.constants import GOD_ACCOUNT,WALLET_LP,WALLET_SWAPPER
-import brownie
+# import brownie
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.utility_functions import *
@@ -15,8 +15,8 @@ class UniswapV3SwapperAgent():
         
         self.pool=pool
         self.policy=policy_func
-        self._token0=token0
-        self._token1=token1
+        # self._token0=token0
+        # self._token1=token1
         #wallet_swapper =brownie.network.accounts[0]
         self.pool.fundToken0FromAbove(WALLET_SWAPPER.address, toBase18(token0))
         self.pool.fundToken1FromAbove(WALLET_SWAPPER.address, toBase18(token1))

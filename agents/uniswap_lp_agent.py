@@ -1,4 +1,4 @@
-import brownie
+# import brownie
 import random
 import pandas as pd
 import os
@@ -16,8 +16,8 @@ class UniswapV3LiquidityProviderAgent():
 
         self.pool=pool
         self.policy=policy_func
-        self._token0=token0
-        self._token1=token1
+        # self._token0=token0
+        # self._token1=token1
         self.pool.fundToken0FromAbove(WALLET_LP.address, toBase18(token0))
         self.pool.fundToken1FromAbove(WALLET_LP.address, toBase18(token1))
         #transferETH(GOD_ACCOUNT,WALLET_LP.address,toBase18(10000))

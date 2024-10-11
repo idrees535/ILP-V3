@@ -9,14 +9,13 @@ import math
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
+from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 from util.utility_functions import *
-import brownie
+# import brownie
 from brownie import accounts, network
 from web3 import Web3
 from brownie.exceptions import VirtualMachineError
 from enforce_typing import enforce_types
-from util.constants import *
 
 class UniV3Model():
     def __init__(self, token0='token0', token1='token1', token0_decimals=18, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=1000000):
@@ -43,6 +42,12 @@ class UniV3Model():
 
         self.w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
         #self.base_fee = w3.eth.get_block('latest')['baseFeePerGas']
+        # Check if connection is successful
+        if self.w3.isConnected():
+            print("Connected to Hardhat")
+        else:
+            print("Failed to connect to Hardhat")
+            exit()
 
         #latest_block = w3.eth.get_block('latest')
         self.base_fee = 875000000 #latest_block.get('baseFeePerGas', 0)  # Provide a default if not present

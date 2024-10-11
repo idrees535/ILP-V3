@@ -10,7 +10,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 from .train_env import DiscreteSimpleEnv
 from util.utility_functions import *
-from util.constants import *
+from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 
 import mlflow
 import mlflow.tensorflow

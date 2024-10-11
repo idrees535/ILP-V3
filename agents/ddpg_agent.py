@@ -229,28 +229,28 @@ class DDPG:
         return actor_loss, critic_loss
         
     def learn(self):
-            if self.memory.mem_cntr < self.batch_size:
-                return
-            states, actions, rewards, next_states, dones = self.memory.sample_buffer(self.batch_size)
-            # Convert to tensors
-            states = tf.convert_to_tensor(states, dtype=tf.float32)
-            actions = tf.convert_to_tensor(actions, dtype=tf.float32)
-            rewards = tf.convert_to_tensor(rewards, dtype=tf.float32)
-            next_states = tf.convert_to_tensor(next_states, dtype=tf.float32)
-            dones = tf.convert_to_tensor(dones, dtype=tf.bool)
+        if self.memory.mem_cntr < self.batch_size:
+            return
+        states, actions, rewards, next_states, dones = self.memory.sample_buffer(self.batch_size)
+        # Convert to tensors
+        states = tf.convert_to_tensor(states, dtype=tf.float32)
+        actions = tf.convert_to_tensor(actions, dtype=tf.float32)
+        rewards = tf.convert_to_tensor(rewards, dtype=tf.float32)
+        next_states = tf.convert_to_tensor(next_states, dtype=tf.float32)
+        dones = tf.convert_to_tensor(dones, dtype=tf.bool)
 
-            # Perform a training step
-            actor_loss, critic_loss = self.train_step(states, actions, rewards, next_states, dones)
+        # Perform a training step
+        actor_loss, critic_loss = self.train_step(states, actions, rewards, next_states, dones)
 
-            # Logging
-            print(f"Actor Loss: {actor_loss.numpy()}, Critic Loss: {critic_loss.numpy()}")
+        # Logging
+        print(f"Actor Loss: {actor_loss.numpy()}, Critic Loss: {critic_loss.numpy()}")
 
-            with self.train_summary_writer.as_default():
-                tf.summary.scalar('critic_loss', critic_loss, step=self.memory.mem_cntr)
-                tf.summary.scalar('actor_loss', actor_loss, step=self.memory.mem_cntr)
+        with self.train_summary_writer.as_default():
+            tf.summary.scalar('critic_loss', critic_loss, step=self.memory.mem_cntr)
+            tf.summary.scalar('actor_loss', actor_loss, step=self.memory.mem_cntr)
 
-            self.update_network_parameters()
-            self.memory.clear()
+        self.update_network_parameters()
+        self.memory.clear()
 
 class DDGPEval(DDPG):
     def choose_action(self, state):

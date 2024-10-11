@@ -8,6 +8,8 @@ import brownie
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
+HARDHAT_PROJECT_PATH = f"{BASE_PATH}/hardhat-project"   # Path to your Hardhat project
+
 if BASE_PATH not in sys.path:
     sys.path.append(BASE_PATH)
 os.chdir(BASE_PATH)

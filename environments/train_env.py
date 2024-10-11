@@ -9,7 +9,7 @@ import gymnasium as gym
 # from tensorflow.keras.layers import Dense
 # from tensorflow.keras.optimizers import Adam
 from util.utility_functions import *
-from util.constants import *
+from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 from util.pool_configs import *
 from models.SimEngine import SimEngine
 
@@ -351,3 +351,6 @@ class DiscreteSimpleEnv(gym.Env):
             return True
         else:
             return False
+        
+    def revert_back_to_snapshot(self): 
+            self.pool.revert_to_snapshot(self.snapshot_id)

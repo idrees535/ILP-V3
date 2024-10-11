@@ -3,7 +3,10 @@ import csv
 import sys
 import os 
 import shutil
-from util.constants import *
+import subprocess
+import time
+import signal
+from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP,HARDHAT_PROJECT_PATH
 from util.utility_functions import *
 from collections import OrderedDict
 import brownie
@@ -136,3 +139,31 @@ def _fees() -> tuple:
     max_fee = 1000000000
 
     return (priority_fee, max_fee)
+
+
+# Function to start the Hardhat node
+def start_hardhat_node():
+    print("Starting Hardhat node...")
+    # Start Hardhat node in the background
+    process = subprocess.Popen(
+        ["npx", "hardhat", "node"], 
+        cwd=HARDHAT_PROJECT_PATH,
+        preexec_fn=os.setsid  # This makes it possible to stop the process later
+    )
+    time.sleep(30)  # Give some time for the node to start
+    return process
+
+# Function to stop the Hardhat node
+def stop_hardhat_node(process):
+    print("Stopping Hardhat node...")
+    # Send signal to stop the process group
+    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+    print("Hardhat node stopped.")
+
+# Function to reset Hardhat state
+def reset_hardhat_state():
+    global hardhat_process  # Declare 'hardhat_process' as global before usage
+    # Stop the current node if running
+    if 'hardhat_process' in globals():
+        stop_hardhat_node(hardhat_process)
+    hardhat_process = start_hardhat_node()

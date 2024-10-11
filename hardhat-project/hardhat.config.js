@@ -92,6 +92,10 @@ module.exports = {
       ],
     },
   },
+  mocha: {
+    timeout: 20000,  // Adjust the timeout as needed
+    parallel: true,  // Enable parallel execution of test files
+  },
 };
 
 

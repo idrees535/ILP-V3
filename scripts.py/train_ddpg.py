@@ -3,39 +3,39 @@ import os
 import pandas as pd 
 import numpy as np
 from tqdm import tqdm 
+import importlib
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from environments.train_env import DiscreteSimpleEnv
-from environments.eval_env import DiscreteSimpleEnvEval
 from agents.ddpg_agent import DDPG,DDGPEval
 from util.plot import *
-from agents.ppo_agent import PPO,PPOEval
 from util.sync_pool_subgraph_data import *
 from util.utility_functions import *
-from util.constants import *
+from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 
 def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ddpg/ddpg_{TIMESTAMP}',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
     env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics,action_transform=action_transform)
     n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
     input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
     ddpg_agent = DDPG(alpha=alpha, beta=beta, input_dims=input_dims, tau=tau, env=env, n_actions=n_actions, batch_size=batch_size, training=training)
-    
+     
     for i in range(n_episodes):
+        reset_hardhat_state()
+        import util.pool_configs
+        importlib.reload(util.pool_configs)
         state = env.reset()
         episode_reward = 0
         
         for _ in tqdm(range(max_steps), desc= f'EPISODE {i+1}/{len(range(n_episodes))} Progress'):
-            # Redirect standard output to null (suppress output)
-            sys.stdout = open(os.devnull, 'w')
+            sys.stdout = open(os.devnull, 'w') # Redirect standard output to null (suppress output)
             action = ddpg_agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
             ddpg_agent.remember(state, action, reward, next_state, done)
             ddpg_agent.learn()
             state = next_state
             episode_reward += reward
-            # Restore normal standard output
-            sys.stdout = sys.__stdout__
+            sys.stdout = sys.__stdout__ # Restore normal standard output
             if done:
                 break
         print(f"Episode {i+1}: Reward = {episode_reward}")
