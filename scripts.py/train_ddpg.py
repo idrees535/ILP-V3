@@ -7,18 +7,18 @@ import importlib
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from util.hardhat_control import start_hardhat_node,stop_hardhat_node,brownie_connect
+from util.hardhat_control import start_hardhat_node,stop_hardhat_node
 start_hardhat_node()
-BROWNIE_PROJECTUniV3 = brownie_connect()
 from environments.train_env import DiscreteSimpleEnv
 from agents.ddpg_agent import DDPG,DDGPEval
 from util.plot import *
 from util.sync_pool_subgraph_data import *
 from util.utility_functions import *
-from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
+from util.constants import  GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 
+if brownie.network.show_active() != "development":
+    brownie.network.connect("development")
 def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ddpg/ddpg_{TIMESTAMP}',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
-
     env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics,action_transform=action_transform)
     n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
     input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())

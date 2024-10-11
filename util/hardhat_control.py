@@ -35,10 +35,5 @@ def stop_hardhat_node():
     subprocess.run(["sudo", "fuser", "-k", "8545/tcp"])    # Kill any process using port 8545
     print("Hardhat node stopped.")
 
-def brownie_connect():
-    BROWNIE_PROJECTUniV3 = brownie.project.load(f"{BASE_PATH}/v3_core/", name="UniV3Project")
-    #print(BROWNIE_PROJECTUniV3.available_contracts)
 
-    if brownie.network.show_active() != "development":
-        brownie.network.connect("development")
-    return BROWNIE_PROJECTUniV3
+
