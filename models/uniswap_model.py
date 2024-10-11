@@ -6,6 +6,7 @@ import random
 import pandas as pd
 import numpy as np
 import math
+import shutil
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
