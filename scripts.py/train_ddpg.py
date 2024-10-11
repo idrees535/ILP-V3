@@ -122,4 +122,4 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
 
     return output_file
 
-train_ddpg_agent(max_steps=30, n_episodes=50, alpha=0.0001, beta=0.0001)
+train_ddpg_agent(max_steps=2000, n_episodes=20, alpha=0.001, beta=0.001)
