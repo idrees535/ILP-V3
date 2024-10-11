@@ -10,7 +10,7 @@ import gymnasium as gym
 # from tensorflow.keras.optimizers import Adam
 from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 from util.utility_functions import *
-from util.pool_configs import *
+from util.pool_configs import refresh_pool_data
 from models.SimEngine import SimEngine
 
 # import mlflow
@@ -82,6 +82,7 @@ class DiscreteSimpleEnv(gym.Env):
         self.beta=beta
         
     def reset(self):
+        btc_weth_pool,btc_usdt_pool,eth_dai_pool,weth_usdc_pool = refresh_pool_data ()
         self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
         #self.pool = btc_weth_pool
         

@@ -26,8 +26,6 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
      
     for i in range(n_episodes):
         start_hardhat_node()
-        import util.pool_configs
-        importlib.reload(util.pool_configs)
         state = env.reset()
         episode_reward = 0
         
