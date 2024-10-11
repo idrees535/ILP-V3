@@ -77,7 +77,7 @@ selected_pool = UniV3Model(
     initial_pool_price=selected_pool_config["initial_pool_price"],
     deployer=deployer,
     # sync_pool=sync_pool,
-    initial_liquidity_amount_token1=selected_pool_config["initial_liquidity_amount_token1"]
+    initial_liquidity_amount=selected_pool_config["initial_liquidity_amount_token1"]
 )
 
 # Now `selected_pool` contains the UniV3Model instance created with the randomly selected pool configuration
