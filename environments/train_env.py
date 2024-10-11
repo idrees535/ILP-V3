@@ -82,6 +82,17 @@ class DiscreteSimpleEnv(gym.Env):
         self.beta=beta
         
     def reset(self):
+        self.pool=None
+        self.global_state=None
+        self.curr_price=None
+        self.action_lower_bound=None
+        self.action_upper_bound=None
+        self.state=None
+        self.engine=None
+        btc_weth_pool=None
+        btc_usdt_pool=None 
+        eth_dai_pool=None 
+        weth_usdc_pool=None
         btc_weth_pool,btc_usdt_pool,eth_dai_pool,weth_usdc_pool = refresh_pool_data ()
         self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
         #self.pool = btc_weth_pool
