@@ -17,8 +17,8 @@ pool_configs = [
         "token1": "USDC",
         "supply_token0": 1e40,
         "supply_token1": 1e40,
-        "decimals_token0": 18,
-        "decimals_token1": 18,
+        "token0_decimals": 18,
+        "token1_decimals": 18,
         "fee_tier": 3000,
         "initial_pool_price": 2000,
         "initial_liquidity_amount_token1": 10000000
@@ -28,8 +28,8 @@ pool_configs = [
         "token1": "DAI",
         "supply_token0": 1e40,
         "supply_token1": 1e40,
-        "decimals_token0": 18,
-        "decimals_token1": 18,
+        "token0_decimals": 18,
+        "token1_decimals": 18,
         "fee_tier": 3000,
         "initial_pool_price": 1000,
         "initial_liquidity_amount_token1": 10000000
@@ -39,8 +39,8 @@ pool_configs = [
         "token1": "USDT",
         "supply_token0": 1e40,
         "supply_token1": 1e40,
-        "decimals_token0": 18,
-        "decimals_token1": 18,
+        "token0_decimals": 18,
+        "token1_decimals": 18,
         "fee_tier": 3000,
         "initial_pool_price": 60000,
         "initial_liquidity_amount_token1": 1000000000
@@ -50,8 +50,8 @@ pool_configs = [
         "token1": "WETH",
         "supply_token0": 1e40,
         "supply_token1": 1e40,
-        "decimals_token0": 18,
-        "decimals_token1": 18,
+        "token0_decimals": 18,
+        "token1_decimals": 18,
         "fee_tier": 3000,
         "initial_pool_price": 20,  # 20 WETH
         "initial_liquidity_amount_token1": 10000
@@ -69,8 +69,8 @@ sync_pool = True
 selected_pool = UniV3Model(
     token0=selected_pool_config["token0"],
     token1=selected_pool_config["token1"],
-    decimals_token0=selected_pool_config["decimals_token0"],
-    decimals_token1=selected_pool_config["decimals_token1"],
+    token0_decimals=selected_pool_config["token0_decimals"],
+    token1_decimals=selected_pool_config["token1_decimals"],
     supply_token0=selected_pool_config["supply_token0"],
     supply_token1=selected_pool_config["supply_token1"],
     fee_tier=selected_pool_config["fee_tier"],
