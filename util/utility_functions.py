@@ -137,15 +137,3 @@ def _fees() -> tuple:
 
     return (priority_fee, max_fee)
 
-# Function to start the Hardhat node
-def start_hardhat_node(BASE_PATH):
-    print("Starting Hardhat node...")
-    subprocess.run(["npx", "hardhat", "node"], cwd=f"{BASE_PATH}/hardhat-project")  # Start Hardhat node in the background
-    time.sleep(60)  # Give some time for the node to start
-
-
-# Function to stop the Hardhat node
-def stop_hardhat_node():
-    print("Stopping Hardhat node...")
-    subprocess.run(["sudo", "fuser", "-k", "8545/tcp"])    # Kill any process using port 8545
-    print("Hardhat node stopped.")

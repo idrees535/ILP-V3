@@ -12,9 +12,11 @@ from agents.ddpg_agent import DDPG,DDGPEval
 from util.plot import *
 from util.sync_pool_subgraph_data import *
 from util.utility_functions import *
+from util.hardhat_control import start_hardhat_node,stop_hardhat_node
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 
 def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ddpg/ddpg_{TIMESTAMP}',alpha=0.001, beta=0.001, tau=0.8,batch_size=50, training=True,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
+    start_hardhat_node()
     env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics,action_transform=action_transform)
     n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
     input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
