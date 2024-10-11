@@ -8,6 +8,8 @@ import signal
 # from collections import OrderedDict
 import brownie
 # from brownie.network import chain
+import logging
+logging.getLogger("brownie").setLevel(logging.ERROR)
 
 min_tick = -887272
 max_tick = 887272
