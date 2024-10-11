@@ -150,10 +150,10 @@ def start_hardhat_node():
     return process
 
 # Function to stop the Hardhat node
-def stop_hardhat_node(process):
+def stop_hardhat_node():
     print("Stopping Hardhat node...")
-    # Send signal to stop the process group
-    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+    # Kill any process using port 8545
+    subprocess.run(["sudo", "fuser", "-k", "8545/tcp"])
     print("Hardhat node stopped.")
 
 # Function to reset Hardhat state

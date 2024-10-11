@@ -9,7 +9,6 @@ import gymnasium as gym
 # from tensorflow.keras.layers import Dense
 # from tensorflow.keras.optimizers import Adam
 from util.utility_functions import *
-process = start_hardhat_node()
 from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 from util.pool_configs import *
 from models.SimEngine import SimEngine
