@@ -4,9 +4,10 @@ import os
 import pathlib
 import subprocess
 import logging
-
+import brownie 
 
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
+
 HARDHAT_PROJECT_PATH = f"{BASE_PATH}/hardhat-project"   # Path to your Hardhat project
 
 def start_hardhat_node():
@@ -33,3 +34,10 @@ def stop_hardhat_node():
     print("Stopping Hardhat node...")
     subprocess.run(["sudo", "fuser", "-k", "8545/tcp"])    # Kill any process using port 8545
     print("Hardhat node stopped.")
+
+def brownie_connect():
+    BROWNIE_PROJECTUniV3 = brownie.project.load(f"{BASE_PATH}/v3_core/", name="UniV3Project")
+    #print(BROWNIE_PROJECTUniV3.available_contracts)
+
+    if brownie.network.show_active() != "development":
+        brownie.network.connect("development")

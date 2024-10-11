@@ -13,11 +13,7 @@ os.chdir(BASE_PATH)
 if "." not in os.environ["PATH"]:
     os.environ["PATH"] += ":."
 
-BROWNIE_PROJECTUniV3 = brownie.project.load(f"{BASE_PATH}/v3_core/", name="UniV3Project")
-#print(BROWNIE_PROJECTUniV3.available_contracts)
 
-if brownie.network.show_active() != "development":
-    brownie.network.connect("development")
 
 GOD_ACCOUNT = brownie.network.accounts[9]
 RL_AGENT_ACCOUNT = brownie.network.accounts[8]
