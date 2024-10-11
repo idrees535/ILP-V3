@@ -96,7 +96,6 @@ class DiscreteSimpleEnv(gym.Env):
         if brownie.network.show_active() != "development":
             brownie.network.connect("development")
 
-        BROWNIE_PROJECTUniV3 = brownie.project.load(f"{BASE_PATH}/v3_core/", name="UniV3Project")
         btc_weth_pool,btc_usdt_pool,eth_dai_pool,weth_usdc_pool = refresh_pool_data ()
         self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
         #self.pool = btc_weth_pool
