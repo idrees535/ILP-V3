@@ -15,7 +15,7 @@ if "." not in os.environ["PATH"]:
 
 if brownie.network.show_active() != "development":
     brownie.network.connect("development")
-
+BROWNIE_PROJECTUniV3 = None
 BROWNIE_PROJECTUniV3 = brownie.project.load(f"{BASE_PATH}/v3_core/", name="UniV3Project")
 
 GOD_ACCOUNT = brownie.network.accounts[9]

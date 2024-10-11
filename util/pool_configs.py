@@ -12,6 +12,7 @@ from models.uniswap_model import UniV3Model
 # _TOKEN0 = None
 
 def refresh_pool_data():
+    from .constants import  GOD_ACCOUNT,WALLET_LP,WALLET_SWAPPER,RL_AGENT_ACCOUNT
     token0 = "WETH"
     token1 = "USDC"
     supply_token0 = 1e40
