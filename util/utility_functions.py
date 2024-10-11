@@ -140,7 +140,7 @@ def _fees() -> tuple:
 # Function to start the Hardhat node
 def start_hardhat_node():
     print("Starting Hardhat node...")
-    subprocess.run(["sudo","npx", "hardhat", "node"],cwd =f"{BASE_PATH}/hardhat-project")  # Start Hardhat node in the background
+    subprocess.run(["sudo", "-E", "npx", "hardhat", "node"], cwd=f"{BASE_PATH}/hardhat-project")  # Start Hardhat node in the background
     time.sleep(60)  # Give some time for the node to start
 
 
