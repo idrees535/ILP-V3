@@ -83,7 +83,6 @@ class DiscreteSimpleEnv(gym.Env):
         
     def reset(self):
         from util.pool_configs import weth_usdc_pool,btc_weth_pool,eth_dai_pool,btc_usdt_pool
-        btc_weth_pool,btc_usdt_pool,eth_dai_pool,weth_usdc_pool = refresh_pool_data ()
         self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
         #self.pool = btc_weth_pool
         
