@@ -155,11 +155,3 @@ def stop_hardhat_node():
     # Kill any process using port 8545
     subprocess.run(["sudo", "fuser", "-k", "8545/tcp"])
     print("Hardhat node stopped.")
-
-# Function to reset Hardhat state
-def reset_hardhat_state():
-    global hardhat_process  # Declare 'hardhat_process' as global before usage
-    # Stop the current node if running
-    if 'hardhat_process' in globals():
-        stop_hardhat_node(hardhat_process)
-    hardhat_process = start_hardhat_node()

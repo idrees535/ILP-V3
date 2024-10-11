@@ -22,7 +22,8 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
     ddpg_agent = DDPG(alpha=alpha, beta=beta, input_dims=input_dims, tau=tau, env=env, n_actions=n_actions, batch_size=batch_size, training=training)
      
     for i in range(n_episodes):
-        reset_hardhat_state()
+        stop_hardhat_node()
+        start_hardhat_node()
         import util.pool_configs
         importlib.reload(util.pool_configs)
         state = env.reset()
