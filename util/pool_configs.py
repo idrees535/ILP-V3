@@ -76,7 +76,7 @@ selected_pool = UniV3Model(
     fee_tier=selected_pool_config["fee_tier"],
     initial_pool_price=selected_pool_config["initial_pool_price"],
     deployer=deployer,
-    sync_pool=sync_pool,
+    # sync_pool=sync_pool,
     initial_liquidity_amount_token1=selected_pool_config["initial_liquidity_amount_token1"]
 )
 
