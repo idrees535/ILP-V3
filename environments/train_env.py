@@ -10,8 +10,9 @@ import gymnasium as gym
 # from tensorflow.keras.optimizers import Adam
 from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 from util.utility_functions import *
-from util.pool_configs import *
 from models.SimEngine import SimEngine
+import importlib
+from util import pool_configs
 
 # import mlflow
 # import mlflow.tensorflow
@@ -82,9 +83,11 @@ class DiscreteSimpleEnv(gym.Env):
         self.beta=beta
         
     def reset(self):
-        from util.pool_configs import weth_usdc_pool,btc_weth_pool,eth_dai_pool,btc_usdt_pool
-        self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
-        #self.pool = btc_weth_pool
+        importlib.reload(pool_configs)
+
+        # Now, fetch the selected_pool after reload
+        selected_pool = pool_configs.selected_pool
+        self.pool = selected_pool
         
         print(f'Pool selcted for this episode: {self.pool.pool_id}')
         # sim_strategy = SimStrategy()
