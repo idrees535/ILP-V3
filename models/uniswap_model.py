@@ -12,7 +12,7 @@ import shutil
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP,BROWNIE_PROJECTUniV3
 from util.utility_functions import *
-# import brownie
+import brownie
 from brownie import accounts, network
 from web3 import Web3
 from brownie.exceptions import VirtualMachineError
@@ -40,7 +40,7 @@ class UniV3Model():
         self.pool_id = f"{token0}_{token1}_{fee_tier}"
 
         self.synced_uniswap_pool_state=state
-
+        BROWNIE_PROJECTUniV3 = brownie.project.load(f"{BASE_PATH}/v3_core/", name="UniV3Project")
         self.w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
         #self.base_fee = w3.eth.get_block('latest')['baseFeePerGas']
         # Check if connection is successful
