@@ -3,8 +3,7 @@ import sys
 import pathlib
 import datetime
 import brownie
-# from brownie._config import CONFIG  
-#sys.stdout = open(os.devnull, 'w')
+
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 

@@ -8,7 +8,6 @@ from .constants import  GOD_ACCOUNT
 from .utility_functions import *
 from models.uniswap_model import UniV3Model
 
-
 _TOKEN1 = None
 _TOKEN0 = None
 
