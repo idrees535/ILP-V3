@@ -27,7 +27,7 @@ def start_hardhat_node():
         print(f"An error occurred while starting Hardhat node: {e}")
     
     # Optionally, wait for a few seconds to ensure the node has started
-    time.sleep(10)
+    time.sleep(40)
 
 # Function to stop the Hardhat node
 def stop_hardhat_node():

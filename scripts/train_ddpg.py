@@ -122,4 +122,4 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
 
     return output_file
 
-train_ddpg_agent(max_steps=1000, n_episodes=20, alpha=0.001, beta=0.001,batch_size=25,model_name='model_storage/ddpg/tempest_20_1000')
+train_ddpg_agent(max_steps=1000, n_episodes=20, alpha=0.001, beta=0.001,batch_size=25)
