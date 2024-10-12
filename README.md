@@ -42,10 +42,6 @@ nvm install 18.20.4
 nvm use 18.20.4
 ```
 
-Install hardhat using npm:
-```bash
-npm install --save-dev hardhat
-```
 
 Install solc-js via npm: 
 ```bash

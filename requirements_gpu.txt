@@ -2,7 +2,8 @@ enforce_typing
 eth-brownie
 gymnasium
 mlflow
-tensorflow[and-cuda]==2.14.0
+# tensorflow[and-cuda]==2.14.0
+tensorflow-cpu==2.14.0
 tensorflow_probability==0.22.1
 ipykernel
 #pandas==2.2.3
@@ -13,3 +14,5 @@ django
 requests
 keras==2.14.0
 tqdm
+
+#pip install --no-deps pandas==2.2.3  numpy==1.24.4
