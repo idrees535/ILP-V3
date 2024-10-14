@@ -6,8 +6,13 @@ module.exports = {
     hardhat: {
       chainId: 1337, 
       port: 8545,    
-      gas: 2100000, 
-      gasPrice: 1000000000,
+      gas: "auto", 
+      gasPrice: "auto",
+      mining: {
+        mempool: {
+          order: "fifo"
+        }
+      },
       accounts: [
         {
           privateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
