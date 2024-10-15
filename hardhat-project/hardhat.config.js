@@ -1,4 +1,6 @@
 /** @type import('hardhat/config').HardhatUserConfig */
+// Disable all console.log calls
+console.log = function() {};
 
 module.exports = {
   solidity: "0.7.6",

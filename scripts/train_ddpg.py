@@ -25,23 +25,23 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
     ddpg_agent = DDPG(alpha=alpha, beta=beta, input_dims=input_dims, tau=tau, env=env, n_actions=n_actions, batch_size=batch_size, training=training)
      
     for i in range(n_episodes):
-        start_hardhat_node()
+        #start_hardhat_node()
         state = env.reset()
         episode_reward = 0
         
         for _ in tqdm(range(max_steps), desc= f'EPISODE {i+1}/{len(range(n_episodes))} Progress'):
-            sys.stdout = open(os.devnull, 'w') # Redirect standard output to null (suppress output)
+           #sys.stdout = open(os.devnull, 'w') # Redirect standard output to null (suppress output)
             action = ddpg_agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
             ddpg_agent.remember(state, action, reward, next_state, done)
             ddpg_agent.learn()
             state = next_state
             episode_reward += reward
-            sys.stdout = sys.__stdout__ # Restore normal standard output
+            #sys.stdout = sys.__stdout__ # Restore normal standard output
             if done:
                 break
         print(f"Episode {i+1}: Reward = {episode_reward}")
-        stop_hardhat_node()
+        #stop_hardhat_node()
         #ddpg_agent.memory.clear()
     
     # Create dummy data for model input shape
@@ -122,4 +122,4 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
 
     return output_file
 
-train_ddpg_agent(max_steps=1000, n_episodes=20, alpha=0.001, beta=0.001,batch_size=25)
+train_ddpg_agent(max_steps=500, n_episodes=1, alpha=0.001, beta=0.001,batch_size=50)

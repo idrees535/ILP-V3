@@ -16,7 +16,7 @@ from util.utility_functions import *
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 
 
-def train_ppo_agent(max_steps=100, n_episodes=10, model_name='model_storage/ppo/ppo2', buffer_size=50,n_epochs=10, gamma=0.5, alpha=0.01, gae_lambda=0.75, policy_clip=0.8, max_grad_norm=10,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
+def train_ppo_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ppo/ppo_{TIMESTAMP}', buffer_size=50,n_epochs=10, gamma=0.5, alpha=0.01, gae_lambda=0.75, policy_clip=0.8, max_grad_norm=10,agent_budget_usd=10000,use_running_statistics=False,action_transform='linear'):
     env=DiscreteSimpleEnv(agent_budget_usd=agent_budget_usd,use_running_statistics=use_running_statistics, action_transform=action_transform)
     n_actions = sum(action_space.shape[0] for action_space in env.action_space.values())
     input_dims = sum(np.prod(env.observation_space.spaces[key].shape) for key in env.observation_space.spaces.keys())
@@ -108,4 +108,4 @@ def ppo_training_vis(ppo_train_data_log,model_name):
     train_combined_metrics_plot(ppo_train_data_df,output_dir)
     train_separate_episode_action_plot(ppo_train_data_df,output_dir)
 
-train_ppo_agent()
+train_ppo_agent(max_steps=4000, n_episodes=2)

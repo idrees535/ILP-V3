@@ -211,8 +211,12 @@ class DiscreteSimpleEnv(gym.Env):
         return obs
 
     def _take_action(self, action):
-        self.penalty=0
+        self.global_state = self.pool.get_global_state()
+        # Scaling for curr_price and liquidity
+        curr_price = float(self.global_state['curr_price'])
+        liquidity = float(self.global_state['liquidity_raw'])
 
+        self.penalty=0
         raw_a, raw_b = action[0, 0].numpy(), action[0, 1].numpy()
 
         # Add exploration noise
@@ -260,10 +264,28 @@ class DiscreteSimpleEnv(gym.Env):
         # ensure actions are not too close - Add penalty
         min_diff_percentage = 0.05  # 5% difference
         price_diff = price_upper - price_lower
-        
         if price_diff < min_diff_percentage * price_lower:
             self.penalty+=self.penalty_param_magnitude
             price_upper = price_lower + min_diff_percentage * price_lower
+
+        # Penalize for out of range liquidity
+        if price_upper < curr_price:
+            self.penalty += self.penalty_param_magnitude
+
+        if price_lower > curr_price:
+            self.penalty += self.penalty_param_magnitude
+
+        if 2.5*(price_lower) < curr_price:
+            self.penalty += self.penalty_param_magnitude
+        if (price_upper)/2.5 > curr_price:
+            self.penalty += self.penalty_param_magnitude
+
+        # Penalty for bounds being too far from the current price
+        # volatility_factor = 0.05  # 5% deviation allowed
+        # max_allowed_deviation = volatility_factor * curr_price
+        # if abs(curr_price - price_lower) > max_allowed_deviation or abs(curr_price - price_upper) > max_allowed_deviation:
+        #     self.penalty += self.penalty_param_magnitude
+
         
         action_dict = {
             'price_lower': price_lower,
@@ -272,8 +294,9 @@ class DiscreteSimpleEnv(gym.Env):
         tick_lower=price_to_valid_tick(action_dict['price_lower'])
         tick_upper=price_to_valid_tick(action_dict['price_upper'])
         amount=self.agent_budget_usd
-        
-        print('\nRL Agent Action')
+        print (f"\n````````````````````````````````````````Current pool price : {curr_price}")
+        print (f"``````````````````````````````````````Current pool loquidity : {fromBase18(liquidity)}")
+        print('RL Agent Action')
         print(f"____RL Agent WALLET {self.pool.get_wallet_balances(GOD_ACCOUNT.address)} ")
         print(f"____Liquidity amount: {amount} toBase18: {toBase18(amount)} ")
         print(f"raw_action: {action}, scaled_action: {action_dict} \ns")
@@ -319,7 +342,7 @@ class DiscreteSimpleEnv(gym.Env):
         impermanent_loss = value_initial - value_final
 
         if fee_income==0:
-            self.penalty_param+= 0.05
+            self.penalty_param+= 0.005
             self.penalty += self.penalty_param_magnitude*(1+self.penalty_param)
 
         print(f'fee_earned:{fee_income}, impermannet_loss: {impermanent_loss}, penalty: {self.penalty}, initial_agent_portofolio_value: {value_initial}, final_agent_portofolio_value: {value_final}, reward_mean: {self.reward_mean}, rewrad_std_dev: {self.reward_std}, reward_count: {self.reward_count}')
@@ -337,7 +360,7 @@ class DiscreteSimpleEnv(gym.Env):
             self.reward_std = new_std
 
         #scaled_reward = (raw_reward - self.reward_mean) / (self.reward_std + 1e-10)
-        scaled_reward = raw_reward*10
+        scaled_reward = raw_reward
 
         #Reset penlaty for next step
         self.penalty=0
@@ -347,7 +370,7 @@ class DiscreteSimpleEnv(gym.Env):
     def _is_done(self):
         
         max_reward_threshold = 100000
-        min_reward_threshold= -100000
+        min_reward_threshold= -100000e100
         max_budget_threshold = 1.5*self.initial_budget_usd
         min_budget_threshold = 0.5*self.initial_budget_usd
 

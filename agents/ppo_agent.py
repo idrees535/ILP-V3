@@ -1,4 +1,6 @@
 import numpy as np
+import os 
+import sys
 import pandas as pd
 import random
 import matplotlib.pyplot as plt
@@ -8,6 +10,7 @@ from tensorflow.keras.callbacks import TensorBoard
 import tensorflow_probability as tfp
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
+from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 
 import mlflow
 import mlflow.tensorflow
@@ -146,7 +149,7 @@ class PPO:
         
 
          # For tensorboard logging
-        self.log_dir = os.path.join(base_path,'model_storage/tensorboard_ppo_logs')
+        self.log_dir = os.path.join(BASE_PATH,'model_storage/tensorboard_ppo_logs')
         self.train_summary_writer = tf.summary.create_file_writer(self.log_dir)
         self.tensorboard_counter=0
  

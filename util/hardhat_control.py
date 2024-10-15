@@ -20,15 +20,14 @@ def start_hardhat_node():
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
+        # Optionally, wait for a few seconds to ensure the node has started
+        time.sleep(4)
         print("Hardhat node started successfully.")
     except FileNotFoundError:
         print("Error: 'npx' command not found. Ensure Node.js and npm are installed.")
     except Exception as e:
         print(f"An error occurred while starting Hardhat node: {e}")
     
-    # Optionally, wait for a few seconds to ensure the node has started
-    time.sleep(40)
-
 # Function to stop the Hardhat node
 def stop_hardhat_node():
     print("Stopping Hardhat node...")
