@@ -377,7 +377,7 @@ class DiscreteSimpleEnv(gym.Env):
 
     def _is_done(self):
         
-        max_reward_threshold = 100000
+        max_reward_threshold = 100000e100
         min_reward_threshold= -100000e100
         max_budget_threshold = 1.5*self.initial_budget_usd
         min_budget_threshold = 0.5*self.initial_budget_usd
