@@ -1,6 +1,6 @@
 /** @type import('hardhat/config').HardhatUserConfig */
 // Disable all console.log calls
-console.log = function() {};
+// console.log = function() {};
 
 module.exports = {
   solidity: "0.7.6",
@@ -8,8 +8,8 @@ module.exports = {
     hardhat: {
       chainId: 1337, 
       port: 8545,    
-      gas: 2100000, 
-      gasPrice: 1000000000,
+      gas: "auto", 
+      gasPrice: "auto",
       loggingEnabled: false,
       accounts: [
         {

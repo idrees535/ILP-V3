@@ -107,12 +107,11 @@ def ddpg_training_vis(ddpg_train_data_log,model_name):
     ddpg_train_data_df = pd.DataFrame(df_data)
     base_model_name = os.path.basename(model_name)
     output_dir = os.path.join(BASE_PATH,'model_output', 'ddpg', base_model_name)
-    print(f"Output Directory: {output_dir}")
     os.makedirs(output_dir, exist_ok=True)
-    output_file = os.path.join(output_dir, f'train_logs.csv')
+    output_file = os.path.join(output_dir, f'ddpg_train_logs.csv')
          
     ddpg_train_data_df.to_csv(output_file, index=False)
-    #print(ddpg_train_data_df)
+    print(f"Output Directory: {output_dir}")
     
     train_rewards_plot(ddpg_train_data_df, output_dir)
     train_raw_actions_plot(ddpg_train_data_df, output_dir)

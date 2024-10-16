@@ -275,10 +275,10 @@ class DiscreteSimpleEnv(gym.Env):
         if price_lower > curr_price:
             self.penalty += self.penalty_param_magnitude
 
-        if 2.5*(price_lower) < curr_price:
-            self.penalty += self.penalty_param_magnitude
-        if (price_upper)/2.5 > curr_price:
-            self.penalty += self.penalty_param_magnitude
+        # if 2.5*(price_lower) < curr_price:
+        #     self.penalty += self.penalty_param_magnitude
+        # if (price_upper)/2.5 > curr_price:
+        #     self.penalty += self.penalty_param_magnitude
 
         # Penalty for bounds being too far from the current price
         # volatility_factor = 0.05  # 5% deviation allowed
@@ -336,14 +336,22 @@ class DiscreteSimpleEnv(gym.Env):
         self.global_state = self.pool.get_global_state()
         pool_price = float(self.global_state['curr_price'])
 
-        value_initial = (amount0_initial * pool_price + amount1_initial) / 1e18
-        value_final = (amount0_final * pool_price + amount1_final) / 1e18
+        value_initial = (amount0_initial * toBase18(pool_price) + amount1_initial) / 1e18
+        value_final = (amount0_final * toBase18(pool_price) + amount1_final) / 1e18
 
         impermanent_loss = value_initial - value_final
+        # Step 3: Calculate the total reward (fees earned minus impermanent loss)
+        total_reward = fee_income - impermanent_loss
 
-        if fee_income==0:
-            self.penalty_param+= 0.005
-            self.penalty += self.penalty_param_magnitude*(1+self.penalty_param)
+        if fee_income<=0:
+            # self.penalty_param+= 0.005
+            # self.penalty += self.penalty_param_magnitude*(1+self.penalty_param)
+            self.penalty += self.penalty_param_magnitude
+
+        if total_reward <= 0:
+            # Apply additional penalty if impermanent loss exceeds fee income
+            self.penalty_multiplier = 0.01
+            self.penalty += abs(total_reward) * self.penalty_multiplier
 
         print(f'fee_earned:{fee_income}, impermannet_loss: {impermanent_loss}, penalty: {self.penalty}, initial_agent_portofolio_value: {value_initial}, final_agent_portofolio_value: {value_final}, reward_mean: {self.reward_mean}, rewrad_std_dev: {self.reward_std}, reward_count: {self.reward_count}')
         print()
