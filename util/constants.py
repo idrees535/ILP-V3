@@ -5,6 +5,7 @@ import datetime
 import brownie
 
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
+BASE_PATH = '/mnt/c/Users/MuhammadSaqib/Documents/ILP-Agent-Framework'
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 if BASE_PATH not in sys.path:

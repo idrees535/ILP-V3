@@ -8,7 +8,7 @@ from tqdm import tqdm
 # Add parent directory to sys.path to handle imports
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from environments.train_env import DiscreteSimpleEnv
+# from environments.train_env import DiscreteSimpleEnv
 from environments.eval_env import DiscreteSimpleEnvEval
 from agents.ddpg_agent import DDPG,DDGPEval
 from util.plot import *
@@ -17,7 +17,7 @@ from util.sync_pool_subgraph_data import *
 from util.utility_functions import *
 from util.constants import *
 
-def predict_action(pool_id="0x3416cf6c708da44db2624d63ea0aaef7113527c6",ddpg_agent_path='model_storage/ddpg/ddpg_1',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm',date_str='2024-05-03'):
+def predict_action(pool_id="0xcbcdf9626bc03e24f779434178a73a0b4bad62ed",ddpg_agent_path='model_storage/ddpg/ddpg_tempest_2000x50',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm',date_str='2024-01-01'):
     pool_data = fetch_inference_pool_data_1(pool_id,date_str)
     print(f"State Space: {pool_data}")
 
@@ -143,5 +143,3 @@ def perform_inference(user_preferences,pool_state,pool_id="0x99ac8ca7087fa4a2a1f
         return 'exit_position', None,None  # Exit the position to stop further losses
     else:
         return 'maintain_position', None,None  # Maintain the current position
-
-predict_action()
