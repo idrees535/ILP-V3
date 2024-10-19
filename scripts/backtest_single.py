@@ -160,8 +160,9 @@ def save_data_to_df(response_json):
 
 # Example usage
 start_date = '2024-03-01'
-end_date = '2024-05-01'
-ddpg_agent_path = f'model_storage/ddpg/ddpg_tempest_2000x50'
+end_date = '2024-09-01'
+agent_name = "ddpg_tempest_2000x50"
+ddpg_agent_path = f'model_storage/ddpg/{agent_name}'
 ppo_agent_path = 'model_storage/ppo/lstm_actor_critic_batch_norm'
 pool_id = "0xcbcdf9626bc03e24f779434178a73a0b4bad62ed" # BTC/ETH pool
 agent = "ddpg"
@@ -174,5 +175,5 @@ rebalancing_frequency = 7
 
 data_df, results_df = backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path, ppo_agent_path, rebalancing_frequency, agent)
 
-results_df.to_csv(f"model_output/backtest/results_ddpg_tempest_2000x50.csv")
-data_df.to_csv(f"model_output/backtest/data_df_ddpg_tempest_2000x50.csv")
+results_df.to_csv(f"model_output/backtest/results_{agent_name}.csv")
+data_df.to_csv(f"model_output/backtest/data_df_{agent_name}.csv")
