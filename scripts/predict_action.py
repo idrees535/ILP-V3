@@ -19,7 +19,7 @@ from util.constants import *
 
 def predict_action(pool_id="0xcbcdf9626bc03e24f779434178a73a0b4bad62ed",ddpg_agent_path='model_storage/ddpg/ddpg_tempest_2000x50',ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm',date_str='2024-01-01'):
     pool_data = fetch_inference_pool_data_1(pool_id,date_str)
-    print(f"State Space: {pool_data}")
+    print(f"\n\nState Space: {pool_data}\n\n")
 
     global_state = pool_data
     curr_price = global_state['token1Price']
@@ -40,13 +40,16 @@ def predict_action(pool_id="0xcbcdf9626bc03e24f779434178a73a0b4bad62ed",ddpg_age
     ddpg_action_dict,ddpg_action_ticks = postprocess_action(ddpg_action, curr_price,action_transform='linear')
 
     # PPO Agent Action
-    ppo_action, _ = ppo_eval_agent.choose_action(obs)
+    ppo_action , _ = ppo_eval_agent.choose_action(obs)
+    print(f"\n\nPPO ACTION:   {ppo_action} \n\n")
     ppo_action_dict,ppo_action_ticks = postprocess_action(ppo_action, curr_price,action_transform='exp')
 
     return ddpg_action,ddpg_action_dict,ddpg_action_ticks,ppo_action, ppo_action_dict,ppo_action_ticks
 
 def postprocess_action(action, curr_price,action_transform='linear'):
-    a_0, a_1 = action[0, 0].numpy(), action[0, 1].numpy()
+    action_numpy = action.numpy()  # Convert the whole action tensor to a NumPy array
+    a_0, a_1 = action_numpy[0, 0], action_numpy[0, 1]
+    # a_0, a_1 = action[0, 0].numpy(), action[0, 1].numpy()
 
     action_lower_bound = curr_price * 0.1
     action_upper_bound = curr_price * 2
