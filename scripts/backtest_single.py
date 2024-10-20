@@ -161,7 +161,7 @@ def save_data_to_df(response_json):
 # Example usage
 start_date = '2024-03-01'
 end_date = '2024-09-01'
-agent_name = "ddpg_tempest_2000x50"
+agent_name = "ddpg_1"
 ddpg_agent_path = f'model_storage/ddpg/{agent_name}'
 ppo_agent_path = 'model_storage/ppo/lstm_actor_critic_batch_norm'
 pool_id = "0xcbcdf9626bc03e24f779434178a73a0b4bad62ed" # BTC/ETH pool
