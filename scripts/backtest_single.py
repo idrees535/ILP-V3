@@ -52,8 +52,8 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path,
         all_positions.append({
             "start": convert_to_unix_timestamp(start_date_str),
             "end": convert_to_unix_timestamp(end_date_str),
-            "lower_tick": (action_lower),
-            "upper_tick": (action_upper),
+            "price_lower": (action_lower),
+            "price_upper": (action_upper),
         })
 
         # Move to the next rebalancing date
