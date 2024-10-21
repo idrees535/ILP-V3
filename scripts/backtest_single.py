@@ -100,8 +100,8 @@ def simulate_position(token0, token1, positions):
     vector = {
         "datatype": "raw",
         "fee_tier": 1000,
-        "token0": token0,
-        "token1": token1,
+        "token0": token0*1e8,
+        "token1": token1*1e18,
         "range_type": "price",
         "positions": positions
     }
@@ -160,15 +160,15 @@ def save_data_to_df(response_json):
 
 # Example usage
 start_date = '2024-03-01'
-end_date = '2024-04-01'
-agent_name = "ddpg_1"
+end_date = '2024-06-25'
+agent_name = "ddpg_tempest_1000x20"
 ddpg_agent_path = f'model_storage/ddpg/{agent_name}'
 ppo_agent_path = 'model_storage/ppo/lstm_actor_critic_batch_norm'
 pool_id = "0xcbcdf9626bc03e24f779434178a73a0b4bad62ed" # BTC/ETH pool
 agent = "ddpg"
 
 budget_eth=10 # Initail total ETH reserves for liquidity position
-btc_eth_price=18 #btc/ETH price
+btc_eth_price=18.29 #btc/ETH price
 token0 = (budget_eth/2)/btc_eth_price 
 token1 = budget_eth/2
 rebalancing_frequency = 7
