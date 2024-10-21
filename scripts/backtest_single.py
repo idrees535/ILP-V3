@@ -30,16 +30,16 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path,
         end_date_str = end_interval.strftime('%Y-%m-%d %H:%M:%S')
 
         if agent == "ddpg":
-            action_lower = ddpg_action_ticks["tick_lower"]
-            action_upper = ddpg_action_ticks["tick_upper"]
+            action_lower = ddpg_action_dict["price_lower"]
+            action_upper = ddpg_action_dict["price_upper"]
             print(f"\n_______________________________ANGENT :  DDPG")
             print(f"\nDDPG ACTION: {ddpg_action}")
             print(f"\n{ddpg_action_dict}")
             print(f"\n{ddpg_action_ticks}\n")
             
         else:
-            action_lower = ppo_action_ticks["tick_lower"]
-            action_upper = ppo_action_ticks["tick_upper"]
+            action_lower = ppo_action_dict["price_lower"]
+            action_upper = ppo_action_dict["price_upper"]
             print(f"\n_______________________________ANGENT :  PPO")
             print(f"\nPPO ACTION: {ppo_action}")
             print(f"\n{ppo_action_dict}")
@@ -100,9 +100,9 @@ def simulate_position(token0, token1, positions):
     vector = {
         "datatype": "raw",
         "fee_tier": 1000,
-        "token0": token0*1e6,
-        "token1": token1*1e18,
-        "range_type": "tick",
+        "token0": token0,
+        "token1": token1,
+        "range_type": "price",
         "positions": positions
     }
     print(vector)
@@ -160,7 +160,7 @@ def save_data_to_df(response_json):
 
 # Example usage
 start_date = '2024-03-01'
-end_date = '2024-09-01'
+end_date = '2024-04-01'
 agent_name = "ddpg_1"
 ddpg_agent_path = f'model_storage/ddpg/{agent_name}'
 ppo_agent_path = 'model_storage/ppo/lstm_actor_critic_batch_norm'
