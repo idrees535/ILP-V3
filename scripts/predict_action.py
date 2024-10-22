@@ -57,7 +57,7 @@ class PredictAction:
         print(f"\n\nState Space: {global_state}\n\n")
 
         # Extract state
-        curr_price = global_state['token0Price']
+        curr_price = global_state['token1Price']
         liquidity = global_state['liquidity']
         fee_growth_0 = global_state['feeGrowthGlobal0X128']
         fee_growth_1 = global_state['feeGrowthGlobal1X128']
