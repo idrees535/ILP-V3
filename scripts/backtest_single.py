@@ -77,8 +77,8 @@ def simulate_position(token0, token1, positions):
     vector = {
         "datatype": "raw",
         "fee_tier": 1000,
-        "token0": token0*1e18,
-        "token1": token1*1e8,
+        "token0": token0,
+        "token1": token1,
         "range_type": "price",
         "positions": positions
     }
@@ -145,8 +145,8 @@ agent = "ddpg"
 
 budget_eth=10 # Initail total ETH reserves for liquidity position
 btc_eth_price=18.29  # btc/ETH price
-token0 = budget_eth/2  # ETH
-token1 = (budget_eth/2)/btc_eth_price  # BTC
+token0 = ((budget_eth/2)/btc_eth_price)*1e8  # BTC
+token1 = (budget_eth/2)*1e18  # ETH
 rebalancing_frequency = 7
 
 data_df, results_df = backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, rebalancing_frequency, agent)

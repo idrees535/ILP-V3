@@ -57,7 +57,7 @@ class PredictAction:
         print(f"\n\nState Space: {global_state}\n\n")
 
         # Extract state
-        curr_price = global_state['token0Price']
+        curr_price = global_state['token1Price']
         liquidity = global_state['liquidity']
         fee_growth_0 = global_state['feeGrowthGlobal0X128']
         fee_growth_1 = global_state['feeGrowthGlobal1X128']
@@ -65,8 +65,8 @@ class PredictAction:
         obs = {
             'scaled_curr_price': curr_price / 5000,
             'scaled_liquidity': liquidity / 1e20,
-            'scaled_feeGrowthGlobal0x128': fee_growth_0 / 1e34,
-            'scaled_feeGrowthGlobal1x128': fee_growth_1 / 1e34
+            'scaled_feeGrowthGlobal0x128': fee_growth_1 / 1e34,
+            'scaled_feeGrowthGlobal1x128': fee_growth_0 / 1e34
         }
         print(f"Obs Space: {obs}")
 
