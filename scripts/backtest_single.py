@@ -136,17 +136,17 @@ def save_data_to_df(response_json):
     return data_df, final_result_df
 
 # Example usage
-start_date = '2024-03-01'
+start_date = '2024-01-01'
 end_date = '2024-06-25'
 agent_name = "ddpg_tempest_1000x20"
 agent_path = f'model_storage/ddpg/{agent_name}'
-pool_id = "0xcbcdf9626bc03e24f779434178a73a0b4bad62ed" # WBTC/WETH pool
+pool_id = "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" # WBTC/WETH pool
 agent = "ddpg"
 
-budget_eth=10 # Initail total ETH reserves for liquidity position
-btc_eth_price=18.29  # btc/ETH price
-token0 = ((budget_eth/2)/btc_eth_price)*1e8  # BTC
-token1 = (budget_eth/2)*1e18  # ETH
+budget = 10000 # Initail total budget 
+price=2284  
+token0 = ((budget/2)/price)*1e18
+token1 = (budget/2)*1e6
 rebalancing_frequency = 7
 
 data_df, results_df = backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, rebalancing_frequency, agent)
