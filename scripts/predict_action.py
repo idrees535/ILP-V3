@@ -33,7 +33,6 @@ class PredictAction:
         ddpg_eval_agent.critic.load_weights(ddpg_critic_model_path)
 
         # Load PPO agent
-        eval_env = DiscreteSimpleEnvEval(agent_budget_usd=10000, percentage_range=0.50, seed=42, penalty_param_magnitude=0, use_running_statistics=False)
         ppo_eval_agent = PPOEval(eval_env, n_actions, observation_dims=input_dims, buffer_size=5, training=False)
         ppo_actor_model_path = os.path.join(BASE_PATH, ppo_agent_path, 'actor')
         ppo_critic_model_path = os.path.join(BASE_PATH, ppo_agent_path, 'critic')
