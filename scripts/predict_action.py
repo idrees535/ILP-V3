@@ -63,10 +63,10 @@ class PredictAction:
         fee_growth_1 = global_state['feeGrowthGlobal1X128']
 
         obs = {
-            'scaled_curr_price': curr_price / 5000,
-            'scaled_liquidity': liquidity / 1e20,
-            'scaled_feeGrowthGlobal0x128': fee_growth_1 / 1e34,
-            'scaled_feeGrowthGlobal1x128': fee_growth_0 / 1e34
+            'scaled_curr_price': curr_price ,
+            'scaled_liquidity': liquidity,
+            'scaled_feeGrowthGlobal0x128': fee_growth_1,
+            'scaled_feeGrowthGlobal1x128': fee_growth_0
         }
         print(f"Obs Space: {obs}")
 
