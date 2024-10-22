@@ -8,25 +8,25 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # from util.utility_functions import price_to_valid_tick
 from util.constants import *
-from scripts.predict_action import predict_action
+from scripts.predict_action import PredictAction
 
 
 def backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path, ppo_agent_path, rebalancing_frequency, agent):
     current_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-
+    # Initialize the PredictAction class
+    predictor = PredictAction(ddpg_agent_path,ppo_agent_path)
     all_positions = []
 
     while current_date <= end_date:
         curr_date_str = current_date.strftime('%Y-%m-%d')
         # Step 3: Predict new positions
-        ddpg_action,ddpg_action_dict,ddpg_action_ticks,ppo_action, ppo_action_dict,ppo_action_ticks = get_inference(ddpg_agent_path, ppo_agent_path, pool_id, curr_date_str)
+        ddpg_action,ddpg_action_dict,ddpg_action_ticks,ppo_action, ppo_action_dict,ppo_action_ticks = predictor.predict_action(pool_id,curr_date_str)
         print(f"DDPG Action:     {ddpg_action}")
         
         # Step 4: Rebalance portfolio
-        start_interval = current_date
         end_interval = current_date + timedelta(days=rebalancing_frequency)
-        start_date_str = start_interval.strftime('%Y-%m-%d %H:%M:%S')
+        start_date_str = current_date.strftime('%Y-%m-%d %H:%M:%S')
         end_date_str = end_interval.strftime('%Y-%m-%d %H:%M:%S')
 
         if agent == "ddpg":
@@ -44,9 +44,6 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path,
             print(f"\nPPO ACTION: {ppo_action}")
             print(f"\n{ppo_action_dict}")
             print(f"\n{ppo_action_ticks}\n")
-
-        # print(f"Price lower  :  {action_lower}    :  {type(action_lower)}")
-        # print(f"Price upper  :  {action_upper}    :  {type(action_upper)}")
         
         # Collect all positions in a list
         all_positions.append({
@@ -57,7 +54,7 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path,
         })
 
         # Move to the next rebalancing date
-        current_date += timedelta(days=rebalancing_frequency)
+        current_date = end_interval
 
     # Step 5: Send all positions to the simulator API in a single request
     response = simulate_position(token0, token1, all_positions)
@@ -76,25 +73,6 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path,
 def convert_to_unix_timestamp(date_str):
     dt = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
     return int(dt.timestamp())
-
-def get_inference(ddpg_agent_path='model_storage/ddpg/ddpg_1', ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm', pool_id="0xcbcdf9626bc03e24f779434178a73a0b4bad62ed", date_str='2024-05-05'):
-    # url = "http://127.0.0.1:8000/predict_action/"
-    # data = {
-    #     "pool_id": pool_id,
-    #     "ddpg_agent_path": ddpg_agent_path,
-    #     "ppo_agent_path": ppo_agent_path,
-    #     "date_str": date_str
-    # }
-    ddpg_action,ddpg_action_dict,ddpg_action_ticks,ppo_action, ppo_action_dict,ppo_action_ticks = predict_action(pool_id,ddpg_agent_path,ppo_agent_path,date_str)
-    # response = requests.post(url, json=data)
-    # response_json = response.json()
-    # ddpg_action = response_json['ddpg_action']
-    # ppo_action = response_json['ppo_action']
-    # print(f"\n\nPPO ACTION: {ppo_action}")
-    # print(f"\n{ppo_action_dict}")
-    # print(f"\n{ppo_action_ticks}\n")
-
-    return ddpg_action,ddpg_action_dict,ddpg_action_ticks,ppo_action, ppo_action_dict,ppo_action_ticks
 
 def simulate_position(token0, token1, positions):
     vector = {
