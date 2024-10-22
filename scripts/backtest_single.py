@@ -140,7 +140,7 @@ start_date = '2024-01-01'
 end_date = '2024-01-07'
 agent_name = "ddpg_tempest_1000x20"
 agent_path = f'model_storage/ddpg/{agent_name}'
-pool_id = "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" # WBTC/WETH pool
+pool_id = "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" 
 agent = "ddpg"
 
 budget = 10000 # Initail total budget 
