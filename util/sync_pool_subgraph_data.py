@@ -130,11 +130,11 @@ def fetch_inference_pool_data_1(pool_id='0xcbcdf9626bc03e24f779434178a73a0b4bad6
         # Constructing the state representation with float data type
         state = {
             #'date': datetime.utcfromtimestamp(data['date']).strftime('%Y-%m-%d'),
-            'feeGrowthGlobal0X128': float(data['volumeToken1']),
-            'feeGrowthGlobal1X128': float(data['volumeToken0']),
+            'feeGrowthGlobal0X128': float(data['volumeToken0']),
+            'feeGrowthGlobal1X128': float(data['volumeToken1']),
             'liquidity': float(data['liquidity']),
-            'token0price': float(data['token1Price']),
-            'token1Price': float(data['token0Price'])
+            'token0price': float(data['token0Price']),
+            'token1Price': float(data['token1Price'])
         }
         return state
     else:
