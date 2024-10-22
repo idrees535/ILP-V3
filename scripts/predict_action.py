@@ -15,31 +15,41 @@ from util.utility_functions import *
 from util.constants import *
 
 class PredictAction:
-    def __init__(self, ddpg_agent_path='model_storage/ddpg/ddpg_1', ppo_agent_path='model_storage/ppo/lstm_actor_critic_batch_norm'):
+    def __init__(self, agent_path='model_storage/ddpg/ddpg_1', agent ='ddpg'):
+        self.agent =agent
         # Initialize the agents and the environment
-        self.ddpg_eval_agent, self.ppo_eval_agent, self.eval_env = self.load_inference_agents(ddpg_agent_path, ppo_agent_path)
+        if self.agent =='ddpg':
+            self.ddpg_eval_agent,self.eval_env = self.load_ddpg_agent(agent_path)
+        elif self.agent =='ppo':
+            self.ppo_eval_agent, self.eval_env = self.load_ppo_agent(agent_path)
+        else:
+            print ("Unkown agent selected")
 
-    def load_inference_agents(self, ddpg_agent_path, ppo_agent_path):
+    def load_ddpg_agent(self, agent_path):
         # Initialize environment
         eval_env = DiscreteSimpleEnvEval(agent_budget_usd=10000, percentage_range=0.30, seed=42)
         n_actions = sum(action_space.shape[0] for action_space in eval_env.action_space.values())
         input_dims = sum(np.prod(eval_env.observation_space.spaces[key].shape) for key in eval_env.observation_space.spaces.keys())
-
         # Load DDPG agent
         ddpg_eval_agent = DDGPEval(env=eval_env, n_actions=n_actions, input_dims=input_dims, training=False)
-        ddpg_actor_model_path = os.path.join(BASE_PATH, ddpg_agent_path, 'actor')
-        ddpg_critic_model_path = os.path.join(BASE_PATH, ddpg_agent_path, 'critic')
+        ddpg_actor_model_path = os.path.join(BASE_PATH, agent_path, 'actor')
+        ddpg_critic_model_path = os.path.join(BASE_PATH, agent_path, 'critic')
         ddpg_eval_agent.actor.load_weights(ddpg_actor_model_path)
         ddpg_eval_agent.critic.load_weights(ddpg_critic_model_path)
-
+        return ddpg_eval_agent, eval_env
+    
+    def load_ppo_agent(self, agent_path):
+        # Initialize environment
+        eval_env = DiscreteSimpleEnvEval(agent_budget_usd=10000, percentage_range=0.30, seed=42)
+        n_actions = sum(action_space.shape[0] for action_space in eval_env.action_space.values())
+        input_dims = sum(np.prod(eval_env.observation_space.spaces[key].shape) for key in eval_env.observation_space.spaces.keys())
         # Load PPO agent
         ppo_eval_agent = PPOEval(eval_env, n_actions, observation_dims=input_dims, buffer_size=5, training=False)
-        ppo_actor_model_path = os.path.join(BASE_PATH, ppo_agent_path, 'actor')
-        ppo_critic_model_path = os.path.join(BASE_PATH, ppo_agent_path, 'critic')
+        ppo_actor_model_path = os.path.join(BASE_PATH, agent_path, 'actor')
+        ppo_critic_model_path = os.path.join(BASE_PATH, agent_path, 'critic')
         ppo_eval_agent.actor.load_weights(ppo_actor_model_path)
         ppo_eval_agent.critic.load_weights(ppo_critic_model_path)
-
-        return ddpg_eval_agent, ppo_eval_agent, eval_env
+        return  ppo_eval_agent, eval_env
 
     def predict_action(self, pool_id="0xcbcdf9626bc03e24f779434178a73a0b4bad62ed", date_str='2024-01-01'):
         # Fetch pool data
@@ -63,16 +73,18 @@ class PredictAction:
         # Reset environment
         # self.eval_env.reset()
 
-        # DDPG Agent Action
-        ddpg_action = self.ddpg_eval_agent.choose_action(obs)
-        ddpg_action_dict, ddpg_action_ticks = self.postprocess_action(ddpg_action, curr_price, action_transform='linear')
+        if self.agent =='ddpg':
+            # DDPG Agent Action
+            action = self.ddpg_eval_agent.choose_action(obs)
+            action_dict, action_ticks = self.postprocess_action(action, curr_price, action_transform='linear')
 
-        # PPO Agent Action
-        ppo_action, _ = self.ppo_eval_agent.choose_action(obs)
-        print(f"\n\nPPO ACTION:   {ppo_action} \n\n")
-        ppo_action_dict, ppo_action_ticks = self.postprocess_action(ppo_action, curr_price, action_transform='exp')
+        elif self.agent =='ppo':
+            # PPO Agent Action
+            action, _ = self.ppo_eval_agent.choose_action(obs)
+            print(f"\n\nPPO ACTION:   {action} \n\n")
+            action_dict, action_ticks = self.postprocess_action(action, curr_price, action_transform='exp')
 
-        return ddpg_action, ddpg_action_dict, ddpg_action_ticks, ppo_action, ppo_action_dict, ppo_action_ticks
+        return action, action_dict, action_ticks
 
     def postprocess_action(self, action, curr_price, action_transform='linear'):
         action_numpy = action.numpy()  # Convert the action tensor to NumPy array

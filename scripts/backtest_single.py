@@ -11,18 +11,17 @@ from util.constants import *
 from scripts.predict_action import PredictAction
 
 
-def backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path, ppo_agent_path, rebalancing_frequency, agent):
+def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, rebalancing_frequency, agent):
     current_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     # Initialize the PredictAction class
-    predictor = PredictAction(ddpg_agent_path,ppo_agent_path)
+    predictor = PredictAction(agent_path, agent)
     all_positions = []
 
     while current_date <= end_date:
         curr_date_str = current_date.strftime('%Y-%m-%d')
         # Step 3: Predict new positions
-        ddpg_action,ddpg_action_dict,ddpg_action_ticks,ppo_action, ppo_action_dict,ppo_action_ticks = predictor.predict_action(pool_id,curr_date_str)
-        print(f"DDPG Action:     {ddpg_action}")
+        action, action_dict, action_ticks = predictor.predict_action(pool_id,curr_date_str)
         
         # Step 4: Rebalance portfolio
         end_interval = current_date + timedelta(days=rebalancing_frequency)
@@ -30,20 +29,20 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path,
         end_date_str = end_interval.strftime('%Y-%m-%d %H:%M:%S')
 
         if agent == "ddpg":
-            action_lower = ddpg_action_dict["price_lower"]
-            action_upper = ddpg_action_dict["price_upper"]
-            print(f"\n_______________________________ANGENT :  DDPG")
-            print(f"\nDDPG ACTION: {ddpg_action}")
-            print(f"\n{ddpg_action_dict}")
-            print(f"\n{ddpg_action_ticks}\n")
+            action_lower = action_dict["price_lower"]
+            action_upper = action_dict["price_upper"]
+            print(f"\n_______________________________DDPG AGENT ACTIONS")
+            print(f"\n{action}")
+            print(f"\n{action_dict}")
+            print(f"\n{action_ticks}\n")
             
         else:
-            action_lower = ppo_action_dict["price_lower"]
-            action_upper = ppo_action_dict["price_upper"]
-            print(f"\n_______________________________ANGENT :  PPO")
-            print(f"\nPPO ACTION: {ppo_action}")
-            print(f"\n{ppo_action_dict}")
-            print(f"\n{ppo_action_ticks}\n")
+            action_lower = action_dict["price_lower"]
+            action_upper = action_dict["price_upper"]
+            print(f"\n_______________________________PPO AGENT ACTIONS")
+            print(f"\n{action}")
+            print(f"\n{action_dict}")
+            print(f"\n{action_ticks}\n")
         
         # Collect all positions in a list
         all_positions.append({
@@ -140,8 +139,7 @@ def save_data_to_df(response_json):
 start_date = '2024-03-01'
 end_date = '2024-06-25'
 agent_name = "ddpg_tempest_1000x20"
-ddpg_agent_path = f'model_storage/ddpg/{agent_name}'
-ppo_agent_path = 'model_storage/ppo/lstm_actor_critic_batch_norm'
+agent_path = f'model_storage/ddpg/{agent_name}'
 pool_id = "0xcbcdf9626bc03e24f779434178a73a0b4bad62ed" # BTC/ETH pool
 agent = "ddpg"
 
@@ -151,7 +149,7 @@ token0 = (budget_eth/2)/btc_eth_price
 token1 = budget_eth/2
 rebalancing_frequency = 7
 
-data_df, results_df = backtest_ilp(start_date, end_date, token0, token1, pool_id, ddpg_agent_path, ppo_agent_path, rebalancing_frequency, agent)
+data_df, results_df = backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, rebalancing_frequency, agent)
 
 results_df.to_csv(f"model_output/backtest/results_{agent_name}.csv")
 data_df.to_csv(f"model_output/backtest/data_df_{agent_name}.csv")
