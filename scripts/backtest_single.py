@@ -89,7 +89,7 @@ def convert_responses_to_dataframe_and_aggregate_final(responses):
         "total_impermanent_loss": 0,
         "total_portfolio_value_end": 0,
         "total_portfolio_value_start": 0,
-        # "count": 0
+        "count": 0
     }
     
     for response in responses:
@@ -125,7 +125,7 @@ def convert_responses_to_dataframe_and_aggregate_final(responses):
             final_result_aggregate["total_impermanent_loss"] += final_result["impermanent_loss"]
             final_result_aggregate["total_portfolio_value_end"] += final_result["portfolio_value_end"]
             final_result_aggregate["total_portfolio_value_start"] += final_result["portfolio_value_start"]
-            # final_result_aggregate["count"] += 1
+            final_result_aggregate["count"] += 1
 
     # Convert to DataFrame
     data_df = pd.DataFrame(data)
