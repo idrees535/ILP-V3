@@ -134,7 +134,7 @@ def convert_responses_to_dataframe_and_aggregate_final(responses):
     aggregated_final_result = {
         "average_PnL": final_result_aggregate["total_PnL"],
         "average_fee_value": final_result_aggregate["total_fee_value"],
-        "average_fee_yield": final_result_aggregate["total_fee_yield"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        "average_fee_yield": final_result_aggregate["total_fee_yield"],
         "average_impermanent_loss": final_result_aggregate["total_impermanent_loss"],
         "average_portfolio_value_end": final_result_aggregate["total_portfolio_value_end"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
         "average_portfolio_value_start": final_result_aggregate["total_portfolio_value_start"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0
@@ -164,7 +164,7 @@ def simulate_position(token0, token1, positions):
         response_json = response.json()
         all_responses.append(response_json)
 
-    print(f"\n\n {all_responses}")
+    # print(f"\n\n {all_responses}")
     return all_responses
 
 # def save_data_to_df(response_json):
