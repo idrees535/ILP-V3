@@ -76,6 +76,7 @@ def convert_to_unix_timestamp(date_str):
 def simulate_position(token0, token1, positions):
     vector = {
         "datatype": "raw",
+        "pool": f"{pool_id}",
         "fee_tier": 1000,
         "token0": token0,
         "token1": token1,
