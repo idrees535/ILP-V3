@@ -139,6 +139,7 @@ def convert_responses_to_dataframe_and_aggregate_final(responses):
         "average_portfolio_value_end": final_result_aggregate["total_portfolio_value_end"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
         "average_portfolio_value_start": final_result_aggregate["total_portfolio_value_start"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0
     }
+    print(f"\n\n {json.dumps(aggregated_final_result,indent=4)}")
     result_df = pd.DataFrame([aggregated_final_result])
     return data_df, result_df
 
