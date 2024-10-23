@@ -89,7 +89,7 @@ def convert_responses_to_dataframe_and_aggregate_final(responses):
         "total_impermanent_loss": 0,
         "total_portfolio_value_end": 0,
         "total_portfolio_value_start": 0,
-        "count": 0
+        # "count": 0
     }
     
     for response in responses:
@@ -125,17 +125,17 @@ def convert_responses_to_dataframe_and_aggregate_final(responses):
             final_result_aggregate["total_impermanent_loss"] += final_result["impermanent_loss"]
             final_result_aggregate["total_portfolio_value_end"] += final_result["portfolio_value_end"]
             final_result_aggregate["total_portfolio_value_start"] += final_result["portfolio_value_start"]
-            final_result_aggregate["count"] += 1
+            # final_result_aggregate["count"] += 1
 
     # Convert to DataFrame
     data_df = pd.DataFrame(data)
 
     # Calculate averages for aggregated fields
     aggregated_final_result = {
-        "average_PnL": final_result_aggregate["total_PnL"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
-        "average_fee_value": final_result_aggregate["total_fee_value"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        "average_PnL": final_result_aggregate["total_PnL"],
+        "average_fee_value": final_result_aggregate["total_fee_value"],
         "average_fee_yield": final_result_aggregate["total_fee_yield"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
-        "average_impermanent_loss": final_result_aggregate["total_impermanent_loss"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        "average_impermanent_loss": final_result_aggregate["total_impermanent_loss"],
         "average_portfolio_value_end": final_result_aggregate["total_portfolio_value_end"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
         "average_portfolio_value_start": final_result_aggregate["total_portfolio_value_start"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0
     }
