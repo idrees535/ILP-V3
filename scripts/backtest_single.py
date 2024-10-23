@@ -166,9 +166,10 @@ def simulate_position(token0, token1, positions):
         print(json.dumps(vec,indent=4))
         response = requests.post(url, json=vec)
         print(f"___________Voyager Response:\n{response.text}")
-        all_responses.append(response)
+        response_json = response.json()
+        all_responses.append(response_json)
 
-    print(f"\n\n {all_responses}")
+    print(f"\n\n {response_json}")
     return all_responses
 
 def save_data_to_df(response_json):
