@@ -133,11 +133,11 @@ def convert_responses_to_dataframe_and_aggregate_final(responses):
     # Calculate averages for aggregated fields
     aggregated_final_result = {
         "average_PnL": final_result_aggregate["total_PnL"],
-        "average_fee_value": final_result_aggregate["total_fee_value"],
+        # "average_fee_value": final_result_aggregate["total_fee_value"],
         "average_fee_yield": final_result_aggregate["total_fee_yield"],
         "average_impermanent_loss": final_result_aggregate["total_impermanent_loss"],
-        "average_portfolio_value_end": final_result_aggregate["total_portfolio_value_end"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
-        "average_portfolio_value_start": final_result_aggregate["total_portfolio_value_start"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0
+        # "average_portfolio_value_end": final_result_aggregate["total_portfolio_value_end"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        # "average_portfolio_value_start": final_result_aggregate["total_portfolio_value_start"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0
     }
     print(f"\n\n {json.dumps(aggregated_final_result,indent=4)}")
     result_df = pd.DataFrame([aggregated_final_result])
