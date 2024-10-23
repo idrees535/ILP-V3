@@ -145,7 +145,7 @@ def convert_responses_to_dataframe_and_aggregate_final(responses):
         "average_portfolio_value_end": final_result_aggregate["total_portfolio_value_end"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
         "average_portfolio_value_start": final_result_aggregate["total_portfolio_value_start"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0
     }
-    result_df = pd.DataFrame(aggregated_final_result)
+    result_df = pd.DataFrame([aggregated_final_result])
     return data_df, result_df
 
 def simulate_position(token0, token1, positions):
@@ -169,7 +169,7 @@ def simulate_position(token0, token1, positions):
         response_json = response.json()
         all_responses.append(response_json)
 
-    print(f"\n\n {response_json}")
+    print(f"\n\n {all_responses}")
     return all_responses
 
 def save_data_to_df(response_json):
