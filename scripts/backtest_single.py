@@ -9,6 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # from util.utility_functions import price_to_valid_tick
 from util.constants import *
 from scripts.predict_action import PredictAction
+import json
 
 
 def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, rebalancing_frequency, agent):
@@ -56,15 +57,16 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, reba
         current_date = end_interval
 
     # Step 5: Send all positions to the simulator API in a single request
-    response = simulate_position(token0, token1, all_positions)
-    response_json = response.json()
+    response_list = simulate_position(token0, token1, all_positions)
+    # response_json = response.json()
 
-    if 'LP_positions' not in response_json:
-        print(f"Error: 'LP_positions' not found in response or response is None: {response_json}")
-        return pd.DataFrame(), pd.DataFrame()
+    # if 'LP_positions' not in response_json:
+    #     print(f"Error: 'LP_positions' not found in response or response is None: {response_json}")
+    #     return pd.DataFrame(), pd.DataFrame()
 
-    # Process the response to save data to a DataFrame
-    data_df, results_df = save_data_to_df(response_json)
+    # # Process the response to save data to a DataFrame
+    # data_df, results_df = save_data_to_df(response_json)
+    data_df, result_df = convert_responses_to_dataframe_and_aggregate_final(response_list)
 
     return data_df, results_df
 
@@ -72,6 +74,79 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, reba
 def convert_to_unix_timestamp(date_str):
     dt = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
     return int(dt.timestamp())
+
+# Function to split the positions while maintaining the original structure
+def split_positions_for_api(data):
+    separated_objects = []
+
+    for position in data['positions']:
+        # Create a new object with a single-element positions list
+        new_object = {**data, "positions": [position]}
+        separated_objects.append(new_object)
+    return separated_objects
+
+# Function to convert responses to a DataFrame
+def convert_responses_to_dataframe_and_aggregate_final(responses):
+    data = []
+    final_result_aggregate = {
+        "total_PnL": 0,
+        "total_fee_value": 0,
+        "total_fee_yield": 0,
+        "total_impermanent_loss": 0,
+        "total_portfolio_value_end": 0,
+        "total_portfolio_value_start": 0,
+        "count": 0
+    }
+    
+    for response in responses:
+        if response["status"] == "success":
+            lp_info = response["LP_positions"][0]["info"]
+            burn = response["LP_positions"][0]["burn"]
+            mint = response["LP_positions"][0]["mint"]
+            swap = response["LP_positions"][0]["swap"]
+            final_result = response["final_result"]
+
+            # Add relevant data to a dictionary
+            row = {
+                "APR": lp_info["APR"],
+                "Impermanent_loss_info": lp_info["Impermanent_loss"],
+                "PnL_info": lp_info["PnL"],
+                "X_start": lp_info["X_start"],
+                "Y_start": lp_info["Y_start"],
+                "lower_price_info": lp_info["lower_price"],
+                "upper_price_info": lp_info["upper_price"],
+                "burn_X_collect": burn["X_collect"],
+                "burn_Y_collect": burn["Y_collect"],
+                "mint_X_left": mint["X_left"],
+                "mint_Y_left": mint["Y_left"],
+                "swap_X_after_swap": swap["X_after_swap"],
+                "swap_Y_after_swap": swap["Y_after_swap"]
+            }
+            data.append(row)
+
+            # Aggregate final results
+            final_result_aggregate["total_PnL"] += final_result["PnL"]
+            final_result_aggregate["total_fee_value"] += final_result["fee_value"]
+            final_result_aggregate["total_fee_yield"] += final_result["fee_yield"]
+            final_result_aggregate["total_impermanent_loss"] += final_result["impermanent_loss"]
+            final_result_aggregate["total_portfolio_value_end"] += final_result["portfolio_value_end"]
+            final_result_aggregate["total_portfolio_value_start"] += final_result["portfolio_value_start"]
+            final_result_aggregate["count"] += 1
+
+    # Convert to DataFrame
+    data_df = pd.DataFrame(data)
+
+    # Calculate averages for aggregated fields
+    aggregated_final_result = {
+        "average_PnL": final_result_aggregate["total_PnL"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        "average_fee_value": final_result_aggregate["total_fee_value"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        "average_fee_yield": final_result_aggregate["total_fee_yield"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        "average_impermanent_loss": final_result_aggregate["total_impermanent_loss"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        "average_portfolio_value_end": final_result_aggregate["total_portfolio_value_end"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0,
+        "average_portfolio_value_start": final_result_aggregate["total_portfolio_value_start"] / final_result_aggregate["count"] if final_result_aggregate["count"] > 0 else 0
+    }
+    result_df = pd.DataFrame(aggregated_final_result)
+    return data_df, result_df
 
 def simulate_position(token0, token1, positions):
     vector = {
@@ -83,12 +158,18 @@ def simulate_position(token0, token1, positions):
         "range_type": "price",
         "positions": positions
     }
-    print(vector)
     url = "http://localhost:5050/MVP"
-    response = requests.post(url, json=vector)
-    print(response.text)
 
-    return response
+    multiple_vectors = split_positions_for_api(vector)
+    all_responses =[]
+    for vec in multiple_vectors:
+        print(json.dumps(vec,indent=4))
+        response = requests.post(url, json=vec)
+        print(f"___________Voyager Response:\n{response.text}")
+        all_responses.append(response)
+
+    print(f"\n\n {all_responses}")
+    return all_responses
 
 def save_data_to_df(response_json):
     data = []
@@ -132,13 +213,13 @@ def save_data_to_df(response_json):
     }
 
     data_df = pd.DataFrame(data)
-    final_result_df = pd.DataFrame([final_result_data])
+    result_df = pd.DataFrame([final_result_data])
 
-    return data_df, final_result_df
+    return data_df, result_df
 
 # Example usage
 start_date = '2024-01-01'
-end_date = '2024-01-07'
+end_date = '2024-01-14'
 agent_name = "ddpg_tempest_1000x20"
 agent_path = f'model_storage/ddpg/{agent_name}'
 pool_id = "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" 
