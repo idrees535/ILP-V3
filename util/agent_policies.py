@@ -35,14 +35,16 @@ def noise_trader_policy(state):
     price_impact_upper_bound = price_to_sqrtp(pool_price * (1 + slippage_tolerance))
     price_impact_lower_bound = price_to_sqrtp(pool_price * (1 - slippage_tolerance))
     print (f"\n```````````````````````````````````````Current pool price  : {pool_price}")
-    print (f"``````````````````````````````````````Current pool loquidity : {fromBase18(liquidity)}")
+    print (f"``````````````````````````````````Current pool raw loquidity : {liquidity}")
     if action == 'swap_token0_for_token1':
+        print("`````````````````````````````````````SWAP TOKEN0 FOR TOKEN1")
         # token0_amount = calc_amount0(liquidity, sqrt_price, price_impact_upper_bound)
         token0_amount=liquidity0(liquidity,price_impact_upper_bound,price_impact_lower_bound)
         token0_amount = fromBase18(token0_amount)
         swap_amount = min(token0_amount ,100000)
         swap_amount = swap_amount * random.uniform(0.00009,0.0009)
     else:
+        print("`````````````````````````````````````SWAP TOKEN1 FOR TOKEN0")
         # token1_amount = calc_amount1(liquidity, price_impact_lower_bound, pool_price)
         token1_amount=liquidity1(liquidity,price_impact_upper_bound,price_impact_lower_bound)
         token1_amount = fromBase18(token1_amount)
@@ -63,7 +65,7 @@ def retail_lp_policy(state):
         liquidity = global_state['liquidity_raw']
         pool_price = global_state['curr_price']
         print (f"\n```````````````````````````````````````Current pool price  : {pool_price}")
-        print (f"``````````````````````````````````````Current pool loquidity : {fromBase18(liquidity)}")    
+        print (f"``````````````````````````````````Current pool raw loquidity : {liquidity}")    
         # Calculate price bounds
         price_lower = pool_price * random.uniform(0.5, 0.9)
         tick_lower = price_to_valid_tick(price_lower)
