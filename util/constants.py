@@ -4,7 +4,7 @@ import pathlib
 import datetime
 import brownie
 import logging
-logging.getLogger("brownie").setLevel(logging.WARNING)  # Suppress most logs, only show warnings and errors
+logging.getLogger("brownie").setLevel(logging.ERROR)  # Suppress most logs, only show warnings and errors
 logging.getLogger("web3").setLevel(logging.CRITICAL)
 logging.basicConfig(level=logging.CRITICAL)
 

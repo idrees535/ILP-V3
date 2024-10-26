@@ -1,4 +1,3 @@
-# import brownie
 import sys
 import os
 
@@ -44,18 +43,19 @@ pool_configs = [
         "fee_tier": 3000,
         "initial_pool_price": 60000,
         "initial_liquidity_amount_token1": 1000000000
-    },
-    {
-        "token0": "BTC",
-        "token1": "WETH",
-        "supply_token0": 1e40,
-        "supply_token1": 1e40,
-        "token0_decimals": 18,
-        "token1_decimals": 18,
-        "fee_tier": 3000,
-        "initial_pool_price": 20,  # 20 WETH
-        "initial_liquidity_amount_token1": 10000
     }
+    # ,
+    # {
+    #     "token0": "BTC",
+    #     "token1": "WETH",
+    #     "supply_token0": 1e40,
+    #     "supply_token1": 1e40,
+    #     "token0_decimals": 18,
+    #     "token1_decimals": 18,
+    #     "fee_tier": 3000,
+    #     "initial_pool_price": 20,  # 20 WETH
+    #     "initial_liquidity_amount_token1": 10000
+    # }
 ]
 
 # Select a random pool configuration

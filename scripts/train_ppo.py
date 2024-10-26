@@ -30,7 +30,7 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ppo
         episode_reward = 0
         
         for  _ in tqdm(range(max_steps), desc= f'EPISODE {i+1}/{len(range(n_episodes))} Progress'):
-            sys.stdout = open(os.devnull, 'w') # Redirect standard output to null (suppress output)
+            # sys.stdout = open(os.devnull, 'w') # Redirect standard output to null (suppress output)
             action,log_prob = ppo_agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
             ppo_agent.remember(state, action, reward, next_state, done,log_prob)
@@ -38,7 +38,7 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ppo
             episode_reward += reward
             if ppo_agent.rollout_buffer.is_full():
                 ppo_agent.learn()
-            sys.stdout = sys.__stdout__ # Restore normal standard output
+            # sys.stdout = sys.__stdout__ # Restore normal standard output
             if done:
                 break
         print(f"Episode {i+1}: Reward = {episode_reward}")
@@ -113,4 +113,4 @@ def ppo_training_vis(ppo_train_data_log,model_name):
     
     return output_file
 
-train_ppo_agent(max_steps=40, n_episodes=1)
+train_ppo_agent(max_steps=1000, n_episodes=20, buffer_size=10,n_epochs=5, gamma=0.5, alpha=0.001, gae_lambda=0.75, policy_clip=0.6, max_grad_norm=0.6)

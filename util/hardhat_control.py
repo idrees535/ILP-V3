@@ -3,8 +3,6 @@ import os
 import os
 import pathlib
 import subprocess
-import logging
-import brownie 
 
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 

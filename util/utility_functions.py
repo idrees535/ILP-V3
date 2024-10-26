@@ -5,8 +5,10 @@ import random
 import subprocess
 import time
 import signal
+import logging
 import brownie
 # from brownie.network import chain
+logging.getLogger("brownie").setLevel(logging.ERROR)
 
 min_tick = -887272
 max_tick = 887272
