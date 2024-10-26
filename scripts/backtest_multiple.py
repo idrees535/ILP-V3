@@ -4,14 +4,28 @@ import requests
 import pandas as pd
 import os 
 import sys 
+import json
 import matplotlib.pyplot as plt
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # from util.utility_functions import price_to_valid_tick
-from util.constants import *
 from util.hardhat_control import start_hardhat_node,stop_hardhat_node
+start_hardhat_node()
+from util.constants import *
 from scripts.predict_action import PredictAction
 
-start_hardhat_node()
+# Example usage
+start_date = '2024-02-01'
+end_date = '2024-02-14'
+agent = "ddpg"
+agent_name = "ddpg_tempest_2000x50"
+agent_path = f'model_storage/{agent}/{agent_name}'
+pool_id = "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" 
+budget = 10000 # Initail total budget 
+price=2284  
+token0 = ((budget/2)/price)*1e18
+token1 = (budget/2)*1e6
+rebalancing_frequency = 7
+
 def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, rebalancing_frequency, agent):
     current_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
@@ -66,7 +80,7 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, reba
 
     # Process the response to save data to a DataFrame
     data_df, results_df = save_data_to_df(response_json)
-
+    print(f"\n\n {json.dumps(results_df,indent=4)}")
     return data_df, results_df
 
 # Function to convert date string to Unix timestamp
@@ -137,19 +151,6 @@ def save_data_to_df(response_json):
 
     return data_df, final_result_df
 
-# Example usage
-start_date = '2024-02-01'
-end_date = '2024-02-14'
-agent = "ppo"
-agent_name = "ppo_20241026_215047"
-agent_path = f'model_storage/{agent}/{agent_name}'
-pool_id = "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36" 
-
-budget = 10000 # Initail total budget 
-price=2284  
-token0 = ((budget/2)/price)*1e18
-token1 = (budget/2)*1e6
-rebalancing_frequency = 7
 
 data_df, results_df = backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, rebalancing_frequency, agent)
 
