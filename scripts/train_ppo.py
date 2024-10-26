@@ -113,4 +113,5 @@ def ppo_training_vis(ppo_train_data_log,model_name):
     
     return output_file
 
-train_ppo_agent(max_steps=1000, n_episodes=20, buffer_size=10,n_epochs=5, gamma=0.5, alpha=0.001, gae_lambda=0.75, policy_clip=0.6, max_grad_norm=1)
+max_steps = 1000
+train_ppo_agent(max_steps, n_episodes=20, buffer_size=10,n_epochs=5, gamma=0.5, alpha=0.001, gae_lambda=0.75, policy_clip=0.6, max_grad_norm=1)

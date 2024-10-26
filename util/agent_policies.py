@@ -23,7 +23,7 @@ def calc_amount1(liq, pa, pb):
 
 def noise_trader_policy(state):
     actions = ['swap_token0_for_token1', 'swap_token1_for_token0']
-    action = random.choice(actions)
+    action = random.choice(actions*100)
     
     # Determine slippage tolerance between 1% and 14%
     slippage_tolerance = random.uniform(0.01, 0.05)
@@ -35,16 +35,16 @@ def noise_trader_policy(state):
     price_impact_upper_bound = price_to_sqrtp(pool_price * (1 + slippage_tolerance))
     price_impact_lower_bound = price_to_sqrtp(pool_price * (1 - slippage_tolerance))
     print (f"\n```````````````````````````````````````Current pool price  : {pool_price}")
-    print (f"``````````````````````````````````Current pool raw loquidity : {liquidity}")
+    print (f"```````````````````````````````````````Current pool raw loquidity : {liquidity}")
     if action == 'swap_token0_for_token1':
-        print("`````````````````````````````````````SWAP TOKEN0 FOR TOKEN1")
+        print("```````````````````````````````````````SWAP TOKEN0 FOR TOKEN1")
         # token0_amount = calc_amount0(liquidity, sqrt_price, price_impact_upper_bound)
         token0_amount=liquidity0(liquidity,price_impact_upper_bound,price_impact_lower_bound)
         token0_amount = fromBase18(token0_amount)
         swap_amount = min(token0_amount ,100000)
         swap_amount = swap_amount * random.uniform(0.00009,0.0009)
     else:
-        print("`````````````````````````````````````SWAP TOKEN1 FOR TOKEN0")
+        print("```````````````````````````````````````SWAP TOKEN1 FOR TOKEN0")
         # token1_amount = calc_amount1(liquidity, price_impact_lower_bound, pool_price)
         token1_amount=liquidity1(liquidity,price_impact_upper_bound,price_impact_lower_bound)
         token1_amount = fromBase18(token1_amount)
@@ -65,24 +65,24 @@ def retail_lp_policy(state):
         liquidity = global_state['liquidity_raw']
         pool_price = global_state['curr_price']
         print (f"\n```````````````````````````````````````Current pool price  : {pool_price}")
-        print (f"``````````````````````````````````Current pool raw loquidity : {liquidity}")    
-        # Calculate price bounds
-        price_lower = pool_price * random.uniform(0.5, 0.9)
-        tick_lower = price_to_valid_tick(price_lower)
+        print (f"```````````````````````````````````````Current pool raw loquidity : {liquidity}")    
+        # # Calculate price bounds
+        # price_lower = pool_price * random.uniform(0.5, 0.9)
+        # tick_lower = price_to_valid_tick(price_lower)
         
-        price_upper = pool_price * random.uniform(1.1, 1.5)
-        tick_upper = price_to_valid_tick(price_upper)
+        # price_upper = pool_price * random.uniform(1.1, 1.5)
+        # tick_upper = price_to_valid_tick(price_upper)
         
-        # Calculate liquidity for token0 and token1
-        liq_token0 = calc_amount0(liquidity, price_to_sqrtp(price_lower), price_to_sqrtp(price_upper))
-        liq_token1 = calc_amount1(liquidity, price_to_sqrtp(price_lower), price_to_sqrtp(price_upper))
+        # # Calculate liquidity for token0 and token1
+        # liq_token0 = calc_amount0(liquidity, price_to_sqrtp(price_lower), price_to_sqrtp(price_upper))
+        # liq_token1 = calc_amount1(liquidity, price_to_sqrtp(price_lower), price_to_sqrtp(price_upper))
         
         # Calculate total liquidity and cap it to avoid exceeding MAX_SAFE_INTEGER
-        total_liq = liq_token0 * pool_price + liq_token1
-        liquidity_percentage = random.uniform(0.01, 0.5)  # Retail LPs allocate a small percentage of liquidity
-        liq_amount_token1 = fromBase18(liquidity_percentage * total_liq) #random.uniform(0, 1)*current_price 
-        liq_amount_token1 = min (liq_amount_token1, 1000)
-        return action, tick_lower, tick_upper, liq_amount_token1
+        # total_liq = liq_token0 * pool_price + liq_token1
+        liquidity_percentage = random.uniform(0.01, 0.1)  # Retail LPs allocate a small percentage of liquidity
+        amount = liquidity_percentage * liquidity #random.uniform(0, 1)*current_price 
+        # liq_amount_token1 = min (liq_amount_token1, 1000) * liquidity_percentage
+        return action, tick_lower, tick_upper, amount
     
     elif action == 'remove_liquidity':
         print("\nREMOVE LIQUIDITY")
