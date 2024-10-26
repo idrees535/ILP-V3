@@ -15,7 +15,7 @@ from scripts.predict_action import PredictAction
 
 # Example usage
 start_date = '2024-02-01'
-end_date = '2024-02-14'
+end_date = '2024-06-01'
 agent = "ddpg"
 agent_name = "ddpg_tempest_2000x50"
 agent_path = f'model_storage/{agent}/{agent_name}'
@@ -80,7 +80,7 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, reba
 
     # Process the response to save data to a DataFrame
     data_df, results_df = save_data_to_df(response_json)
-    print(f"\n\n {json.dumps(results_df,indent=4)}")
+    print(f"\n\n {json.dumps(response_json,indent=4)}")
     return data_df, results_df
 
 # Function to convert date string to Unix timestamp
