@@ -10,7 +10,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.constants import *
 from util.hardhat_control import start_hardhat_node,stop_hardhat_node
 from scripts.predict_action import PredictAction
-import json
 
 start_hardhat_node()
 def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, rebalancing_frequency, agent):
@@ -53,97 +52,27 @@ def backtest_ilp(start_date, end_date, token0, token1, pool_id, agent_path, reba
             "lower_price": (action_lower),
             "upper_price": (action_upper),
         })
+
         # Move to the next rebalancing date
         current_date = end_interval
 
     # Step 5: Send all positions to the simulator API in a single request
-    response_list = simulate_position(token0, token1, all_positions)
-    # if 'LP_positions' not in response_json:
-    #     print(f"Error: 'LP_positions' not found in response or response is None: {response_json}")
-    #     return pd.DataFrame(), pd.DataFrame()
-    data_df, result_df = convert_responses_to_dataframe_and_aggregate_final(response_list)
+    response = simulate_position(token0, token1, all_positions)
+    response_json = response.json()
 
-    return data_df, result_df
+    if 'LP_positions' not in response_json:
+        print(f"Error: 'LP_positions' not found in response or response is None: {response_json}")
+        return pd.DataFrame(), pd.DataFrame()
+
+    # Process the response to save data to a DataFrame
+    data_df, results_df = save_data_to_df(response_json)
+
+    return data_df, results_df
 
 # Function to convert date string to Unix timestamp
 def convert_to_unix_timestamp(date_str):
     dt = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
     return int(dt.timestamp())
-
-# Function to split the positions while maintaining the original structure
-def split_positions_for_api(data):
-    separated_objects = []
-
-    for position in data['positions']:
-        # Create a new object with a single-element positions list
-        new_object = {**data, "positions": [position]}
-        separated_objects.append(new_object)
-    return separated_objects
-
-# Function to convert responses to a DataFrame
-def convert_responses_to_dataframe_and_aggregate_final(responses):
-    data = []
-    final_result_aggregate = {
-        "total_PnL": 0,
-        "total_fee_value": 0,
-        "total_fee_yield": 0,
-        "total_impermanent_loss": 0,
-        "total_portfolio_value_end": 0,
-        "total_portfolio_value_start": 0,
-        "count": 0
-    }
-    
-    for response in responses:
-        if response["status"] == "success":
-            lp_info = response["LP_positions"][0]["info"]
-            burn = response["LP_positions"][0]["burn"]
-            mint = response["LP_positions"][0]["mint"]
-            swap = response["LP_positions"][0]["swap"]
-            final_result = response["final_result"]
-
-            # Add relevant data to a dictionary
-            row = {
-                "APR": lp_info["APR"],
-                "Impermanent_loss_info": lp_info["Impermanent_loss"],
-                "PnL_info": lp_info["PnL"],
-                "X_start": lp_info["X_start"],
-                "Y_start": lp_info["Y_start"],
-                "lower_price_info": lp_info["lower_price"],
-                "upper_price_info": lp_info["upper_price"],
-                "burn_X_collect": burn["X_collect"],
-                "burn_Y_collect": burn["Y_collect"],
-                "mint_X_left": mint["X_left"],
-                "mint_Y_left": mint["Y_left"],
-                "swap_X_after_swap": swap["X_after_swap"],
-                "swap_Y_after_swap": swap["Y_after_swap"]
-            }
-            data.append(row)
-
-            # Aggregate final results
-            final_result_aggregate["total_PnL"] += final_result["PnL"]
-            final_result_aggregate["total_fee_value"] = final_result["fee_value"]
-            final_result_aggregate["total_fee_yield"] += final_result["fee_yield"]
-            final_result_aggregate["total_impermanent_loss"] += final_result["impermanent_loss"]
-            if final_result_aggregate["count"] == 0:
-                final_result_aggregate["portfolio_value_start"] = final_result["portfolio_value_start"]
-            final_result_aggregate["total_portfolio_value_end"] = final_result["portfolio_value_end"]
-            final_result_aggregate["count"] += 1
-
-    # Convert to DataFrame
-    data_df = pd.DataFrame(data)
-
-    # Calculate averages for aggregated fields
-    aggregated_final_result = {
-        "average_PnL": final_result_aggregate["total_PnL"],
-        "average_fee_value": final_result_aggregate["total_fee_value"],
-        "average_fee_yield": final_result_aggregate["total_fee_yield"],
-        "average_impermanent_loss": final_result_aggregate["total_impermanent_loss"],
-        "average_portfolio_value_start": final_result_aggregate["total_portfolio_value_start"],
-        "average_portfolio_value_end": final_result_aggregate["total_portfolio_value_end"]
-    }
-    print(f"\n\n {json.dumps(aggregated_final_result,indent=4)}")
-    result_df = pd.DataFrame([aggregated_final_result])
-    return data_df, result_df
 
 def simulate_position(token0, token1, positions):
     vector = {
@@ -155,65 +84,58 @@ def simulate_position(token0, token1, positions):
         "range_type": "price",
         "positions": positions
     }
+    print(vector)
     url = "http://localhost:5050/MVP"
+    response = requests.post(url, json=vector)
+    print(response.text)
 
-    multiple_vectors = split_positions_for_api(vector)
-    all_responses =[]
-    for vec in multiple_vectors:
-        print(json.dumps(vec,indent=4))
-        response = requests.post(url, json=vec)
-        print(f"___________Voyager Response:\n{response.text}")
-        response_json = response.json()
-        all_responses.append(response_json)
+    return response
 
-    # print(f"\n\n {all_responses}")
-    return all_responses
+def save_data_to_df(response_json):
+    data = []
+    for position in response_json.get('LP_positions', []):
+        burn_data = position.get('burn', {})
+        info_data = position.get('info', {})
+        mint_data = position.get('mint', {})
+        swap_data = position.get('swap', {})
 
-# def save_data_to_df(response_json):
-#     data = []
-#     for position in response_json.get('LP_positions', []):
-#         burn_data = position.get('burn', {})
-#         info_data = position.get('info', {})
-#         mint_data = position.get('mint', {})
-#         swap_data = position.get('swap', {})
+        data.append({
+            'start': info_data.get('start'),
+            'end': info_data.get('end'),
+            'curr_price': burn_data.get('burn_price') / 1e10,
+            'lower_price': info_data.get('lower_price'),
+            'upper_price': info_data.get('upper_price'),
+            'X_start': info_data.get('X_start'),
+            'Y_start': info_data.get('Y_start'),
+            'liquidity': mint_data.get('liquidity'),
+            'X_left': mint_data.get('X_left')/1e8,
+            'X_mint': mint_data.get('X_mint')/1e8,
+            'Y_left': mint_data.get('Y_left')/1e18,
+            'Y_mint': mint_data.get('Y_mint')/1e18,
+            'X_fee': burn_data.get('X_fee')/1e8,
+            'X_reserve': burn_data.get('X_reserve')/1e8,
+            'Y_fee': burn_data.get('Y_fee')/1e18,
+            'Y_reserve': burn_data.get('Y_reserve')/1e18,
+            'APR': info_data.get('APR'),
+            'Impermanent_loss': info_data.get('Impermanent_loss'),
+            'PnL': info_data.get('PnL'),
+            'Yield': info_data.get('Yield')
+        })
 
-#         data.append({
-#             'start': info_data.get('start'),
-#             'end': info_data.get('end'),
-#             'curr_price': burn_data.get('burn_price') / 1e10,
-#             'lower_price': info_data.get('lower_price'),
-#             'upper_price': info_data.get('upper_price'),
-#             'X_start': info_data.get('X_start'),
-#             'Y_start': info_data.get('Y_start'),
-#             'liquidity': mint_data.get('liquidity'),
-#             'X_left': mint_data.get('X_left')/1e8,
-#             'X_mint': mint_data.get('X_mint')/1e8,
-#             'Y_left': mint_data.get('Y_left')/1e18,
-#             'Y_mint': mint_data.get('Y_mint')/1e18,
-#             'X_fee': burn_data.get('X_fee')/1e8,
-#             'X_reserve': burn_data.get('X_reserve')/1e8,
-#             'Y_fee': burn_data.get('Y_fee')/1e18,
-#             'Y_reserve': burn_data.get('Y_reserve')/1e18,
-#             'APR': info_data.get('APR'),
-#             'Impermanent_loss': info_data.get('Impermanent_loss'),
-#             'PnL': info_data.get('PnL'),
-#             'Yield': info_data.get('Yield')
-#         })
+    final_result = response_json.get('final_result', {})
+    final_result_data = {
+        'final_PnL': final_result.get('PnL'),
+        'final_fee_value': final_result.get('fee_value')/1e18,
+        'final_fee_yield': final_result.get('fee_yield'),
+        'final_impermanent_loss': final_result.get('impermanent_loss'),
+        'final_portfolio_value_end': final_result.get('portfolio_value_end')/1e18,
+        'final_portfolio_value_start': final_result.get('portfolio_value_start')/1e18
+    }
 
-#     final_result = response_json.get('final_result', {})
-#     final_result_data = {
-#         'final_PnL': final_result.get('PnL'),
-#         'final_fee_value': final_result.get('fee_value')/1e18,
-#         'final_fee_yield': final_result.get('fee_yield'),
-#         'final_impermanent_loss': final_result.get('impermanent_loss'),
-#         'final_portfolio_value_end': final_result.get('portfolio_value_end')/1e18,
-#         'final_portfolio_value_start': final_result.get('portfolio_value_start')/1e18
-#     }
+    data_df = pd.DataFrame(data)
+    final_result_df = pd.DataFrame([final_result_data])
 
-#     data_df = pd.DataFrame(data)
-#     result_df = pd.DataFrame([final_result_data])
-
-#     return data_df, result_df
+    return data_df, final_result_df
 
 # Example usage
 start_date = '2024-02-01'

@@ -169,52 +169,6 @@ def simulate_position(token0, token1, positions):
     # print(f"\n\n {all_responses}")
     return all_responses
 
-# def save_data_to_df(response_json):
-#     data = []
-#     for position in response_json.get('LP_positions', []):
-#         burn_data = position.get('burn', {})
-#         info_data = position.get('info', {})
-#         mint_data = position.get('mint', {})
-#         swap_data = position.get('swap', {})
-
-#         data.append({
-#             'start': info_data.get('start'),
-#             'end': info_data.get('end'),
-#             'curr_price': burn_data.get('burn_price') / 1e10,
-#             'lower_price': info_data.get('lower_price'),
-#             'upper_price': info_data.get('upper_price'),
-#             'X_start': info_data.get('X_start'),
-#             'Y_start': info_data.get('Y_start'),
-#             'liquidity': mint_data.get('liquidity'),
-#             'X_left': mint_data.get('X_left')/1e8,
-#             'X_mint': mint_data.get('X_mint')/1e8,
-#             'Y_left': mint_data.get('Y_left')/1e18,
-#             'Y_mint': mint_data.get('Y_mint')/1e18,
-#             'X_fee': burn_data.get('X_fee')/1e8,
-#             'X_reserve': burn_data.get('X_reserve')/1e8,
-#             'Y_fee': burn_data.get('Y_fee')/1e18,
-#             'Y_reserve': burn_data.get('Y_reserve')/1e18,
-#             'APR': info_data.get('APR'),
-#             'Impermanent_loss': info_data.get('Impermanent_loss'),
-#             'PnL': info_data.get('PnL'),
-#             'Yield': info_data.get('Yield')
-#         })
-
-#     final_result = response_json.get('final_result', {})
-#     final_result_data = {
-#         'final_PnL': final_result.get('PnL'),
-#         'final_fee_value': final_result.get('fee_value')/1e18,
-#         'final_fee_yield': final_result.get('fee_yield'),
-#         'final_impermanent_loss': final_result.get('impermanent_loss'),
-#         'final_portfolio_value_end': final_result.get('portfolio_value_end')/1e18,
-#         'final_portfolio_value_start': final_result.get('portfolio_value_start')/1e18
-#     }
-
-#     data_df = pd.DataFrame(data)
-#     result_df = pd.DataFrame([final_result_data])
-
-#     return data_df, result_df
-
 # Example usage
 start_date = '2024-02-01'
 end_date = '2024-02-14'
