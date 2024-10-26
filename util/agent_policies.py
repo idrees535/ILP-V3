@@ -41,7 +41,7 @@ def noise_trader_policy(state):
         token0_amount=liquidity0(liquidity,price_impact_upper_bound,price_impact_lower_bound)
         token0_amount = fromBase18(token0_amount)
         swap_amount = min(token0_amount ,100000)
-        swap_amount = swap_amount * random.uniform(0.0001,0.0009)
+        swap_amount = swap_amount * random.uniform(0.00009,0.0009)
     else:
         # token1_amount = calc_amount1(liquidity, price_impact_lower_bound, pool_price)
         token1_amount=liquidity1(liquidity,price_impact_upper_bound,price_impact_lower_bound)
