@@ -1,17 +1,9 @@
-import logging
-import os
-import sys
-
-# Add parent directory to sys.path to handle imports
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from agents.uniswap_lp_agent import UniswapV3LiquidityProviderAgent
 from agents.uniswap_swapper_agent import UniswapV3SwapperAgent
 from util.agent_policies import retail_lp_policy,noise_trader_policy
 
 
-
 class SimEngine:
-
     def __init__(self, pool):
         self.pool = pool
         self.retail_lp = UniswapV3LiquidityProviderAgent(1e10,1e10,retail_lp_policy,self.pool)
@@ -21,10 +13,8 @@ class SimEngine:
         # Trader agents
         self.noise_trader = UniswapV3SwapperAgent(1e10,1e10, noise_trader_policy,self.pool)
         #self.whale_trader = UniswapV3SwapperAgent("whale_trader",5000000000000000.0,5500000000000000.0, whale_trader_policy)
+    
     def run(self):
-
         self.retail_lp.takeStep()
         self.noise_trader.takeStep()
         # self.noise_trader.takeStep()
-
-

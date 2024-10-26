@@ -1,14 +1,11 @@
-
-from enforce_typing import enforce_types
 import os
 import sys
 from util.constants import GOD_ACCOUNT,WALLET_LP,WALLET_SWAPPER
-# import brownie
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.utility_functions import *
 
-@enforce_types
+
 class UniswapV3SwapperAgent():
     def __init__(self, token0, token1 ,policy_func,pool):
         
@@ -31,7 +28,4 @@ class UniswapV3SwapperAgent():
         elif action == 'swap_token1_for_token0':
             tx_receipt=self.pool.swap_token1_for_token0(WALLET_SWAPPER.address, toBase18(amount), data=b'')
             #print(tx_receipt.events)
-            #log_event_to_csv(tx_receipt)
-
-
- 
+            #log_event_to_csv(tx_receipt) 

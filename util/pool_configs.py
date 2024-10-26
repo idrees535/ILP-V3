@@ -1,13 +1,12 @@
 import sys
 import os
+import random
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from .constants import  GOD_ACCOUNT
-# from .utility_functions import *
 from models.uniswap_model import UniV3Model
 
-import random
 
 # Pool configurations as a list of dictionaries
 pool_configs = [
@@ -79,5 +78,3 @@ selected_pool = UniV3Model(
     # sync_pool=sync_pool,
     initial_liquidity_amount=selected_pool_config["initial_liquidity_amount_token1"]
 )
-
-# Now `selected_pool` contains the UniV3Model instance created with the randomly selected pool configuration

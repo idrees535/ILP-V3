@@ -5,8 +5,8 @@ import datetime
 import brownie
 import logging
 logging.getLogger("brownie").setLevel(logging.ERROR)  # Suppress most logs, only show warnings and errors
-logging.getLogger("web3").setLevel(logging.CRITICAL)
-logging.basicConfig(level=logging.CRITICAL)
+logging.getLogger("web3").setLevel(logging.ERROR)
+logging.basicConfig(level=logging.ERROR)
 
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 # BASE_PATH = '/mnt/c/Users/MuhammadSaqib/Documents/ILP-Agent-Framework'
