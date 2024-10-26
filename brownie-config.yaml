@@ -2,7 +2,7 @@ compiler:
   solc:
       version: 0.7.6
 logging:
-  level: WARNING  # Set to WARNING, ERROR, or CRITICAL to reduce log output
+  level: ERROR  # Set to WARNING, ERROR, or CRITICAL to reduce log output
   
 # networks:
 #   default: development
@@ -23,7 +23,7 @@ logging:
 networks:
   default: development
   logging:
-    level: CRITICAL
+    level: ERROR
   hardhat:
     host: http://127.0.0.1  
     port: 8545            
