@@ -66,12 +66,12 @@ def retail_lp_policy(state):
         pool_price = global_state['curr_price']
         print (f"\n```````````````````````````````````````Current pool price  : {pool_price}")
         print (f"```````````````````````````````````````Current pool raw loquidity : {liquidity}")    
-        # # Calculate price bounds
-        # price_lower = pool_price * random.uniform(0.5, 0.9)
-        # tick_lower = price_to_valid_tick(price_lower)
+        # Calculate price bounds
+        price_lower = pool_price * random.uniform(0.5, 0.9)
+        tick_lower = price_to_valid_tick(price_lower)
         
-        # price_upper = pool_price * random.uniform(1.1, 1.5)
-        # tick_upper = price_to_valid_tick(price_upper)
+        price_upper = pool_price * random.uniform(1.1, 1.5)
+        tick_upper = price_to_valid_tick(price_upper)
         
         # # Calculate liquidity for token0 and token1
         # liq_token0 = calc_amount0(liquidity, price_to_sqrtp(price_lower), price_to_sqrtp(price_upper))
