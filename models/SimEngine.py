@@ -25,5 +25,6 @@ class SimEngine:
 
         self.retail_lp.takeStep()
         self.noise_trader.takeStep()
+        # self.noise_trader.takeStep()
 
 

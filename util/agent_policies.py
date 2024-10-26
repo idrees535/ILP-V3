@@ -57,7 +57,7 @@ def noise_trader_policy(state):
 
 def retail_lp_policy(state):
     actions = ['add_liquidity', 'remove_liquidity']
-    action = random.choice(actions)
+    action = random.choice(actions*10)
     
     if action == 'add_liquidity':
         print("\nADD LIQUIDITY")
@@ -67,21 +67,14 @@ def retail_lp_policy(state):
         print (f"\n```````````````````````````````````````Current pool price  : {pool_price}")
         print (f"```````````````````````````````````````Current pool raw loquidity : {liquidity}")    
         # Calculate price bounds
-        price_lower = pool_price * random.uniform(0.5, 0.9)
+        price_lower = pool_price * random.uniform(0.2, 0.9)
         tick_lower = price_to_valid_tick(price_lower)
         
-        price_upper = pool_price * random.uniform(1.1, 1.5)
+        price_upper = pool_price * random.uniform(1.1, 1.9)
         tick_upper = price_to_valid_tick(price_upper)
         
-        # # Calculate liquidity for token0 and token1
-        # liq_token0 = calc_amount0(liquidity, price_to_sqrtp(price_lower), price_to_sqrtp(price_upper))
-        # liq_token1 = calc_amount1(liquidity, price_to_sqrtp(price_lower), price_to_sqrtp(price_upper))
-        
-        # Calculate total liquidity and cap it to avoid exceeding MAX_SAFE_INTEGER
-        # total_liq = liq_token0 * pool_price + liq_token1
-        liquidity_percentage = random.uniform(0.01, 0.1)  # Retail LPs allocate a small percentage of liquidity
-        amount = liquidity_percentage * liquidity #random.uniform(0, 1)*current_price 
-        # liq_amount_token1 = min (liq_amount_token1, 1000) * liquidity_percentage
+        percentage = random.uniform(0.01, 0.1)  # Retail LPs allocate 1% to 10% of total pool liquidity
+        amount = percentage * liquidity 
         return action, tick_lower, tick_upper, amount
     
     elif action == 'remove_liquidity':

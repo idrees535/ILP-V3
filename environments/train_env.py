@@ -146,8 +146,7 @@ class DiscreteSimpleEnv(gym.Env):
         mint_tx_receipt,action=self._take_action(raw_action)
         
         # run uniswap abm env of n_steps
-        print()
-        print('_______________________________Environment Step________________________________')
+        print('\n_______________________________Environment Step________________________________')
         # self.engine.reset()
         self.engine.run()
         print()
@@ -275,14 +274,12 @@ class DiscreteSimpleEnv(gym.Env):
         tick_upper=price_to_valid_tick(action_dict['price_upper'])
         amount=self.agent_budget_usd
 
-        print (f"\n````````````````````````````````````````Current pool price : {curr_price}")
-        print (f"``````````````````````````````````````Current pool loquidity : {fromBase18(liquidity)}")
+        print (f"\n```````````````````````````````````````Current pool price : {curr_price}")
+        print (f"```````````````````````````````````````Current pool raw liquidity : {liquidity}")
         print('RL Agent Action')
         print(f"____RL Agent WALLET {self.pool.get_wallet_balances(GOD_ACCOUNT.address)} ")
-        print(f"____Liquidity amount: {amount} toBase18: {toBase18(amount)} ")
-        print(f"raw_action: {action}, scaled_action: {action_dict} \ns")
+        print(f"Raw action: {action}, Scaled action: {action_dict},  Liquidity amount: {amount} \ns")
 
-        #print(f"\nAmount for liquidity: {amount}")
         mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount, b'')
 
         return mint_tx_receipt,action_dict
