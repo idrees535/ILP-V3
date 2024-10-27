@@ -360,14 +360,14 @@ class UniV3Model():
     
         if existing_position:
             existing_position['liquidity'] += liquidity 
-            existing_position['amount_token1'] += amount_token1 # Add new liquidity to existing position
+            existing_position['amount_token1'] += 000 # Add new liquidity to existing position
         else:
         # Add new position to list
             all_positions[self.pool_id][liquidity_provider_str].append({
                 'tick_lower': tick_lower,
                 'tick_upper': tick_upper,
                 'liquidity': liquidity,
-                'amount_token1': amount_token1
+                'amount_token1': 000
             })
         
         # Store updated positions
@@ -428,7 +428,7 @@ class UniV3Model():
 
         return tx_receipt
     
-    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity,amount_token1, collect_tokens=True):
+    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity, collect_tokens=True):
         liquidity_provider_str = str(liquidity_provider)
         tx_receipt = None
 
@@ -465,7 +465,7 @@ class UniV3Model():
 
         if existing_position['liquidity'] > liquidity:
             existing_position['liquidity'] -= liquidity
-            existing_position['amount_token1'] -= amount_token1  # Deduct removed liquidity
+            existing_position['amount_token1'] -= 000  # Deduct removed liquidity
         else:
             all_positions[self.pool_id][liquidity_provider_str].remove(existing_position)  # Remove position if liquidity becomes zero
         
