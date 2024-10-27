@@ -26,7 +26,7 @@ class UniswapV3LiquidityProviderAgent():
         print(f"____Liquidity amount: {amount} \n")
 
         if liquidity_action == "add_liquidity":
-            tx_receipt= self.pool.add_liquidity_with_liquidity(WALLET_LP.address, tick_lower, tick_upper, amount, b'')
+            tx_receipt= self.pool.add_liquidity_with_liquidity(WALLET_LP.address, tick_lower, tick_upper, amount,  b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
         elif liquidity_action == "remove_liquidity":

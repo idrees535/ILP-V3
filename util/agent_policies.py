@@ -87,6 +87,7 @@ def retail_lp_policy(state):
             tick_lower = position_to_remove['tick_lower']
             tick_upper = position_to_remove['tick_upper']
             amount = position_to_remove['liquidity']
+            amount_token1 = position_to_remove['amount_token1']
             
             return action, tick_lower, tick_upper, amount
         else:

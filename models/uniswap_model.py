@@ -58,10 +58,21 @@ class UniV3Model():
         self.ensure_valid_json_file("model_storage/liq_positions.json")
 
    
-        self.reset_env()
-        self.deploy_load_tokens()
-    
-        self.deploy_load_pool()
+        try:
+            self.deploy_load_tokens()
+        except Exception as e:
+            # If any error occurs during pool loading or deployment, reset the environment
+            print(f"Error encountered: {e}. Resetting environment...")
+            self.reset_env()
+            self.deploy_load_tokens()
+        
+        try:
+            self.deploy_load_pool()
+        except Exception as e:
+            # If any error occurs during pool loading or deployment, reset the environment
+            print(f"Error encountered: {e}. Resetting environment...")
+            self.reset_env()
+            self.deploy_load_pool()
 
     def ensure_valid_json_file(self, filepath, default_content="{}"):
         """
@@ -254,11 +265,11 @@ class UniV3Model():
             print(self.format_transaction(tx_receipt.events))
             #print(str(tx_receipt.events))
 
-            if amount0 > 0:
-                tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
-            if amount1 > 0:
-                tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
-                #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
+            # if amount0 > 0:
+            #     tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
+            # if amount1 > 0:
+            #     tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
+            #     #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
 
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
@@ -314,11 +325,12 @@ class UniV3Model():
             amount0 = tx_receipt.events['Mint']['amount0']
             amount1 = tx_receipt.events['Mint']['amount1']
             print(self.format_transaction(tx_receipt.events))
-            if amount0 > 0:
-                tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
-            if amount1 > 0:
-                tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
-                #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
+
+            # if amount0 > 0:
+            #     tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
+            # if amount1 > 0:
+            #     tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
+            #     #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
 
 
         except VirtualMachineError as e:
@@ -349,14 +361,14 @@ class UniV3Model():
     
         if existing_position:
             existing_position['liquidity'] += liquidity 
-            existing_position['amount_token1'] += liquidity # Add new liquidity to existing position
+            # existing_position['amount_token1'] += liquidity # Add new liquidity to existing position
         else:
         # Add new position to list
             all_positions[self.pool_id][liquidity_provider_str].append({
                 'tick_lower': tick_lower,
                 'tick_upper': tick_upper,
                 'liquidity': liquidity,
-                'amount_token1':liquidity
+                'amount_token1': 000
             })
         
         # Store updated positions
@@ -417,11 +429,9 @@ class UniV3Model():
 
         return tx_receipt
     
-    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity,collect_tokens=True):
+    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity, collect_tokens=True):
         liquidity_provider_str = str(liquidity_provider)
         tx_receipt = None
-        
-        # Convert budget to liquidity amount
 
         try:
             tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
@@ -456,7 +466,7 @@ class UniV3Model():
 
         if existing_position['liquidity'] > liquidity:
             existing_position['liquidity'] -= liquidity
-            existing_position['amount_token1'] -= liquidity  # Deduct removed liquidity
+            # existing_position['amount_token1'] -= 000  # Deduct removed liquidity
         else:
             all_positions[self.pool_id][liquidity_provider_str].remove(existing_position)  # Remove position if liquidity becomes zero
         
