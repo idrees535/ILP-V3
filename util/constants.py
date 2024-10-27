@@ -11,6 +11,8 @@ logging.basicConfig(level=logging.ERROR)
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 # BASE_PATH = '/mnt/c/Users/MuhammadSaqib/Documents/ILP-Agent-Framework'
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+logging.basicConfig(level=logging.ERROR) # Set the desired logging level
+
 
 if BASE_PATH not in sys.path:
     sys.path.append(BASE_PATH)

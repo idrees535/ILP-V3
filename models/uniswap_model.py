@@ -57,22 +57,9 @@ class UniV3Model():
         self.ensure_valid_json_file("model_storage/token_pool_addresses.json")
         self.ensure_valid_json_file("model_storage/liq_positions.json")
 
-   
-        try:
-            self.deploy_load_tokens()
-        except Exception as e:
-            # If any error occurs during pool loading or deployment, reset the environment
-            print(f"Error encountered: {e}. Resetting environment...")
-            self.reset_env()
-            self.deploy_load_tokens()
-        
-        try:
-            self.deploy_load_pool()
-        except Exception as e:
-            # If any error occurs during pool loading or deployment, reset the environment
-            print(f"Error encountered: {e}. Resetting environment...")
-            self.reset_env()
-            self.deploy_load_pool()
+        self.reset_env()
+        self.deploy_load_tokens()
+        self.deploy_load_pool()
 
     def ensure_valid_json_file(self, filepath, default_content="{}"):
         """
