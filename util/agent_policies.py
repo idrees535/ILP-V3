@@ -79,7 +79,7 @@ def retail_lp_policy(state):
 
         amount_token1 = calc_amount1(liquidity,price_impact_lower_bound,price_impact_upper_bound)
         
-        percentage = random.uniform(0.01, 0.1)  # Retail LPs allocate 1% to 10% of total pool liquidity
+        percentage = random.uniform(0.01, 0.05)  # Retail LPs allocate 1% to 5% of total pool liquidity
         amount = percentage * liquidity 
         return action, tick_lower, tick_upper, amount, amount_token1
     

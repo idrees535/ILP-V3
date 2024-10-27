@@ -6,7 +6,7 @@ from util.agent_policies import retail_lp_policy,noise_trader_policy
 class SimEngine:
     def __init__(self, pool):
         self.pool = pool
-        self.retail_lp = UniswapV3LiquidityProviderAgent(1e10,1e10,retail_lp_policy,self.pool)
+        self.retail_lp = UniswapV3LiquidityProviderAgent(1e20,1e20,retail_lp_policy,self.pool)
         #self.inst_lp = UniswapV3LiquidityProviderAgent("inst_lp", 1000000000000.0,110000000000000.0,inst_LP_policy)
         #self.rl_lp = UniswapV3LiquidityProviderAgent("rl_lp", 1000000000000.0,110000000000000.0,rl_LP_policy)
         
