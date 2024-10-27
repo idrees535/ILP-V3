@@ -1,9 +1,7 @@
 import sys
 import os
-import pandas as pd
 import numpy as np
-from tqdm import tqdm
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -81,7 +79,7 @@ class PredictAction:
         elif self.agent =='ppo':
             # PPO Agent Action
             action, _ = self.ppo_eval_agent.choose_action(obs)
-            print(f"\n\nPPO ACTION:   {action} \n\n")
+            # print(f"\n\nPPO ACTION:   {action} \n\n")
             action_dict, action_ticks = self.postprocess_action(action, curr_price, action_transform='exp')
 
         return action, action_dict, action_ticks
