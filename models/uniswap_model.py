@@ -265,11 +265,11 @@ class UniV3Model():
             print(self.format_transaction(tx_receipt.events))
             #print(str(tx_receipt.events))
 
-            # if amount0 > 0:
-            #     tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
-            # if amount1 > 0:
-            #     tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
-            #     #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
+            if amount0 > 0:
+                tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
+            if amount1 > 0:
+                tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
+                #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
 
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
@@ -315,7 +315,7 @@ class UniV3Model():
         
         return tx_receipt
     
-    def add_liquidity_with_liquidity(self, liquidity_provider, tick_lower, tick_upper, liquidity, data):
+    def add_liquidity_with_liquidity(self, liquidity_provider, tick_lower, tick_upper, liquidity,amount_token1, data):
         tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         tx_receipt=None
         try:
@@ -326,12 +326,11 @@ class UniV3Model():
             amount1 = tx_receipt.events['Mint']['amount1']
             print(self.format_transaction(tx_receipt.events))
 
-            # if amount0 > 0:
-            #     tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
-            # if amount1 > 0:
-            #     tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
-            #     #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
-
+            if amount0 > 0:
+                tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
+            if amount1 > 0:
+                tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
+                #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
 
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
@@ -361,14 +360,14 @@ class UniV3Model():
     
         if existing_position:
             existing_position['liquidity'] += liquidity 
-            # existing_position['amount_token1'] += liquidity # Add new liquidity to existing position
+            existing_position['amount_token1'] += amount_token1 # Add new liquidity to existing position
         else:
         # Add new position to list
             all_positions[self.pool_id][liquidity_provider_str].append({
                 'tick_lower': tick_lower,
                 'tick_upper': tick_upper,
                 'liquidity': liquidity,
-                'amount_token1': 000
+                'amount_token1': amount_token1
             })
         
         # Store updated positions
@@ -429,7 +428,7 @@ class UniV3Model():
 
         return tx_receipt
     
-    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity, collect_tokens=True):
+    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity,amount_token1, collect_tokens=True):
         liquidity_provider_str = str(liquidity_provider)
         tx_receipt = None
 
@@ -466,7 +465,7 @@ class UniV3Model():
 
         if existing_position['liquidity'] > liquidity:
             existing_position['liquidity'] -= liquidity
-            # existing_position['amount_token1'] -= 000  # Deduct removed liquidity
+            existing_position['amount_token1'] -= amount_token1  # Deduct removed liquidity
         else:
             all_positions[self.pool_id][liquidity_provider_str].remove(existing_position)  # Remove position if liquidity becomes zero
         
@@ -495,7 +494,6 @@ class UniV3Model():
             # Transfer token0 to pool (callback)
             tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
             
-        
         except VirtualMachineError as e:
             print("Swap token 0 to Token 1 Transaction failed:", e.revert_msg)
             slot0_data = self.pool_contact.slot0()
@@ -520,10 +518,12 @@ class UniV3Model():
 
             # Trasfer token1 to pool (callabck)
             tx_receipt_token1_transfer = self.token1.transfer(self.pool_contact.address, amount1, tx_params)
+
         except VirtualMachineError as e:
             print("Swap token 1 to Token 0 Transaction failed:", e.revert_msg)
             slot0_data = self.pool_contact.slot0()
             print(f'contract_token0_balance - approx_token0_amount: {self.token0.balanceOf(self.pool_contact)-amount_specified/sqrtp_to_price(slot0_data[0])}, approx_token0_amount: {amount_specified/sqrtp_to_price(slot0_data[0])}, contract_token0_balance: {self.token0.balanceOf(self.pool_contact)}, contract_token1_balance - amount_swap_token1: {self.token1.balanceOf(self.pool_contact)-amount_specified}')
+        
         return tx_receipt
 
     def collect_fee(self,recipient,tick_lower,tick_upper,poke=False):

@@ -17,7 +17,7 @@ class UniswapV3LiquidityProviderAgent():
         
     def takeStep(self):
         try:
-            liquidity_action, tick_lower, tick_upper, amount = self.policy(self)
+            liquidity_action, tick_lower, tick_upper, amount, amount_token1 = self.policy(self)
         except TypeError:
             print(f"Policy returned None, no action will be taken check your policy functions")
             return None
@@ -26,13 +26,13 @@ class UniswapV3LiquidityProviderAgent():
         print(f"____Liquidity amount: {amount} \n")
 
         if liquidity_action == "add_liquidity":
-            tx_receipt= self.pool.add_liquidity_with_liquidity(WALLET_LP.address, tick_lower, tick_upper, amount,  b'')
+            tx_receipt= self.pool.add_liquidity_with_liquidity(WALLET_LP.address, tick_lower, tick_upper, amount, amount_token1,  b'')
             #print(tx_receipt.events)
             #log_event_to_csv(tx_receipt)
         elif liquidity_action == "remove_liquidity":
             #collect_tx_receipt,_ = self.pool.collect_fee(wallet_lp.address, tick_lower, tick_upper)
             #log_event_to_csv(tx_receipt)
-            burn_tx_receipt = self.pool.remove_liquidity_with_liquidty(WALLET_LP.address, tick_lower, tick_upper, amount)
+            burn_tx_receipt = self.pool.remove_liquidity_with_liquidty(WALLET_LP.address, tick_lower, tick_upper, amount, amount_token1)
             #print(burn_tx_receipt.events)
             #log_event_to_csv(tx_receipt)
         elif liquidity_action == "hold":

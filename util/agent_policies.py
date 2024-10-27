@@ -26,7 +26,7 @@ def noise_trader_policy(state):
     action = random.choice(actions*100)
     
     # Determine slippage tolerance between 1% and 14%
-    slippage_tolerance = random.uniform(0.01, 0.05)
+    slippage_tolerance = random.uniform(0.01, 0.15)
     
     global_state = state.pool.get_global_state()
     pool_price = global_state['curr_price']
@@ -64,6 +64,10 @@ def retail_lp_policy(state):
         global_state = state.pool.get_global_state()
         liquidity = global_state['liquidity_raw']
         pool_price = global_state['curr_price']
+        # Determine slippage tolerance between 1% and 14%
+        slippage_tolerance = random.uniform(0.01, 0.15)
+        price_impact_upper_bound = price_to_sqrtp(pool_price * (1 + slippage_tolerance))
+        price_impact_lower_bound = price_to_sqrtp(pool_price * (1 - slippage_tolerance))
         print (f"\n```````````````````````````````````````Current pool price  : {pool_price}")
         print (f"```````````````````````````````````````Current pool raw loquidity : {liquidity}")    
         # Calculate price bounds
@@ -72,10 +76,12 @@ def retail_lp_policy(state):
         
         price_upper = pool_price * random.uniform(1.1, 1.9)
         tick_upper = price_to_valid_tick(price_upper)
+
+        amount_token1 = calc_amount1(liquidity,price_impact_lower_bound,price_impact_upper_bound)
         
         percentage = random.uniform(0.01, 0.1)  # Retail LPs allocate 1% to 10% of total pool liquidity
         amount = percentage * liquidity 
-        return action, tick_lower, tick_upper, amount
+        return action, tick_lower, tick_upper, amount, amount_token1
     
     elif action == 'remove_liquidity':
         print("\nREMOVE LIQUIDITY")
@@ -89,10 +95,10 @@ def retail_lp_policy(state):
             amount = position_to_remove['liquidity']
             amount_token1 = position_to_remove['amount_token1']
             
-            return action, tick_lower, tick_upper, amount
+            return action, tick_lower, tick_upper, amount, amount_token1
         else:
             print(" No positions to remove ")
-            return None
+            return retail_lp_policy(state)  # Retry by calling the function again
 
 def update_slippage_tolerance(state, params):
     recent_slippages = state['recent_slippages']  # List or other data structure
