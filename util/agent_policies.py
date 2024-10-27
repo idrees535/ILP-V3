@@ -51,7 +51,7 @@ def noise_trader_policy(state):
         swap_amount = min(token1_amount,100000)
         swap_amount = swap_amount* random.uniform(0.08, 1.4)
         
-    print (f"SWAP AMOUNT : {swap_amount}")
+    # print (f"SWAP AMOUNT : {swap_amount}")
     return action, swap_amount
 
 
