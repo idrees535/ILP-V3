@@ -56,7 +56,7 @@ def noise_trader_policy(state):
 
 
 def retail_lp_policy(state):
-    actions = ['add_liquidity', 'remove_liquidity']
+    actions = ['add_liquidity', 'remove_liquidity', 'remove_liquidity']
     action = random.choice(actions*10)
     
     if action == 'add_liquidity':
@@ -80,7 +80,7 @@ def retail_lp_policy(state):
         amount_token1 = calc_amount1(liquidity,price_impact_lower_bound,price_impact_upper_bound)
         
         percentage = random.uniform(0.01, 0.05)  # Retail LPs allocate 1% to 5% of total pool liquidity
-        amount = percentage * liquidity 
+        amount = percentage * liquidity
         return action, tick_lower, tick_upper, amount, amount_token1
     
     elif action == 'remove_liquidity':
