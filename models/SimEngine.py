@@ -15,6 +15,6 @@ class SimEngine:
         #self.whale_trader = UniswapV3SwapperAgent("whale_trader",5000000000000000.0,5500000000000000.0, whale_trader_policy)
     
     def run(self):
-        self.retail_lp.takeStep()
+        # self.retail_lp.takeStep()
         self.noise_trader.takeStep()
-        # self.noise_trader.takeStep()
+        self.noise_trader.takeStep()

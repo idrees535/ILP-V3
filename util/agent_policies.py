@@ -59,6 +59,22 @@ def retail_lp_policy(state):
     actions = ['add_liquidity', 'remove_liquidity', 'remove_liquidity']
     action = random.choice(actions*10)
     
+    if action == 'remove_liquidity':
+        print("\nREMOVE LIQUIDITY")
+        lp_positions = state.pool.get_lp_all_positions(WALLET_LP.address)
+        if lp_positions:
+            position_to_remove = random.choice(lp_positions)
+            print(f"Position going to remove : {position_to_remove}")
+            tick_lower = position_to_remove['tick_lower']
+            tick_upper = position_to_remove['tick_upper']
+            amount = position_to_remove['liquidity']
+            amount_token1 = position_to_remove['amount_token1']
+            
+            return action, tick_lower, tick_upper, amount, amount_token1
+        else:
+            print(" No positions to remove ")
+            action = 'add_liquidity' 
+
     if action == 'add_liquidity':
         print("\nADD LIQUIDITY")
         global_state = state.pool.get_global_state()
@@ -82,23 +98,6 @@ def retail_lp_policy(state):
         percentage = random.uniform(0.01, 0.05)  # Retail LPs allocate 1% to 5% of total pool liquidity
         amount = percentage * liquidity
         return action, tick_lower, tick_upper, amount, amount_token1
-    
-    elif action == 'remove_liquidity':
-        print("\nREMOVE LIQUIDITY")
-        lp_positions = state.pool.get_lp_all_positions(WALLET_LP.address)
-
-        if lp_positions:
-            position_to_remove = random.choice(lp_positions)
-            print(f"Position going to remove : {position_to_remove}")
-            tick_lower = position_to_remove['tick_lower']
-            tick_upper = position_to_remove['tick_upper']
-            amount = position_to_remove['liquidity']
-            amount_token1 = position_to_remove['amount_token1']
-            
-            return action, tick_lower, tick_upper, amount, amount_token1
-        else:
-            print(" No positions to remove ")
-            return retail_lp_policy(state)  # Retry by calling the function again
 
 def update_slippage_tolerance(state, params):
     recent_slippages = state['recent_slippages']  # List or other data structure
