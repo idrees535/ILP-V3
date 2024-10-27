@@ -57,7 +57,7 @@ def noise_trader_policy(state):
 
 def retail_lp_policy(state):
     actions = ['add_liquidity', 'remove_liquidity', 'remove_liquidity']
-    action = random.choice(actions*10)
+    action = random.choice(actions)
     
     if action == 'remove_liquidity':
         print("\nREMOVE LIQUIDITY")
