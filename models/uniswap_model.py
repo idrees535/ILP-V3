@@ -618,11 +618,10 @@ class UniV3Model():
 
 
     def get_tick_state(self,tick):
-        pool_state = self.pool_contact
+   
         word_position = tick >> 8
-
-        tick_info = pool_state.ticks(tick)
-        tick_bitmap = pool_state.tickBitmap(word_position)
+        tick_info = self.pool_contact.ticks(tick)
+        tick_bitmap = self.pool_contact.tickBitmap(word_position)
 
         return {
         'tick':tick,
@@ -643,17 +642,17 @@ class UniV3Model():
     }
     
     def get_global_state(self):
-        pool_state = self.pool_contact
-        slot0_data = pool_state.slot0()
+
+        slot0_data = self.pool_contact.slot0()
         observation_index = slot0_data[2]
 
-        feeGrowthGlobal0X128 = pool_state.feeGrowthGlobal0X128()
-        feeGrowthGlobal1X128 = pool_state.feeGrowthGlobal1X128()
-        protocol_fees = pool_state.protocolFees()
+        feeGrowthGlobal0X128 = self.pool_contact.feeGrowthGlobal0X128()
+        feeGrowthGlobal1X128 = self.pool_contact.feeGrowthGlobal1X128()
+        protocol_fees = self.pool_contact.protocolFees()
         
-        liquidity = pool_state.liquidity()
+        liquidity = self.pool_contact.liquidity()
 
-        observation_info = pool_state.observations(observation_index)
+        observation_info = self.pool_contact.observations(observation_index)
         
         return {
         "curr_sqrtPriceX96": slot0_data[0],

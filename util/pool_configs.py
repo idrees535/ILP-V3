@@ -58,7 +58,7 @@ pool_configs = [
 ]
 
 # Select a random pool configuration
-selected_pool_config = random.choice(pool_configs)
+selected_pool_config = random.choice(pool_configs*15)
 
 # Parameters common to all pools
 deployer = GOD_ACCOUNT
