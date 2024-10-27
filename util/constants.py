@@ -4,14 +4,12 @@ import pathlib
 import datetime
 import brownie
 import logging
-logging.getLogger("brownie").setLevel(logging.ERROR)  # Suppress most logs, only show warnings and errors
-logging.getLogger("web3").setLevel(logging.ERROR)
-logging.basicConfig(level=logging.ERROR)
+# Suppress all logging across the entire application
+logging.disable(logging.CRITICAL)
 
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 # BASE_PATH = '/mnt/c/Users/MuhammadSaqib/Documents/ILP-Agent-Framework'
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-logging.basicConfig(level=logging.ERROR) # Set the desired logging level
 
 
 if BASE_PATH not in sys.path:

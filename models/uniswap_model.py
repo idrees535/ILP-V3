@@ -18,7 +18,6 @@ from brownie import accounts, network
 from web3 import Web3
 from brownie.exceptions import VirtualMachineError
 from enforce_typing import enforce_types
-logging.getLogger("brownie").setLevel(logging.ERROR)
 
 class UniV3Model():
     def __init__(self, token0='token0', token1='token1', token0_decimals=18, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=1000000):
