@@ -74,17 +74,10 @@ class DiscreteSimpleEnv(gym.Env):
         importlib.reload(pool_configs)
 
         # Now, fetch the selected_pool after reload
-        selected_pool = pool_configs.selected_pool
-        self.pool = selected_pool
-        
+        self.pool = pool_configs.selected_pool
+
         print(f'Pool selcted for this episode: {self.pool.pool_id}')
-        # sim_strategy = SimStrategy()
-        # sim_state = SimState(ss=sim_strategy,pool=self.pool)
-
         output_dir = "model_output"
-        # netlist_log_func = netlist_createLogData
-
-        #from engine.SimEngine import SimEngine
         self.engine = SimEngine(self.pool)
 
         self.global_state=self.pool.get_global_state()

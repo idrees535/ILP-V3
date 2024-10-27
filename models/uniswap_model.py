@@ -306,7 +306,6 @@ class UniV3Model():
     
     def add_liquidity_with_liquidity(self, liquidity_provider, tick_lower, tick_upper, liquidity, data):
         tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
-        tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         tx_receipt=None
         try:
             liquidity=liquidity
