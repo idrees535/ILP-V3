@@ -25,7 +25,6 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
     ddpg_agent = DDPG(alpha=alpha, beta=beta, input_dims=input_dims, tau=tau, env=env, n_actions=n_actions, batch_size=batch_size, training=training)
      
     for i in range(n_episodes):
-        start_hardhat_node()
         state = env.reset()
         episode_reward = 0
         
@@ -42,6 +41,7 @@ def train_ddpg_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/dd
                 break
         print(f"Episode {i+1}: Reward = {episode_reward}")
         stop_hardhat_node()
+        start_hardhat_node()
         #ddpg_agent.memory.clear()
     
     # Create dummy data for model input shape

@@ -25,7 +25,6 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ppo
     ppo_agent = PPO(env, n_actions, observation_dims=input_dims,buffer_size=buffer_size,n_epochs=n_epochs, gamma=gamma, alpha=alpha, gae_lambda=gae_lambda, policy_clip=policy_clip, max_grad_norm=max_grad_norm)
     
     for i in range(n_episodes):
-        start_hardhat_node()
         state = env.reset()
         episode_reward = 0
         
@@ -43,6 +42,7 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ppo
                 break
         print(f"Episode {i+1}: Reward = {episode_reward}")
         stop_hardhat_node()
+        start_hardhat_node()
 
     ppo_model_base_path = os.path.join(BASE_PATH,model_name)
     ppo_actor_model_path = os.path.join(ppo_model_base_path, 'actor')
