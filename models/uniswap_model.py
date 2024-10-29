@@ -8,6 +8,7 @@ import numpy as np
 import math
 import shutil
 import logging
+import time
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -96,7 +97,7 @@ class UniV3Model():
         # This function deploys a token and saves its address in the JSON file
         def deploy_and_save_token(name, symbol, decimals, supply, key):
             token = SimpleToken.deploy(name, symbol, decimals, toBase18(supply),  {'from': self.deployer, 'gas_price': self.base_fee + 1, 'silent': True})
-            print(f"New {symbol} token deployed at {token.address}")
+            # print(f"New {symbol} token deployed at {token.address}")
             pool_addresses[key] = token.address
             addresses[self.pool_id] = pool_addresses
             self.save_addresses(addresses)
@@ -106,19 +107,19 @@ class UniV3Model():
         if "token1_address" in pool_addresses:
             self.token1 = SimpleToken.at(pool_addresses["token1_address"])
         else:
-            print("Token1 contract not deployed, deploying a new token1")
+            print(f"Token1 contract not deployed, deploying: {self.token1_symbol}")
             self.token1 = deploy_and_save_token(self.token1_name, self.token1_symbol, self.token1_decimals, self.supply_token1, "token1_address")
 
         # Load or deploy token0
         if "token0_address" in pool_addresses:
             self.token0 = SimpleToken.at(pool_addresses["token0_address"])
         else:
-            print("Token0 contract not deployed, deploying a new token0")
+            print(f"Token0 contract not deployed, deploying: {self.token0_symbol}")
             self.token0 = deploy_and_save_token(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, "token0_address")
             # Ensure token0 address is less than token1 address
-            while int(self.token0.address, 16) >= int(self.token1.address, 16):
+            while int(self.token0.address, 16) > int(self.token1.address, 16):
                 self.token0 = deploy_and_save_token(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, "token0_address")
-
+        time.sleep(7)  # Pauses for 5 seconds
 
     def deploy_load_pool(self):
         UniswapV3Factory = BROWNIE_PROJECTUniV3.UniswapV3Factory
@@ -128,7 +129,7 @@ class UniV3Model():
  
         if "pool_address" in pool_addresses:
             self.pool_contact = UniswapV3Pool.at(pool_addresses["pool_address"])
-            print(f"Existing pool:{self.pool_id} having pool address: {self.pool_contact} loaded")
+            print(f"Existing {self.pool_id} pool having pool address: {self.pool_contact} loaded")
         else:
             self.factory = UniswapV3Factory.deploy( {'from': self.deployer, 'gas_price': self.base_fee + 1, 'silent': True})
             pool_creation_txn = self.factory.createPool(self.token0.address, self.token1.address, self.fee_tier,  {'from': self.deployer, 'gas_price': self.base_fee + 1,'silent': True})
@@ -144,6 +145,7 @@ class UniV3Model():
             addresses[self.pool_id] = pool_addresses
             self.save_addresses(addresses)
             self.sync_pool_state()
+            print(f"New {self.pool_id} pool deployed having pool address: {self.pool_contact}")
 
     def ensure_token_order(self):
         # Check if token0's address is greater than token1's address
@@ -301,7 +303,7 @@ class UniV3Model():
         
         return tx_receipt
     
-    def add_liquidity_with_liquidity(self, liquidity_provider, tick_lower, tick_upper, liquidity,amount_token1, data):
+    def add_liquidity_with_liquidity(self, liquidity_provider, tick_lower, tick_upper, liquidity, data):
         tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         tx_receipt=None
         try:

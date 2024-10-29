@@ -10,55 +10,55 @@ from models.uniswap_model import UniV3Model
 
 # Pool configurations as a list of dictionaries
 pool_configs = [
-    {
-        "token0": "WETH",
-        "token1": "USDC",
-        "supply_token0": 1e40,
-        "supply_token1": 1e40,
-        "token0_decimals": 18,
-        "token1_decimals": 18,
-        "fee_tier": 3000,
-        "initial_pool_price": 2000,
-        "initial_liquidity_amount_token1": 10000000
-    },
-    {
-        "token0": "ETH",
-        "token1": "DAI",
-        "supply_token0": 1e40,
-        "supply_token1": 1e40,
-        "token0_decimals": 18,
-        "token1_decimals": 18,
-        "fee_tier": 3000,
-        "initial_pool_price": 1000,
-        "initial_liquidity_amount_token1": 10000000
-    },
-    {
-        "token0": "BTC",
-        "token1": "USDT",
-        "supply_token0": 1e40,
-        "supply_token1": 1e40,
-        "token0_decimals": 18,
-        "token1_decimals": 18,
-        "fee_tier": 3000,
-        "initial_pool_price": 60000,
-        "initial_liquidity_amount_token1": 1000000000
-    }
-    # ,
     # {
-    #     "token0": "BTC",
-    #     "token1": "WETH",
+    #     "token0": "WETH",
+    #     "token1": "USDC",
     #     "supply_token0": 1e40,
     #     "supply_token1": 1e40,
     #     "token0_decimals": 18,
     #     "token1_decimals": 18,
     #     "fee_tier": 3000,
-    #     "initial_pool_price": 20,  # 20 WETH
-    #     "initial_liquidity_amount_token1": 10000
+    #     "initial_pool_price": 2000,
+    #     "initial_liquidity_amount_token1": 10000000
+    # },
+    # {
+    #     "token0": "ETH",
+    #     "token1": "DAI",
+    #     "supply_token0": 1e40,
+    #     "supply_token1": 1e40,
+    #     "token0_decimals": 18,
+    #     "token1_decimals": 18,
+    #     "fee_tier": 3000,
+    #     "initial_pool_price": 1000,
+    #     "initial_liquidity_amount_token1": 10000000
+    # },
+    # {
+    #     "token0": "BTC",
+    #     "token1": "USDT",
+    #     "supply_token0": 1e40,
+    #     "supply_token1": 1e40,
+    #     "token0_decimals": 18,
+    #     "token1_decimals": 18,
+    #     "fee_tier": 3000,
+    #     "initial_pool_price": 60000,
+    #     "initial_liquidity_amount_token1": 1000000000
     # }
+    # ,
+    {
+        "token0": "BTC",
+        "token1": "WETH",
+        "supply_token0": 1e40,
+        "supply_token1": 1e40,
+        "token0_decimals": 18,
+        "token1_decimals": 18,
+        "fee_tier": 3000,
+        "initial_pool_price": 20,  # 20 WETH
+        "initial_liquidity_amount_token1": 10000
+    }
 ]
 
 # Select a random pool configuration
-selected_pool_config = random.choice(pool_configs*15)
+selected_pool_config = random.choice(pool_configs)
 
 # Parameters common to all pools
 deployer = GOD_ACCOUNT

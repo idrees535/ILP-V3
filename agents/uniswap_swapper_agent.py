@@ -7,18 +7,17 @@ from util.utility_functions import *
 
 
 class UniswapV3SwapperAgent():
-    def __init__(self, token0, token1 ,policy_func,pool):
+    def __init__(self, initial_token0, initial_token1, pool):
         
         self.pool=pool
-        self.policy=policy_func
-        self.pool.fundToken0FromAbove(WALLET_SWAPPER.address, toBase18(token0))
-        self.pool.fundToken1FromAbove(WALLET_SWAPPER.address, toBase18(token1))
+        self.pool.fundToken0FromAbove(WALLET_SWAPPER.address, toBase18(initial_token0))
+        self.pool.fundToken1FromAbove(WALLET_SWAPPER.address, toBase18(initial_token1))
         # transferETH(GOD_ACCOUNT,WALLET_SWAPPER.address,toBase18(10000))
 
     def takeStep(self,swap_action, amount, block_time):
 
         print(f"____SWAPPER WALLET {self.pool.get_wallet_balances(WALLET_SWAPPER.address)} ")
-        print(f"____SWAP AMOUNT:   {amount} toBase18: {toBase18(amount)} \n")
+        print(f"____SWAP AMOUNT:   {amount} toBase18: {toBase18(amount)}  Block_time {block_time} \n")
 
         if swap_action == 'swap_token0_for_token1':
             tx_receipt=self.pool.swap_token0_for_token1(WALLET_SWAPPER.address, amount, data=b'')
