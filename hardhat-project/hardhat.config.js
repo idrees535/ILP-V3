@@ -1,4 +1,6 @@
 /** @type import('hardhat/config').HardhatUserConfig */
+// Disable all console.log calls
+// console.log = function() {};
 
 module.exports = {
   solidity: "0.7.6",
@@ -6,9 +8,9 @@ module.exports = {
     hardhat: {
       chainId: 1337, 
       port: 8545,    
-      gas: 2100000, 
-      gasPrice: 1000000000,
-      // loggingEnabled: false,
+      gas: "auto", 
+      gasPrice: "auto",
+      loggingEnabled: false,
       accounts: [
         {
           privateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
@@ -92,6 +94,10 @@ module.exports = {
         },
       ],
     },
+  },
+  mocha: {
+    timeout: 20000,  // Adjust the timeout as needed
+    parallel: true,  // Enable parallel execution of test files
   },
 };
 

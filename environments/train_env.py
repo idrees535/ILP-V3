@@ -1,21 +1,10 @@
 import numpy as np
-import pandas as pd
-import random
-# import matplotlib.pyplot as plt
 import gymnasium as gym
-# import tensorflow as tf
-# from tensorflow.keras.callbacks import TensorBoard
-# import tensorflow_probability as tfp
-# from tensorflow.keras.layers import Dense
-# from tensorflow.keras.optimizers import Adam
+from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 from util.utility_functions import *
-from util.constants import *
-from util.pool_configs import *
 from models.SimEngine import SimEngine
-
-# import mlflow
-# import mlflow.tensorflow
-# mlflow.tensorflow.autolog()
+import importlib
+from util import pool_configs
 
 class DiscreteSimpleEnv(gym.Env):
     def __init__(self, agent_budget_usd=10000,alpha = 0.5, exploration_std_dev = 0.01, beta=0.1,penalty_param_magnitude=-1,use_running_statistics=False,action_transform='linear'):
@@ -82,17 +71,13 @@ class DiscreteSimpleEnv(gym.Env):
         self.beta=beta
         
     def reset(self):
-        #self.pool=random.choice([weth_usdc_pool,eth_dai_pool,btc_usdt_pool,btc_weth_pool])
-        self.pool = wbtc_eth_pool
-        
+        importlib.reload(pool_configs)
+
+        # Now, fetch the selected_pool after reload
+        self.pool = pool_configs.selected_pool
+
         print(f'Pool selcted for this episode: {self.pool.pool_id}')
-        # sim_strategy = SimStrategy()
-        # sim_state = SimState(ss=sim_strategy,pool=self.pool)
-
         output_dir = "model_output"
-        # netlist_log_func = netlist_createLogData
-
-        #from engine.SimEngine import SimEngine
         self.engine = SimEngine(self.pool)
 
         self.global_state=self.pool.get_global_state()
@@ -142,8 +127,7 @@ class DiscreteSimpleEnv(gym.Env):
         mint_tx_receipt,action=self._take_action(raw_action)
         
         # run uniswap abm env of n_steps
-        print()
-        print('_______________________________Environment Step________________________________')
+        print('\n_______________________________Environment Step________________________________')
         # self.engine.reset()
         self.engine.run()
         print()
@@ -207,8 +191,11 @@ class DiscreteSimpleEnv(gym.Env):
         return obs
 
     def _take_action(self, action):
+        self.global_state = self.pool.get_global_state()
+        # Scaling for curr_price and liquidity
+        curr_price = float(self.global_state['curr_price'])
+        liquidity = float(self.global_state['liquidity_raw'])
         self.penalty=0
-
         raw_a, raw_b = action[0, 0].numpy(), action[0, 1].numpy()
 
         # Add exploration noise
@@ -256,7 +243,6 @@ class DiscreteSimpleEnv(gym.Env):
         # ensure actions are not too close - Add penalty
         min_diff_percentage = 0.05  # 5% difference
         price_diff = price_upper - price_lower
-        
         if price_diff < min_diff_percentage * price_lower:
             self.penalty+=self.penalty_param_magnitude
             price_upper = price_lower + min_diff_percentage * price_lower
@@ -268,13 +254,13 @@ class DiscreteSimpleEnv(gym.Env):
         tick_lower=price_to_valid_tick(action_dict['price_lower'])
         tick_upper=price_to_valid_tick(action_dict['price_upper'])
         amount=self.agent_budget_usd
-        
-        print('\nRL Agent Action')
-        print(f"____RL Agent WALLET {self.pool.get_wallet_balances(GOD_ACCOUNT.address)} ")
-        print(f"____Liquidity amount: {amount} toBase18: {toBase18(amount)} ")
-        print(f"raw_action: {action}, scaled_action: {action_dict} \ns")
 
-        #print(f"\nAmount for liquidity: {amount}")
+        print (f"\n```````````````````````````````````````Current pool price : {curr_price}")
+        print (f"```````````````````````````````````````Current pool raw liquidity : {liquidity}")
+        print('RL Agent Action')
+        print(f"____RL Agent WALLET {self.pool.get_wallet_balances(GOD_ACCOUNT.address)} ")
+        print(f"Raw action: {action}, Scaled action: {action_dict},  Liquidity amount: {amount} \ns")
+
         mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount, b'')
 
         return mint_tx_receipt,action_dict
@@ -333,7 +319,7 @@ class DiscreteSimpleEnv(gym.Env):
             self.reward_std = new_std
 
         #scaled_reward = (raw_reward - self.reward_mean) / (self.reward_std + 1e-10)
-        scaled_reward = raw_reward*10
+        scaled_reward = raw_reward
 
         #Reset penlaty for next step
         self.penalty=0
@@ -351,3 +337,6 @@ class DiscreteSimpleEnv(gym.Env):
             return True
         else:
             return False
+        
+    def revert_back_to_snapshot(self): 
+            self.pool.revert_to_snapshot(self.snapshot_id)

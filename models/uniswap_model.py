@@ -6,19 +6,18 @@ import random
 import pandas as pd
 import numpy as np
 import math
+import shutil
 import logging
 
 # Add parent directory to sys.path to handle imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT
+from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP,BROWNIE_PROJECTUniV3
 from util.utility_functions import *
-import brownie
+# import brownie
 from brownie import accounts, network
 from web3 import Web3
 from brownie.exceptions import VirtualMachineError
 from enforce_typing import enforce_types
-from util.constants import *
-logging.getLogger('pool_actions').setLevel(logging.CRITICAL)
 
 class UniV3Model():
     def __init__(self, token0='token0', token1='token1', token0_decimals=18, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=1000000):
@@ -42,9 +41,14 @@ class UniV3Model():
 
         self.synced_uniswap_pool_state=state
         
-
         self.w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
         #self.base_fee = w3.eth.get_block('latest')['baseFeePerGas']
+        # Check if connection is successful
+        if self.w3.isConnected():
+            print("Connected to Hardhat")
+        else:
+            print("Failed to connect to Hardhat")
+            exit()
 
         #latest_block = w3.eth.get_block('latest')
         self.base_fee = 875000000 #latest_block.get('baseFeePerGas', 0)  # Provide a default if not present
@@ -52,21 +56,9 @@ class UniV3Model():
         self.ensure_valid_json_file("model_storage/token_pool_addresses.json")
         self.ensure_valid_json_file("model_storage/liq_positions.json")
 
-        try:
-            self.deploy_load_tokens()
-        except Exception as e:
-            # If any error occurs during pool loading or deployment, reset the environment
-            print(f"Error encountered: {e}. Resetting environment...")
-            self.reset_env()
-            self.deploy_load_tokens()
-        
-        try:
-            self.deploy_load_pool()
-        except Exception as e:
-            # If any error occurs during pool loading or deployment, reset the environment
-            print(f"Error encountered: {e}. Resetting environment...")
-            self.reset_env()
-            self.deploy_load_pool()
+        self.reset_env()
+        self.deploy_load_tokens()
+        self.deploy_load_pool()
 
     def ensure_valid_json_file(self, filepath, default_content="{}"):
         """
@@ -103,7 +95,7 @@ class UniV3Model():
 
         # This function deploys a token and saves its address in the JSON file
         def deploy_and_save_token(name, symbol, decimals, supply, key):
-            token = SimpleToken.deploy(name, symbol, decimals, toBase18(supply),  {'from': self.deployer, 'gas_price': self.base_fee + 1})
+            token = SimpleToken.deploy(name, symbol, decimals, toBase18(supply),  {'from': self.deployer, 'gas_price': self.base_fee + 1, 'silent': True})
             print(f"New {symbol} token deployed at {token.address}")
             pool_addresses[key] = token.address
             addresses[self.pool_id] = pool_addresses
@@ -135,17 +127,17 @@ class UniV3Model():
         pool_addresses = addresses.get(self.pool_id, {})
  
         if "pool_address" in pool_addresses:
-            self.pool = UniswapV3Pool.at(pool_addresses["pool_address"])
-            print(f"Existing pool:{self.pool_id} having pool address: {self.pool} loaded")
+            self.pool_contact = UniswapV3Pool.at(pool_addresses["pool_address"])
+            print(f"Existing pool:{self.pool_id} having pool address: {self.pool_contact} loaded")
         else:
-            self.factory = UniswapV3Factory.deploy( {'from': self.deployer, 'gas_price': self.base_fee + 1})
-            pool_creation_txn = self.factory.createPool(self.token0.address, self.token1.address, self.fee_tier,  {'from': self.deployer, 'gas_price': self.base_fee + 1})
+            self.factory = UniswapV3Factory.deploy( {'from': self.deployer, 'gas_price': self.base_fee + 1, 'silent': True})
+            pool_creation_txn = self.factory.createPool(self.token0.address, self.token1.address, self.fee_tier,  {'from': self.deployer, 'gas_price': self.base_fee + 1,'silent': True})
             self.pool_address = pool_creation_txn.events['PoolCreated']['pool']
             print(self.format_transaction(pool_creation_txn.events))
-            self.pool = UniswapV3Pool.at(self.pool_address)
+            self.pool_contact = UniswapV3Pool.at(self.pool_address)
 
             sqrtPriceX96 = price_to_sqrtp(self.initial_pool_price)
-            tx_receipt=self.pool.initialize(sqrtPriceX96,  {'from': self.deployer, 'gas_price': self.base_fee + 100000})
+            tx_receipt=self.pool_contact.initialize(sqrtPriceX96,  {'from': self.deployer, 'gas_price': self.base_fee + 100000,'silent': True})
             print(self.format_transaction(tx_receipt.events))
 
             pool_addresses["pool_address"] = self.pool_address
@@ -160,7 +152,7 @@ class UniV3Model():
 
             # Continue deploying token0 until its address is less than token1's address
             while True:
-                new_token0 = SimpleToken.deploy(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, {'from': self.deployer, 'gas_price': self.base_fee + 1})
+                new_token0 = SimpleToken.deploy(self.token0_name, self.token0_symbol, self.token0_decimals, self.supply_token0, {'from': self.deployer, 'gas_price': self.base_fee + 1, 'silent': True})
                 if int(new_token0.address, 16) < int(self.token1.address, 16):
                     break
 
@@ -240,16 +232,15 @@ class UniV3Model():
 
 
     def add_liquidity(self, liquidity_provider, tick_lower, tick_upper, token1_budget, data):
-        tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
-        # tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
+        tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         tx_receipt=None
         try:
-            pool_actions = self.pool
             liquidity=self.budget_to_liquidity(tick_lower,tick_upper,token1_budget)
             #print(liquidity)
             liquidity = int(liquidity)
 
-            tx_receipt = pool_actions.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
+            tx_receipt = self.pool_contact.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
 
             # Implement callback
             #amount0 = tx_receipt.events['Mint']['amount0']
@@ -261,9 +252,9 @@ class UniV3Model():
             #print(str(tx_receipt.events))
 
             if amount0 > 0:
-                tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
+                tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
             if amount1 > 0:
-                tx_receipt_token1_transfer=self.token1.transfer(self.pool.address, amount1, tx_params)
+                tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
                 #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
 
         except VirtualMachineError as e:
@@ -310,27 +301,22 @@ class UniV3Model():
         
         return tx_receipt
     
-    def add_liquidity_with_liquidity(self, liquidity_provider, tick_lower, tick_upper, liquidity, data):
-        tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
-        #tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+    def add_liquidity_with_liquidity(self, liquidity_provider, tick_lower, tick_upper, liquidity,amount_token1, data):
+        tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         tx_receipt=None
         try:
-            pool_actions = self.pool
-            liquidity= int(liquidity)
-
-            tx_receipt = pool_actions.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
+            tx_receipt = self.pool_contact.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
 
             # Implement callback
             amount0 = tx_receipt.events['Mint']['amount0']
             amount1 = tx_receipt.events['Mint']['amount1']
             print(self.format_transaction(tx_receipt.events))
-            print(f"\namount0:   {amount0}     amount1:     {amount1} \n")
-            if amount0 > 0:
-                tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
-            if amount1 > 0:
-                tx_receipt_token1_transfer=self.token1.transfer(self.pool.address, amount1, tx_params)
-                #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
 
+            if amount0 > 0:
+                tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
+            if amount1 > 0:
+                tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
+                #print(f'token1 amount:{amount1}transfered to contract:{tx_receipt_token1_transfer}')
 
         except VirtualMachineError as e:
             print("Failed to add liquidty", e.revert_msg)
@@ -360,14 +346,14 @@ class UniV3Model():
     
         if existing_position:
             existing_position['liquidity'] += liquidity 
-            existing_position['amount_token1'] += liquidity # Add new liquidity to existing position
+            existing_position['amount_token1'] += 000 # Add new liquidity to existing position
         else:
         # Add new position to list
             all_positions[self.pool_id][liquidity_provider_str].append({
                 'tick_lower': tick_lower,
                 'tick_upper': tick_upper,
                 'liquidity': liquidity,
-                'amount_token1':liquidity
+                'amount_token1': 000
             })
         
         # Store updated positions
@@ -385,8 +371,8 @@ class UniV3Model():
         liquidity = self.budget_to_liquidity(tick_lower, tick_upper, amount_token1)
 
         try:
-            tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
-            tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
+            tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
+            tx_receipt = self.pool_contact.burn(tick_lower, tick_upper, liquidity, tx_params)
             print(self.format_transaction(tx_receipt.events))
             #if collect_tokens==True:
            #     self.collect_fee(liquidity_provider_str,tick_lower,tick_upper,poke=False)
@@ -428,16 +414,14 @@ class UniV3Model():
 
         return tx_receipt
     
-    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity,collect_tokens=True):
+    def remove_liquidity_with_liquidty(self, liquidity_provider, tick_lower, tick_upper, liquidity, collect_tokens=True):
         liquidity_provider_str = str(liquidity_provider)
         liquidity = int(liquidity)
         tx_receipt = None
-        
-        # Convert budget to liquidity amount
 
         try:
-            tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
-            tx_receipt = self.pool.burn(tick_lower, tick_upper, liquidity, tx_params)
+            tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
+            tx_receipt = self.pool_contact.burn(tick_lower, tick_upper, liquidity, tx_params)
             print(self.format_transaction(tx_receipt.events))
            #if collect_tokens==True:
            #     self.collect_fee(liquidity_provider_str,tick_lower,tick_upper,poke=False)
@@ -468,7 +452,7 @@ class UniV3Model():
 
         if existing_position['liquidity'] > liquidity:
             existing_position['liquidity'] -= liquidity
-            existing_position['amount_token1'] -= liquidity  # Deduct removed liquidity
+            existing_position['amount_token1'] -= 000  # Deduct removed liquidity
         else:
             all_positions[self.pool_id][liquidity_provider_str].remove(existing_position)  # Remove position if liquidity becomes zero
         
@@ -480,69 +464,68 @@ class UniV3Model():
             
 
     def swap_token0_for_token1(self, recipient, amount_specified, data):
-        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1000000, 'gas_limit':  5000000, 'allow_revert': True}
-        #tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1000000, 'gas_limit':  5000000, 'allow_revert': True, 'silent': True}
+        #tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         sqrt_price_limit_x96=4295128740+1
 
-        pool_actions = self.pool
         zero_for_one = True
         tx_receipt=None
         
         try:
             amount_specified = int(amount_specified)
-            tx_receipt= pool_actions.swap(recipient, zero_for_one, amount_specified,sqrt_price_limit_x96, data,tx_params)
+            tx_receipt= self.pool_contact.swap(recipient, zero_for_one, amount_specified,sqrt_price_limit_x96, data,tx_params)
             
             print(self.format_transaction(tx_receipt.events))
             amount0 = int(tx_receipt.events['Swap']['amount0'])
 
             # Transfer token0 to pool (callback)
-            tx_receipt_token0_transfer = self.token0.transfer(self.pool.address, amount0, tx_params)
+            tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
             
-        
         except VirtualMachineError as e:
             print("Swap token 0 to Token 1 Transaction failed:", e.revert_msg)
-            slot0_data = self.pool.slot0()
-            print(f'contract_token1_balance - approx_token1_amount: {self.token1.balanceOf(self.pool)-amount_specified*sqrtp_to_price(slot0_data[0])}, approx_token1_amount: {amount_specified*sqrtp_to_price(slot0_data[0])}), contract_token1_balance: {self.token1.balanceOf(self.pool)}, amount_swap_token0: {amount_specified}, contract_token0 _balance - amount_swap_token0: {self.token0.balanceOf(self.pool)-amount_specified}')
+            slot0_data = self.pool_contact.slot0()
+            print(f'contract_token1_balance - approx_token1_amount: {self.token1.balanceOf(self.pool_contact)-amount_specified*sqrtp_to_price(slot0_data[0])}, approx_token1_amount: {amount_specified*sqrtp_to_price(slot0_data[0])}), contract_token1_balance: {self.token1.balanceOf(self.pool_contact)}, amount_swap_token0: {amount_specified}, contract_token0 _balance - amount_swap_token0: {self.token0.balanceOf(self.pool_contact)-amount_specified}')
 
         return tx_receipt
      
     def swap_token1_for_token0(self, recipient, amount_specified, data):
-        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
-        # tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
+        tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         sqrt_price_limit_x96=1461446703485210103287273052203988822378723970342-1
-
-        pool_actions = self.pool   
+  
         zero_for_one = False
         tx_receipt=None 
 
         try:
             amount_specified = int(amount_specified)
-            tx_receipt = pool_actions.swap(recipient, zero_for_one, amount_specified, sqrt_price_limit_x96, data,tx_params)
+            tx_receipt = self.pool_contact.swap(recipient, zero_for_one, amount_specified, sqrt_price_limit_x96, data,tx_params)
             print(self.format_transaction(tx_receipt.events))
         
             amount1 = int(tx_receipt.events['Swap']['amount1'])
 
             # Trasfer token1 to pool (callabck)
-            tx_receipt_token1_transfer = self.token1.transfer(self.pool.address, amount1, tx_params)
+            tx_receipt_token1_transfer = self.token1.transfer(self.pool_contact.address, amount1, tx_params)
+
         except VirtualMachineError as e:
             print("Swap token 1 to Token 0 Transaction failed:", e.revert_msg)
-            slot0_data = self.pool.slot0()
-            print(f'contract_token0_balance - approx_token0_amount: {self.token0.balanceOf(self.pool)-amount_specified/sqrtp_to_price(slot0_data[0])}, approx_token0_amount: {amount_specified/sqrtp_to_price(slot0_data[0])}, contract_token0_balance: {self.token0.balanceOf(self.pool)}, contract_token1_balance - amount_swap_token1: {self.token1.balanceOf(self.pool)-amount_specified}')
+            slot0_data = self.pool_contact.slot0()
+            print(f'contract_token0_balance - approx_token0_amount: {self.token0.balanceOf(self.pool_contact)-amount_specified/sqrtp_to_price(slot0_data[0])}, approx_token0_amount: {amount_specified/sqrtp_to_price(slot0_data[0])}, contract_token0_balance: {self.token0.balanceOf(self.pool_contact)}, contract_token1_balance - amount_swap_token1: {self.token1.balanceOf(self.pool_contact)-amount_specified}')
+        
         return tx_receipt
 
     def collect_fee(self,recipient,tick_lower,tick_upper,poke=False):
-        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True}
+        tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         
         # Poke to update variables
         if poke==True:
             try:
-                self.pool.burn(tick_lower, tick_upper, 0, tx_params)
+                self.pool_contact.burn(tick_lower, tick_upper, 0, tx_params)
             except VirtualMachineError as e:
                 print("Poke:", e.revert_msg)
         
         position_key = Web3.solidityKeccak(['address', 'int24', 'int24'], [str(recipient), tick_lower, tick_upper]).hex()
 
-        position_info = self.pool.positions(position_key)
+        position_info = self.pool_contact.positions(position_key)
         
         amount0Owed = position_info[3]
         amount1Owed = position_info[4]
@@ -552,16 +535,16 @@ class UniV3Model():
         tx_receipt=None
         fee_collected_usd=0
         try:
-            tx_receipt=self.pool.collect(recipient,tick_lower,tick_upper,amount0Owed, amount1Owed,tx_params)
+            tx_receipt=self.pool_contact.collect(recipient,tick_lower,tick_upper,amount0Owed, amount1Owed,tx_params)
 
             amount0Collected=tx_receipt.events['Collect']['amount0']
             amount1Collected=tx_receipt.events['Collect']['amount1']
 
-            slot0_data = self.pool.slot0()
+            slot0_data = self.pool_contact.slot0()
             fee_collected_usd = fromBase18(amount0Collected*sqrtp_to_price(slot0_data[0]) + amount1Collected)
         except VirtualMachineError as e:
             print("Fee collection failed:", e.revert_msg)
-            print(f"contract_token0_balance - amount0Owed: {self.token0.balanceOf(self.pool)-amount0Owed} ,contract_token1_balance - amount1Owed: {self.token1.balanceOf(self.pool)-amount1Owed}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}")
+            print(f"contract_token0_balance - amount0Owed: {self.token0.balanceOf(self.pool_contact)-amount0Owed} ,contract_token1_balance - amount1Owed: {self.token1.balanceOf(self.pool_contact)-amount1Owed}, position_tick_lower: {tick_lower}, position_tick_upper: {tick_upper}")
 
         return tx_receipt,fee_collected_usd 
     
@@ -600,8 +583,8 @@ class UniV3Model():
 
     def get_position_state(self,tick_lower,tick_upper,agent):
         position_key = Web3.solidityKeccak(['address', 'int24', 'int24'], [str(agent), tick_lower, tick_upper]).hex()
-        pool_state = self.pool
-        position_info = self.pool.positions(position_key)
+        pool_state = self.pool_contact
+        position_info = self.pool_contact.positions(position_key)
         
         return {
         "position_key":f"{str(agent)}_{tick_lower}_{tick_upper}",
@@ -622,11 +605,10 @@ class UniV3Model():
 
 
     def get_tick_state(self,tick):
-        pool_state = self.pool
+   
         word_position = tick >> 8
-
-        tick_info = pool_state.ticks(tick)
-        tick_bitmap = pool_state.tickBitmap(word_position)
+        tick_info = self.pool_contact.ticks(tick)
+        tick_bitmap = self.pool_contact.tickBitmap(word_position)
 
         return {
         'tick':tick,
@@ -647,17 +629,17 @@ class UniV3Model():
     }
     
     def get_global_state(self):
-        pool_state = self.pool
-        slot0_data = pool_state.slot0()
+
+        slot0_data = self.pool_contact.slot0()
         observation_index = slot0_data[2]
 
-        feeGrowthGlobal0X128 = pool_state.feeGrowthGlobal0X128()
-        feeGrowthGlobal1X128 = pool_state.feeGrowthGlobal1X128()
-        protocol_fees = pool_state.protocolFees()
+        feeGrowthGlobal0X128 = self.pool_contact.feeGrowthGlobal0X128()
+        feeGrowthGlobal1X128 = self.pool_contact.feeGrowthGlobal1X128()
+        protocol_fees = self.pool_contact.protocolFees()
         
-        liquidity = pool_state.liquidity()
+        liquidity = self.pool_contact.liquidity()
 
-        observation_info = pool_state.observations(observation_index)
+        observation_info = self.pool_contact.observations(observation_index)
         
         return {
         "curr_sqrtPriceX96": slot0_data[0],
@@ -804,7 +786,7 @@ class UniV3Model():
             return amount * q96 / (pb - pa)
 
         
-        slot0_data = self.pool.slot0()
+        slot0_data = self.pool_contact.slot0()
         sqrtp_cur =slot0_data[0]
         token1p_cur = sqrtp_to_price(sqrtp_cur)
 

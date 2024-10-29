@@ -1,4 +1,6 @@
 import numpy as np
+import os 
+import sys
 import pandas as pd
 import random
 import matplotlib.pyplot as plt
@@ -8,6 +10,7 @@ from tensorflow.keras.callbacks import TensorBoard
 import tensorflow_probability as tfp
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
+from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 
 import mlflow
 import mlflow.tensorflow
@@ -88,7 +91,7 @@ class PPO_Actor(tf.keras.Model):
         x = self.fc3(x)
         x = self.bn3(x)
         mu = self.mu(x)
-        sigma = self.sigma(x)
+        sigma = self.sigma(x) + 1e-3
         
         return mu, sigma
     
@@ -146,7 +149,7 @@ class PPO:
         
 
          # For tensorboard logging
-        self.log_dir = os.path.join(base_path,'model_storage/tensorboard_ppo_logs')
+        self.log_dir = os.path.join(BASE_PATH,'model_storage/tensorboard_ppo_logs')
         self.train_summary_writer = tf.summary.create_file_writer(self.log_dir)
         self.tensorboard_counter=0
  
@@ -167,8 +170,9 @@ class PPO:
         action = action_prob.sample()
         
         #Action clipping
-        #action = tf.clip_by_value(action, 0, 1)
-        log_prob = action_prob.log_prob(action)
+        # Clip sampled actions for stability
+        action = tf.clip_by_value(action, -2, 2)
+        log_prob = action_prob.log_prob(action) + 1e-8  # Small constant to prevent NaN in logs
         print(f"mu: {mu}, sigma: {sigma}, action_prob: {action_prob}, action: {action}, log_prob: {log_prob}")
         return action,log_prob
 
@@ -196,7 +200,7 @@ class PPO:
                 total_loss = self.ppo_loss(states, actions, old_log_probs, advantages, returns, self.policy_clip)
             gradients = tape.gradient(total_loss, self.actor.trainable_variables + self.critic.trainable_variables)
             # Gradient clipping
-            gradients, _ = tf.clip_by_global_norm(gradients, self.max_grad_norm)
+            gradients, _ = tf.clip_by_global_norm(gradients, self.max_grad_norm)   
             self.optimizer.apply_gradients(zip(gradients, self.actor.trainable_variables + self.critic.trainable_variables))
                 
         self.rollout_buffer.reset()
@@ -209,7 +213,8 @@ class PPO:
             gae = delta + gamma * lam * (1 - dones[t]) * gae
             returns[t] = gae + values[t]
         advantages = returns - values
-        return returns, (advantages - advantages.mean()) / (advantages.std() + 1e-10)
+        advantages = np.clip((advantages - advantages.mean()) / (advantages.std() + 1e-10), -10, 10)
+        return returns, advantages
 
     def ppo_loss(self, states, actions, old_log_probs, advantages, returns, clip_param=0.2):
         mu, sigma = self.actor(states)

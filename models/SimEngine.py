@@ -12,9 +12,7 @@ from agents.uniswap_swapper_agent import UniswapV3SwapperAgent
 from util.agent_policies import retail_lp_policy,noise_trader_policy
 
 
-
 class SimEngine:
-
     def __init__(self, pool):
         self.pool = pool
         self.lp_agent = UniswapV3LiquidityProviderAgent(initial_token0=1e10, initial_token1=1e10, pool=self.pool)

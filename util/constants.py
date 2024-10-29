@@ -3,11 +3,14 @@ import sys
 import pathlib
 import datetime
 import brownie
-# from brownie._config import CONFIG  
+import logging
+# Suppress all logging across the entire application
+logging.disable(logging.CRITICAL)
 
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
-BASE_PATH ='/mnt/c/Users/MuhammadSaqib/Documents/ILP-Agent-Framework'
+# BASE_PATH = '/mnt/c/Users/MuhammadSaqib/Documents/ILP-Agent-Framework'
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
 
 if BASE_PATH not in sys.path:
     sys.path.append(BASE_PATH)
@@ -15,11 +18,10 @@ os.chdir(BASE_PATH)
 if "." not in os.environ["PATH"]:
     os.environ["PATH"] += ":."
 
-BROWNIE_PROJECTUniV3 = brownie.project.load(f"{BASE_PATH}/v3_core/", name="UniV3Project")
-#print(BROWNIE_PROJECTUniV3.available_contracts)
-
 if brownie.network.show_active() != "development":
     brownie.network.connect("development")
+BROWNIE_PROJECTUniV3 = None
+BROWNIE_PROJECTUniV3 = brownie.project.load(f"{BASE_PATH}/v3_core/", name="UniV3Project")
 
 GOD_ACCOUNT = brownie.network.accounts[9]
 RL_AGENT_ACCOUNT = brownie.network.accounts[8]

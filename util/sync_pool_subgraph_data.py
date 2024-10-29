@@ -115,6 +115,7 @@ def fetch_inference_pool_data_1(pool_id='0xcbcdf9626bc03e24f779434178a73a0b4bad6
         volumeToken0
         volumeToken1
         liquidity
+        token0Price
         token1Price
       }
     }
@@ -132,6 +133,7 @@ def fetch_inference_pool_data_1(pool_id='0xcbcdf9626bc03e24f779434178a73a0b4bad6
             'feeGrowthGlobal0X128': float(data['volumeToken0']),
             'feeGrowthGlobal1X128': float(data['volumeToken1']),
             'liquidity': float(data['liquidity']),
+            'token0Price': float(data['token0Price']),
             'token1Price': float(data['token1Price'])
         }
         return state
