@@ -14,9 +14,9 @@ class UniswapV3SwapperAgent():
         self.pool.fundToken1FromAbove(WALLET_SWAPPER.address, toBase18(initial_token1))
         # transferETH(GOD_ACCOUNT,WALLET_SWAPPER.address,toBase18(10000))
 
-    def takeStep(self,swap_action, amount, block_time):
-
-        print(f"____SWAPPER WALLET {self.pool.get_wallet_balances(WALLET_SWAPPER.address)} ")
+    def takeStep(self,swap_action, amount, block_time, sqrt_price):
+        print(f"____CURRENT PRICE CSV:   {sqrtp_to_price(sqrt_price)/1e10}")
+        print(f"____SWAPPER WALLET   {self.pool.get_wallet_balances(WALLET_SWAPPER.address)} ")
         print(f"____SWAP AMOUNT:   {amount} toBase18: {toBase18(amount)}  Block_time {block_time} \n")
 
         if swap_action == 'swap_token0_for_token1':

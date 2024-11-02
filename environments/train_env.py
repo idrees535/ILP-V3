@@ -4,7 +4,8 @@ from util.constants import GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCO
 from util.utility_functions import *
 from models.SimEngine import SimEngine
 import importlib
-from util import pool_configs
+# from util import pool_configs
+pool_configs = importlib.import_module('util.pool_configs')
 
 class DiscreteSimpleEnv(gym.Env):
     def __init__(self, agent_budget_usd=10000,alpha = 0.5, exploration_std_dev = 0.01, beta=0.1,penalty_param_magnitude=-1,use_running_statistics=False,action_transform='linear'):
@@ -253,15 +254,15 @@ class DiscreteSimpleEnv(gym.Env):
         }
         tick_lower=price_to_valid_tick(action_dict['price_lower'])
         tick_upper=price_to_valid_tick(action_dict['price_upper'])
-        amount=self.agent_budget_usd
+        # amount=self.agent_budget_usd
 
         print (f"\n```````````````````````````````````````Current pool price : {curr_price}")
         print (f"```````````````````````````````````````Current pool raw liquidity : {liquidity}")
         print('RL Agent Action')
         print(f"____RL Agent WALLET {self.pool.get_wallet_balances(GOD_ACCOUNT.address)} ")
-        print(f"Raw action: {action}, Scaled action: {action_dict},  Liquidity amount: {amount} \ns")
+        print(f"Raw action: {action}, Scaled action: {action_dict},  Liquidity amount: {self.agent_budget_usd} \n")
 
-        mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, amount, b'')
+        mint_tx_receipt=self.pool.add_liquidity(GOD_ACCOUNT, tick_lower, tick_upper, self.agent_budget_usd, b'')
 
         return mint_tx_receipt,action_dict
         

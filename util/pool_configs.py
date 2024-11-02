@@ -49,11 +49,11 @@ pool_configs = [
         "token1": "WETH",
         "supply_token0": 1e40,
         "supply_token1": 1e40,
-        "token0_decimals": 18,
+        "token0_decimals": 8,
         "token1_decimals": 18,
         "fee_tier": 3000,
-        "initial_pool_price": 20,  # 20 WETH
-        "initial_liquidity_amount_token1": 10000
+        "initial_pool_price": 16.07,  # 20 WETH
+        "initial_liquidity_amount_token1": 0
     }
 ]
 

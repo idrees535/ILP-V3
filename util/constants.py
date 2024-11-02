@@ -6,15 +6,6 @@ import brownie
 import logging
 # Suppress all logging across the entire application
 logging.disable(logging.CRITICAL)
-logging.getLogger("urllib3").setLevel(logging.ERROR)
-logging.getLogger("web3").setLevel(logging.ERROR)
-logging.getLogger("eth_utils").setLevel(logging.WARNING)
-logging.getLogger("brownie").setLevel(logging.WARNING)
-logging.getLogger("asyncio").setLevel(logging.ERROR)
-logging.basicConfig(level=logging.ERROR)
-logging.getLogger("web3.middleware.geth_poa").setLevel(logging.ERROR)
-import warnings
-warnings.filterwarnings("ignore")
 
 BASE_PATH = pathlib.Path().resolve().parent.as_posix()
 # BASE_PATH = '/mnt/c/Users/MuhammadSaqib/Documents/ILP-Agent-Framework'

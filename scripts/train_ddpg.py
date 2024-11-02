@@ -10,9 +10,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.hardhat_control import start_hardhat_node,stop_hardhat_node
 start_hardhat_node()
 from environments.train_env import DiscreteSimpleEnv
-from agents.ddpg_agent import DDPG,DDGPEval
+from agents.ddpg_agent import DDPG
 from util.plot import *
-from util.sync_pool_subgraph_data import *
+# from util.sync_pool_subgraph_data import *
 from util.utility_functions import *
 from util.constants import  GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 

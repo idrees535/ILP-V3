@@ -51,6 +51,11 @@ def sqrtp_to_price(sqrtp):
 def tick_to_sqrtp(t):
     return int((1.0001 ** (t / 2)) * q96)
 
+def sqrtp_to_tick(sqrt_price):
+    sqrt_price_normalized = sqrt_price / q96
+    tick = int(2 * math.log(sqrt_price_normalized, 1.0001))
+    return tick
+
 def liquidity0(amount, pa, pb):
     if pa > pb:
         pa, pb = pb, pa

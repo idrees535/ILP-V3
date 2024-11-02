@@ -21,7 +21,7 @@ from brownie.exceptions import VirtualMachineError
 from enforce_typing import enforce_types
 
 class UniV3Model():
-    def __init__(self, token0='token0', token1='token1', token0_decimals=18, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=1000000):
+    def __init__(self, token0='token0', token1='token1', token0_decimals=8, token1_decimals=18, supply_token0=1e18, supply_token1=1e18, fee_tier=3000, initial_pool_price=1,deployer=GOD_ACCOUNT,sync_pool_with_liq=True,sync_pool_with_ticks=False,sync_pool_with_positions=False,sync_pool_with_events=False, state=None, initial_liquidity_amount=1000000):
         self.deployer = deployer
         self.token0_name = token0
         self.token1_name = token1
@@ -29,6 +29,7 @@ class UniV3Model():
         self.token1_symbol = token1
         self.token0_decimals = token0_decimals
         self.token1_decimals = token1_decimals
+        self.decimal_diff = 10 ** (self.token1_decimals - self.token0_decimals)
         self.supply_token0 = supply_token0
         self.supply_token1 = supply_token1
         self.fee_tier = fee_tier
@@ -43,8 +44,7 @@ class UniV3Model():
         self.synced_uniswap_pool_state=state
         
         self.w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
-        #self.base_fee = w3.eth.get_block('latest')['baseFeePerGas']
-        # Check if connection is successful
+
         if self.w3.isConnected():
             print("Connected to Hardhat")
         else:
@@ -144,8 +144,8 @@ class UniV3Model():
             pool_addresses["pool_address"] = self.pool_address
             addresses[self.pool_id] = pool_addresses
             self.save_addresses(addresses)
-            self.sync_pool_state()
-            print(f"New {self.pool_id} pool deployed having pool address: {self.pool_contact}")
+            # self.sync_pool_state()
+            print(f"New {self.pool_id} pool deployed having pool address: {self.pool_contact}\n")
 
     def ensure_token_order(self):
         # Check if token0's address is greater than token1's address
@@ -235,7 +235,7 @@ class UniV3Model():
 
     def add_liquidity(self, liquidity_provider, tick_lower, tick_upper, token1_budget, data):
         tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
-        tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
+        # tx_params1 = {'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         tx_receipt=None
         try:
             liquidity=self.budget_to_liquidity(tick_lower,tick_upper,token1_budget)
@@ -356,6 +356,98 @@ class UniV3Model():
                 'tick_upper': tick_upper,
                 'liquidity': liquidity,
                 'amount_token1': 000
+            })
+        
+        # Store updated positions
+        with open("model_storage/liq_positions.json", "w") as f:
+            json.dump(all_positions, f)
+        
+        return tx_receipt
+    
+    def add_liquidity_with_amounts(self, liquidity_provider, tick_lower, tick_upper, amount0, amount1 , data):
+        tx_params = {'from': str(liquidity_provider), 'gas_price': self.base_fee + 1,  'allow_revert': True, 'silent': True}
+        tx_receipt=None
+        slot0_data = self.pool_contact.slot0()
+        sqrt_ratio_x96 =slot0_data[0]
+        q96 = 2**96
+        price = (sqrt_ratio_x96 / q96) ** 2
+
+        # tick_lower =tick_lower/10
+        # tick_upper = tick_upper/10
+
+        print(f"____________________________________cur price  {price}")
+        
+        sqrt_ratio_a_x96 = tick_to_sqrtp(tick_lower)
+        sqrt_ratio_b_x96 = tick_to_sqrtp(tick_upper)
+        
+        print(f"convert back ticks to check {sqrtp_to_tick(sqrt_ratio_a_x96)}   -   {sqrtp_to_tick(sqrt_ratio_b_x96)}")
+        print(f"using price to valid tick func {price_to_valid_tick(sqrt_ratio_a_x96)}  -   {price_to_valid_tick(sqrt_ratio_b_x96)}")
+        print(f"current tick    {slot0_data[1]}")
+        print(f"____________________________________price range {sqrtp_to_price(sqrt_ratio_a_x96)} - {sqrtp_to_price(sqrt_ratio_b_x96)}")
+        
+        liquidity=self.get_liquidity_for_amounts(sqrt_ratio_x96, sqrt_ratio_a_x96, sqrt_ratio_b_x96, amount0, amount1)
+        
+        try:
+            tx_receipt = self.pool_contact.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
+
+            print(self.format_transaction(tx_receipt.events))
+            # #print(str(tx_receipt.events))
+
+            if amount0 > 0:
+                tx_receipt_token0_transfer = self.token0.transfer(self.pool_contact.address, amount0, tx_params)
+            else:
+                pass
+            if amount1 > 0:
+                tx_receipt_token1_transfer=self.token1.transfer(self.pool_contact.address, amount1, tx_params)
+            else:
+                pass
+                
+            print(f"""
+                Mint:
+                    sender: {str(liquidity_provider)}
+                    owner: {self.pool_contact.address}
+                    tick range: {tick_lower} - {tick_upper}
+                    price range: {sqrtp_to_price(sqrt_ratio_a_x96)/self.decimal_diff} - {sqrtp_to_price(sqrt_ratio_b_x96)/self.decimal_diff}
+                    amount0: {amount0}   -   amount1: {amount1}
+                    cur pool price : {price}
+                    """)
+
+        except VirtualMachineError as e:
+            print("Failed to add liquidty", e.revert_msg)
+
+        # Store position in json file
+        liquidity_provider_str = str(liquidity_provider)
+        
+        try:
+            with open("model_storage/liq_positions.json", "r") as f:
+                all_positions = json.load(f)
+        except FileNotFoundError:
+            all_positions = {}
+        
+        # Initialize if this pool_id is not in the list
+        if self.pool_id not in all_positions:
+            all_positions[self.pool_id] = {}
+        
+        # Initialize if this liquidity provider is not in the list
+        if liquidity_provider_str not in all_positions[self.pool_id]:
+            all_positions[self.pool_id][liquidity_provider_str] = []
+        
+        existing_position = None
+        for position in all_positions[self.pool_id][liquidity_provider_str]:
+            if position['tick_lower'] == tick_lower and position['tick_upper'] == tick_upper:
+                existing_position = position
+                break
+    
+        if existing_position:
+            existing_position['liquidity'] += liquidity 
+            existing_position['amount_token1'] += amount1 # Add new liquidity to existing position
+        else:
+        # Add new position to list
+            all_positions[self.pool_id][liquidity_provider_str].append({
+                'tick_lower': tick_lower,
+                'tick_upper': tick_upper,
+                'liquidity': liquidity,
+                'amount_token1':amount1
             })
         
         # Store updated positions
@@ -492,7 +584,7 @@ class UniV3Model():
      
     def swap_token1_for_token0(self, recipient, amount_specified, data):
         tx_params = {'from': str(recipient), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
-        tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
+        # tx_params1={'from': str(GOD_ACCOUNT), 'gas_price': self.base_fee + 1, 'gas_limit': 5000000, 'allow_revert': True, 'silent': True}
         sqrt_price_limit_x96=1461446703485210103287273052203988822378723970342-1
   
         zero_for_one = False
@@ -760,34 +852,36 @@ class UniV3Model():
     def fundToken0FromAbove(self,dst_address: str, amount_base: int):
         tx_receipt=self.Token0().transfer(dst_address, amount_base, txdict(GOD_ACCOUNT))
         print(f'funded account with token0: {tx_receipt.events}')
+
+    def liquidity0(self, amount, pa, pb):
+        if pa > pb:
+            pa, pb = pb, pa
+        return (amount * pa * pb) / (q96 * (pb - pa))
+
+    def liquidity1(self, amount, pa, pb):
+        if pa > pb:
+            pa, pb = pb, pa
+        return (amount * q96) / (pb - pa)
+
+    def get_liquidity_for_amounts(self, sqrt_ratio_x96, sqrt_ratio_a_x96, sqrt_ratio_b_x96, amount0, amount1):
+        
+        if sqrt_ratio_a_x96 > sqrt_ratio_b_x96:
+            sqrt_ratio_a_x96, sqrt_ratio_b_x96 = sqrt_ratio_b_x96, sqrt_ratio_a_x96
+
+        if sqrt_ratio_x96 <= sqrt_ratio_a_x96:
+            return self.liquidity0(amount0, sqrt_ratio_a_x96, sqrt_ratio_b_x96)
+        
+        elif sqrt_ratio_x96 < sqrt_ratio_b_x96:
+            liquidity0_value = self.liquidity0(amount0, sqrt_ratio_x96, sqrt_ratio_b_x96)
+            liquidity1_value = self.liquidity1(amount1, sqrt_ratio_a_x96, sqrt_ratio_x96)
+            return min(liquidity0_value, liquidity1_value)
+        else:
+            return self.liquidity1(amount1, sqrt_ratio_a_x96, sqrt_ratio_b_x96)
+        
         
     def budget_to_liquidity(self,tick_lower,tick_upper,token1_budget):
             
         q96 = 2**96
-        def get_liquidity_for_amounts(sqrt_ratio_x96, sqrt_ratio_a_x96, sqrt_ratio_b_x96, amount0, amount1):
-            if sqrt_ratio_a_x96 > sqrt_ratio_b_x96:
-                sqrt_ratio_a_x96, sqrt_ratio_b_x96 = sqrt_ratio_b_x96, sqrt_ratio_a_x96
-            
-            if sqrt_ratio_x96 <= sqrt_ratio_a_x96:
-                return liquidity0(amount0, sqrt_ratio_a_x96, sqrt_ratio_b_x96)
-            elif sqrt_ratio_x96 < sqrt_ratio_b_x96:
-                liquidity0_value = liquidity0(amount0, sqrt_ratio_x96, sqrt_ratio_b_x96)
-                liquidity1_value = liquidity1(amount1, sqrt_ratio_a_x96, sqrt_ratio_x96)
-                return min(liquidity0_value, liquidity1_value)
-            else:
-                return liquidity1(amount1, sqrt_ratio_a_x96, sqrt_ratio_b_x96)
-
-        def liquidity0(amount, pa, pb):
-            if pa > pb:
-                pa, pb = pb, pa
-            return (amount * (pa * pb) / q96) / (pb - pa)
-
-        def liquidity1(amount, pa, pb):
-            if pa > pb:
-                pa, pb = pb, pa
-            return amount * q96 / (pb - pa)
-
-        
         slot0_data = self.pool_contact.slot0()
         sqrtp_cur =slot0_data[0]
         token1p_cur = sqrtp_to_price(sqrtp_cur)
@@ -839,7 +933,7 @@ class UniV3Model():
         amount_token1 = toBase18(amount_token1)
         #'''
         
-        liquidity=get_liquidity_for_amounts(sqrt_ratio_x96=sqrtp_cur, sqrt_ratio_a_x96=sqrtp_low, sqrt_ratio_b_x96=sqrtp_upp, amount0=amount_token0, amount1=amount_token1)
+        liquidity=self.get_liquidity_for_amounts(sqrt_ratio_x96=sqrtp_cur, sqrt_ratio_a_x96=sqrtp_low, sqrt_ratio_b_x96=sqrtp_upp, amount0=amount_token0, amount1=amount_token1)
         
         return liquidity
     

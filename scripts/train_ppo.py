@@ -9,11 +9,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.hardhat_control import start_hardhat_node,stop_hardhat_node
 start_hardhat_node()
 from environments.train_env import DiscreteSimpleEnv
-from environments.eval_env import DiscreteSimpleEnvEval
-from agents.ddpg_agent import DDPG,DDGPEval
+# from environments.eval_env import DiscreteSimpleEnvEval
+# from agents.ddpg_agent import DDPG,DDGPEval
 from util.plot import *
-from agents.ppo_agent import PPO,PPOEval
-from util.sync_pool_subgraph_data import *
+from agents.ppo_agent import PPO
+# from util.sync_pool_subgraph_data import *
 from util.utility_functions import *
 from util.constants import BROWNIE_PROJECTUniV3, GOD_ACCOUNT, WALLET_LP, WALLET_SWAPPER, RL_AGENT_ACCOUNT, BASE_PATH,TIMESTAMP
 
@@ -43,6 +43,7 @@ def train_ppo_agent(max_steps=100, n_episodes=10, model_name=f'model_storage/ppo
         print(f"Episode {i+1}: Reward = {episode_reward}")
         stop_hardhat_node()
         start_hardhat_node()
+        # state = env.reset()
 
     ppo_model_base_path = os.path.join(BASE_PATH,model_name)
     ppo_actor_model_path = os.path.join(ppo_model_base_path, 'actor')
@@ -113,5 +114,5 @@ def ppo_training_vis(ppo_train_data_log,model_name):
     
     return output_file
 
-max_steps = 1000
-train_ppo_agent(max_steps, n_episodes=20, buffer_size=10,n_epochs=5, gamma=0.5, alpha=0.001, gae_lambda=0.75, policy_clip=0.6, max_grad_norm=1)
+
+train_ppo_agent(max_steps=1000, n_episodes=20, buffer_size=10,n_epochs=5, gamma=0.5, alpha=0.001, gae_lambda=0.75, policy_clip=0.6, max_grad_norm=1)
