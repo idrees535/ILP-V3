@@ -372,21 +372,19 @@ class UniV3Model():
         q96 = 2**96
         price = (sqrt_ratio_x96 / q96) ** 2
 
-        # tick_lower =tick_lower/10
-        # tick_upper = tick_upper/10
-
-        print(f"____________________________________cur price  {price}")
+        print(f"____________cur price {price/self.decimal_diff}        sqrtp {sqrt_ratio_x96}")
         
         sqrt_ratio_a_x96 = tick_to_sqrtp(tick_lower)
         sqrt_ratio_b_x96 = tick_to_sqrtp(tick_upper)
         
         print(f"convert back ticks to check {sqrtp_to_tick(sqrt_ratio_a_x96)}   -   {sqrtp_to_tick(sqrt_ratio_b_x96)}")
-        print(f"using price to valid tick func {price_to_valid_tick(sqrt_ratio_a_x96)}  -   {price_to_valid_tick(sqrt_ratio_b_x96)}")
+        print(f"using price to valid tick func curr price {price_to_valid_tick(price)}")
         print(f"current tick    {slot0_data[1]}")
-        print(f"____________________________________price range {sqrtp_to_price(sqrt_ratio_a_x96)} - {sqrtp_to_price(sqrt_ratio_b_x96)}")
+        print(f"price range {sqrtp_to_price(sqrt_ratio_a_x96)/self.decimal_diff} - {sqrtp_to_price(sqrt_ratio_b_x96)/self.decimal_diff}")
         
         liquidity=self.get_liquidity_for_amounts(sqrt_ratio_x96, sqrt_ratio_a_x96, sqrt_ratio_b_x96, amount0, amount1)
-        
+
+        print(f"Liquidity calculated by amount0 and amount1    {liquidity}")
         try:
             tx_receipt = self.pool_contact.mint(liquidity_provider, tick_lower, tick_upper, liquidity, data, tx_params)
 
@@ -405,15 +403,15 @@ class UniV3Model():
             print(f"""
                 Mint:
                     sender: {str(liquidity_provider)}
-                    owner: {self.pool_contact.address}
+                    pool: {self.pool_contact.address}
                     tick range: {tick_lower} - {tick_upper}
                     price range: {sqrtp_to_price(sqrt_ratio_a_x96)/self.decimal_diff} - {sqrtp_to_price(sqrt_ratio_b_x96)/self.decimal_diff}
                     amount0: {amount0}   -   amount1: {amount1}
                     cur pool price : {price}
                     """)
 
-        except VirtualMachineError as e:
-            print("Failed to add liquidty", e.revert_msg)
+        except:
+            print("Failed to add liquidty error inside function add_liquidity_with_amounts")
 
         # Store position in json file
         liquidity_provider_str = str(liquidity_provider)

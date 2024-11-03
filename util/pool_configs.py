@@ -52,7 +52,7 @@ pool_configs = [
         "token0_decimals": 8,
         "token1_decimals": 18,
         "fee_tier": 3000,
-        "initial_pool_price": 16.07,  # 20 WETH
+        "initial_pool_price": 160123312905,  # 20 WETH
         "initial_liquidity_amount_token1": 0
     }
 ]
